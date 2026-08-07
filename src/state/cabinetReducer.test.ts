@@ -32,6 +32,7 @@ describe("pending notes", () => {
       type: "note/addPending",
       location: READING_ROOT,
       id: "pending",
+      url: "https://example.com/a-page",
     });
     const placeholder = findNode(withPlaceholder.library, "pending");
     expect(placeholder && isPendingNote(placeholder)).toBe(true);
@@ -41,6 +42,28 @@ describe("pending notes", () => {
       note: makeNote({ id: "pending", title: "Recognized" }),
     });
     expect(noteAt(resolved, "pending")?.title).toBe("Recognized");
+  });
+
+  it("remembers the url so the placeholder can show its domain", () => {
+    const state = reduce(initialState(), {
+      type: "note/addPending",
+      location: READING_ROOT,
+      id: "pending",
+      url: "https://example.com/a-page",
+    });
+    expect(findNode(state.library, "pending")).toMatchObject({
+      url: "https://example.com/a-page",
+    });
+  });
+
+  it("ignores a resolution for a placeholder that was already deleted", () => {
+    const state = reduce(
+      initialState(),
+      { type: "note/addPending", location: READING_ROOT, id: "pending", url: "https://a.com/b" },
+      { type: "node/remove", id: "pending" },
+      { type: "note/resolvePending", note: makeNote({ id: "pending", title: "Too late" }) },
+    );
+    expect(findNode(state.library, "pending")).toBeFalsy();
   });
 });
 

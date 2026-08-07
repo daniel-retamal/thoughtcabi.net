@@ -1,7 +1,9 @@
 import type { IconName } from "@/icons/names";
 import { locateNode } from "@/domain/library/tree";
+import { previewFromNote, type LinkPreview } from "@/domain/links/linkPreview";
 import { draftFromNote, type NoteDraft } from "@/domain/notes/buildNote";
 import type { Channel, Library, LibraryLocation, Note, Tag } from "@/domain/model";
+import type { LinkReader } from "@/links/readLink";
 import type { Dialog } from "@/state/dialogs";
 import { ChannelEditorModal } from "./modals/ChannelEditorModal";
 import { ComposeModal } from "./modals/ComposeModal";
@@ -17,9 +19,10 @@ export interface DialogHostProps {
   tags: readonly Tag[];
   currentLocation: LibraryLocation;
   detailLocationLabel: (note: Note) => string;
+  readLink: LinkReader;
   onClose: () => void;
   onEditNote: (note: Note) => void;
-  onSaveNote: (draft: NoteDraft, editing: Note | null) => void;
+  onSaveNote: (draft: NoteDraft, preview: LinkPreview | null, editing: Note | null) => void;
   onSaveChannel: (channel: Channel | null, name: string, icon: IconName) => void;
   onDeleteChannel: (channel: Channel) => void;
   onSaveTag: (original: Tag | null, name: string, color: string) => void;
@@ -34,6 +37,7 @@ export function DialogHost({
   tags,
   currentLocation,
   detailLocationLabel,
+  readLink,
   onClose,
   onEditNote,
   onSaveNote,
@@ -73,7 +77,9 @@ export function DialogHost({
           library={library}
           tags={tags}
           initial={initial}
-          onSave={(draft) => onSaveNote(draft, editing)}
+          initialPreview={editing ? previewFromNote(editing) : null}
+          readLink={readLink}
+          onSave={(draft, preview) => onSaveNote(draft, preview, editing)}
           onCancel={onClose}
         />
       );

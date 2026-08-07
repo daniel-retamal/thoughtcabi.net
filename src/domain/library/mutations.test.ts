@@ -16,6 +16,7 @@ import {
   reorderWithinLocation,
   replaceNode,
   updateChannel,
+  withoutPendingNotes,
 } from "./mutations";
 import { containerAt, findNode, locateNode } from "./tree";
 
@@ -102,10 +103,19 @@ describe("patchNotes", () => {
 
   it("never rewrites pending placeholders", () => {
     const library: Library = [
-      makeChannel("C", [{ id: "pending", type: "note", loading: true }], "c"),
+      makeChannel(
+        "C",
+        [{ id: "pending", type: "note", url: "https://example.com/x", loading: true }],
+        "c",
+      ),
     ];
     const next = patchNotes(library, () => ({ tag: "x" }));
-    expect(next[0]?.children[0]).toEqual({ id: "pending", type: "note", loading: true });
+    expect(next[0]?.children[0]).toEqual({
+      id: "pending",
+      type: "note",
+      url: "https://example.com/x",
+      loading: true,
+    });
   });
 });
 
@@ -217,6 +227,39 @@ describe("channels", () => {
   it("ignores reordering an unknown channel", () => {
     const library = makeLibrary();
     expect(reorderChannels(library, "ghost", null)).toBe(library);
+  });
+});
+
+describe("withoutPendingNotes", () => {
+  it("prunes placeholders at every depth and leaves real notes alone", () => {
+    const library: Library = [
+      makeChannel(
+        "C",
+        [
+          makeNote({ id: "real" }),
+          { id: "p1", type: "note", url: "https://example.com/a", loading: true },
+          makeFolder(
+            "F",
+            [
+              { id: "p2", type: "note", url: "https://example.com/b", loading: true },
+              makeNote({ id: "nested" }),
+            ],
+            "folder-f",
+          ),
+        ],
+        "c",
+      ),
+    ];
+
+    const pruned = withoutPendingNotes(library);
+    expect(pruned[0]?.children.map((node) => node.id)).toEqual(["real", "folder-f"]);
+    const folder = pruned[0]?.children[1];
+    expect(folder && isFolder(folder) ? folder.children.map((n) => n.id) : []).toEqual(["nested"]);
+  });
+
+  it("leaves a library with nothing pending untouched in shape", () => {
+    const library = makeLibrary();
+    expect(withoutPendingNotes(library)).toEqual(library);
   });
 });
 

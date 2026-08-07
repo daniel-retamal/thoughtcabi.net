@@ -1,3 +1,4 @@
+import { withoutPendingNotes } from "@/domain/library/mutations";
 import type { Library, Tag, ViewMode } from "@/domain/model";
 import { createSeedLibrary, createSeedTags } from "@/domain/seed/seedLibrary";
 import { STORAGE_KEYS } from "./keys";
@@ -11,7 +12,7 @@ export function loadLibrary(): Library {
 }
 
 export function saveLibrary(library: Library): void {
-  writeJson(STORAGE_KEYS.library, library);
+  writeJson(STORAGE_KEYS.library, withoutPendingNotes(library));
 }
 
 export function loadTags(): Tag[] {

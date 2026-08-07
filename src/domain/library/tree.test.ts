@@ -112,7 +112,7 @@ describe("counting and collecting", () => {
   it("collects notes recursively but skips pending placeholders", () => {
     const folder = makeFolder("Root", [
       makeNote({ id: "n1" }),
-      { id: "pending", type: "note", loading: true },
+      { id: "pending", type: "note", url: "https://example.com/x", loading: true },
       makeFolder("Nested", [makeNote({ id: "n2" })]),
     ]);
     expect(collectNotes(folder).map((note) => note.id)).toEqual(["n1", "n2"]);

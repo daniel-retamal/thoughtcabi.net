@@ -1,6 +1,7 @@
 import {
   isFolder,
   isNote,
+  isPendingNote,
   type Channel,
   type Folder,
   type Library,
@@ -72,6 +73,15 @@ export function removeNode(library: Library, nodeId: NodeId): Library {
   const prune = (nodes: readonly LibraryNode[]): LibraryNode[] =>
     mapChildren(
       nodes.filter((node) => node.id !== nodeId),
+      prune,
+    );
+  return withChannelChildren(library, prune);
+}
+
+export function withoutPendingNotes(library: Library): Library {
+  const prune = (nodes: readonly LibraryNode[]): LibraryNode[] =>
+    mapChildren(
+      nodes.filter((node) => !isPendingNote(node)),
       prune,
     );
   return withChannelChildren(library, prune);

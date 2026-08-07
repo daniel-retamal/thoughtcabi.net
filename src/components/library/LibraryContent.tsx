@@ -79,7 +79,7 @@ export function LibraryContent({
           <div className="notes-grid" {...gridZone}>
             {notes.map((note) =>
               isPendingNote(note) ? (
-                <PendingCard key={note.id} />
+                <PendingCard key={note.id} url={note.url} />
               ) : (
                 <NoteCard
                   key={note.id}

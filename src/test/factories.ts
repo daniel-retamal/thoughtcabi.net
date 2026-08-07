@@ -25,7 +25,6 @@ export function makeNote(overrides: Partial<Note> = {}): Note {
     siteName: "Example",
     cat: "link",
     catLabel: "Link",
-    cover: { color: "#123456", glyph: "E", cat: "link", pattern: 0 },
     ...overrides,
   };
 }

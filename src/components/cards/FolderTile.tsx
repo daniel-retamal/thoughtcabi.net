@@ -8,6 +8,7 @@ import { Thumbnail } from "./Thumbnail";
 import { folderTileSummary } from "./folderSummary";
 
 const MOSAIC_CELLS = 4;
+const CELL_WIDTH = "120px";
 
 export interface FolderTileProps extends FolderHandlers {
   folder: Folder;
@@ -31,7 +32,7 @@ export function FolderTile({ folder, onOpen, onRename, onDelete }: FolderTilePro
           const note = previews[index];
           return note ? (
             <div className="cell" key={index}>
-              <Thumbnail note={note} />
+              <Thumbnail note={note} sizes={CELL_WIDTH} />
             </div>
           ) : (
             <div className="cell empty" key={index} />

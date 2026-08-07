@@ -94,12 +94,47 @@ Clearing them restores the seed library. Stored data is validated on load, so a
 corrupt or hand-edited value degrades to a sensible default instead of breaking
 the app.
 
-## Link recognition
+## The link reader
 
-Pasting a URL produces a card with a title, description, source label and
-generated cover art. This is derived locally from a curated catalogue of sites
-in `src/domain/links/siteCatalog.ts` — nothing is fetched. Unknown domains still
-get a believable card, coloured deterministically from the hostname.
+Paste a URL anywhere and a card appears immediately, then fills itself in with the
+page's real title, description, thumbnail and favicon — the way a link behaves when
+you paste it into Discord or WhatsApp.
 
-Fetching real page metadata would need a network round trip and is deliberately
-left out of the local-first build.
+**Nothing is invented.** If a page has no description, the card has no description.
+If it has no image, the card has no image. The only thing derived rather than read
+is the title, which falls back to the URL's own slug when the page offers none.
+
+A page's image is also checked before it is accepted: something too small, too
+lopsided, or that does not load at all is a logo or a tracking pixel rather than a
+preview, and is dropped rather than shown.
+
+When there is no usable picture, the card shows the site's own icon instead —
+small and centred on a plain field, never blown up to fill the frame. Rows do the
+same in their leading column, and when even the icon is missing they fall back to
+a letter taken from the domain, so the column is never empty. That letter belongs
+to rows only: at card size it stops reading as a mark and starts reading as a
+picture that failed. A card with nothing at all to show simply starts at its title.
+
+Some sites are read directly, with no intermediary at all: YouTube, Vimeo,
+Spotify and SoundCloud through oEmbed, plus Wikipedia, GitHub and Bluesky through
+their public APIs. Everything else is ordinary HTML, and here the browser gets in
+the way — a web page cannot read a cross-origin response unless that origin allows
+it, and almost none do. Discord solves this with a server-side crawler; WhatsApp
+solves it on your phone, where the rule does not apply.
+
+So generic pages are fetched through a relay: a stateless worker that hands over
+the bytes and nothing more. All the parsing happens here, in the browser, in
+`src/domain/links/`.
+
+```sh
+cd worker && npx wrangler deploy
+echo 'VITE_LINK_RELAY=https://<your-worker>.workers.dev/?url=' > .env.local
+```
+
+Cloudflare's free tier covers 100,000 relayed links a day, so this costs nothing to
+run. See `worker/README.md`. Without a relay configured the app falls back to a
+public proxy, and if that is unreachable too, a pasted link still becomes a card
+with its URL, domain and slug title.
+
+Adding support for another site means one pure file under `src/domain/links/sites/`,
+one resolver under `src/links/resolvers/`, and one line in the resolver registry.

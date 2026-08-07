@@ -5,20 +5,12 @@ export type NodeId = string;
 export type SiteCategory =
   "video" | "music" | "article" | "hn" | "dev" | "research" | "design" | "link" | "note";
 
-export interface Cover {
-  color: string;
-  glyph: string;
-  cat: SiteCategory;
-  pattern: number;
-}
-
 export interface LinkMetadata {
   url: string;
   domain: string;
   siteName: string;
   cat: SiteCategory;
   catLabel: string;
-  cover: Cover | null;
 }
 
 export interface Note extends LinkMetadata {
@@ -29,12 +21,15 @@ export interface Note extends LinkMetadata {
   tag: string;
   addedAt: number;
   image?: string;
+  siteImage?: string;
+  favicon?: string;
   loading?: false;
 }
 
 export interface PendingNote {
   id: NodeId;
   type: "note";
+  url: string;
   loading: true;
 }
 

@@ -1,14 +1,15 @@
 import type { Note, Tag } from "@/domain/model";
-import { hasThumbnail } from "@/domain/notes/buildNote";
 import { findTag } from "@/domain/tags/tagLibrary";
 import { itemDragProps } from "@/dnd/dragProps";
 import { relativeTime } from "@/lib/relativeTime";
-import { Icon } from "@/components/primitives/Icon";
-import { SiteFavicon } from "@/components/primitives/SiteFavicon";
+import { Monogram } from "@/components/primitives/Monogram";
+import { SiteMark } from "@/components/primitives/SiteMark";
 import { TagBadge } from "@/components/primitives/TagBadge";
 import { NoteActions } from "@/components/cards/NodeActions";
 import { Thumbnail } from "@/components/cards/Thumbnail";
 import type { NoteHandlers } from "@/components/handlers";
+
+const SLOT_WIDTH = "72px";
 
 export interface NoteRowProps extends NoteHandlers {
   note: Note;
@@ -27,15 +28,19 @@ export function NoteRow({ note, tags, fresh, onOpen, onEdit, onDelete }: NoteRow
       {...itemDragProps(note.id)}
       onClick={() => onOpen(note)}
     >
-      {hasThumbnail(note) ? (
-        <div className="row-cover">
-          <Thumbnail note={note} />
-        </div>
-      ) : (
-        <span className="row-glyph">
-          <Icon name="file-text" />
-        </span>
-      )}
+      <div className="row-slot">
+        <Thumbnail
+          note={note}
+          sizes={SLOT_WIDTH}
+          fallback={
+            <SiteMark
+              note={note}
+              scale="row"
+              fallback={<Monogram note={note} className="row-mark" />}
+            />
+          }
+        />
+      </div>
 
       <div className="row-main">
         <div className={hasTitle ? "row-title" : "row-title muted"}>{note.title || "Untitled"}</div>
@@ -48,14 +53,7 @@ export function NoteRow({ note, tags, fresh, onOpen, onEdit, onDelete }: NoteRow
       </div>
 
       <div className="row-dom">
-        {hasLink ? (
-          <>
-            <SiteFavicon note={note} />
-            {note.domain}
-          </>
-        ) : (
-          <span className="none">— no link —</span>
-        )}
+        {hasLink ? note.domain : <span className="none">— no link —</span>}
       </div>
 
       <div className="row-time">{relativeTime(note.addedAt)}</div>

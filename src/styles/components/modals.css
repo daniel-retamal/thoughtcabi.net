@@ -60,10 +60,6 @@
   flex: none;
 }
 
-.modal .cover .cov-glyph {
-  font-size: 130px;
-}
-
 .modal-close {
   position: absolute;
   top: 16px;

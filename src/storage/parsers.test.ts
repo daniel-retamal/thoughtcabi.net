@@ -38,15 +38,20 @@ describe("parseLibrary", () => {
       tag: "",
       url: "",
       cat: "link",
-      cover: null,
     });
+    expect(note).not.toHaveProperty("siteImage");
+    expect(note).not.toHaveProperty("favicon");
   });
 
-  it("keeps pending placeholders intact", () => {
+  it("keeps pending placeholders intact, url and all", () => {
     const node = parseLibrary([
-      { id: "c", name: "C", children: [{ id: "p", type: "note", loading: true }] },
+      {
+        id: "c",
+        name: "C",
+        children: [{ id: "p", type: "note", url: "https://example.com/x", loading: true }],
+      },
     ])?.[0]?.children[0];
-    expect(node).toEqual({ id: "p", type: "note", loading: true });
+    expect(node).toEqual({ id: "p", type: "note", url: "https://example.com/x", loading: true });
   });
 
   it("drops children that carry no id", () => {
@@ -64,11 +69,39 @@ describe("parseLibrary", () => {
     expect(withoutImage?.[0]?.children[0]).not.toHaveProperty("image");
   });
 
-  it("normalizes an unrecognized category", () => {
+  it("keeps the site's own image and favicon apart from the user's", () => {
     const note = parseLibrary([
-      { id: "c", name: "C", children: [{ id: "n", cat: "weird", cover: { cat: "weird" } }] },
+      {
+        id: "c",
+        name: "C",
+        children: [
+          {
+            id: "n",
+            image: "data:user",
+            siteImage: "https://example.com/og.png",
+            favicon: "https://example.com/favicon.ico",
+          },
+        ],
+      },
     ])?.[0]?.children[0];
-    expect(note).toMatchObject({ cat: "link", cover: { cat: "link", color: "#888", glyph: "•" } });
+    expect(note).toMatchObject({
+      image: "data:user",
+      siteImage: "https://example.com/og.png",
+      favicon: "https://example.com/favicon.ico",
+    });
+  });
+
+  it("drops a cover left over from an older save", () => {
+    const note = parseLibrary([
+      { id: "c", name: "C", children: [{ id: "n", cover: { color: "#888", glyph: "E" } }] },
+    ])?.[0]?.children[0];
+    expect(note).not.toHaveProperty("cover");
+  });
+
+  it("normalizes an unrecognized category", () => {
+    const note = parseLibrary([{ id: "c", name: "C", children: [{ id: "n", cat: "weird" }] }])?.[0]
+      ?.children[0];
+    expect(note).toMatchObject({ cat: "link" });
   });
 });
 

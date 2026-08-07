@@ -16,6 +16,21 @@ describe("app state persistence", () => {
     localStorage.clear();
   });
 
+  it("never writes a placeholder that is still being read", () => {
+    const library = makeLibrary();
+    library[0]?.children.push({
+      id: "pending",
+      type: "note",
+      url: "https://example.com/in-flight",
+      loading: true,
+    });
+
+    saveLibrary(library);
+
+    expect(localStorage.getItem(STORAGE_KEYS.library)).not.toContain("in-flight");
+    expect(loadLibrary()[0]?.children.some((node) => node.id === "pending")).toBe(false);
+  });
+
   it("round-trips the library", () => {
     const library = makeLibrary();
     saveLibrary(library);

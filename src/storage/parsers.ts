@@ -1,6 +1,5 @@
 import type {
   Channel,
-  Cover,
   Folder,
   Library,
   LibraryNode,
@@ -10,6 +9,7 @@ import type {
   Tag,
   ViewMode,
 } from "@/domain/model";
+import { asNumber, asRecord, asText, type JsonRecord } from "@/lib/json";
 import { toIconName } from "@/icons/names";
 
 const SITE_CATEGORIES = new Set<string>([
@@ -24,39 +24,28 @@ const SITE_CATEGORIES = new Set<string>([
   "note",
 ]);
 
-type Dict = Record<string, unknown>;
-
-function isDict(value: unknown): value is Dict {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function str(value: unknown, fallback = ""): string {
-  return typeof value === "string" ? value : fallback;
-}
-
-function num(value: unknown, fallback: number): number {
-  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
-}
+const str = asText;
+const num = asNumber;
+const isDict = (value: unknown): value is JsonRecord => asRecord(value) !== null;
 
 function category(value: unknown): SiteCategory {
   return SITE_CATEGORIES.has(str(value)) ? (value as SiteCategory) : "link";
 }
 
-function parseCover(value: unknown): Cover | null {
-  if (!isDict(value)) return null;
-  return {
-    color: str(value.color, "#888"),
-    glyph: str(value.glyph, "•"),
-    cat: category(value.cat),
-    pattern: num(value.pattern, 0),
-  };
+function withOptional(note: Note, value: JsonRecord): Note {
+  const optional: Partial<Note> = {};
+  for (const field of ["image", "siteImage", "favicon"] as const) {
+    const text = str(value[field]);
+    if (text) optional[field] = text;
+  }
+  return { ...note, ...optional };
 }
 
-function parseNote(value: Dict): NoteEntry | null {
+function parseNote(value: JsonRecord): NoteEntry | null {
   const id = str(value.id);
   if (!id) return null;
 
-  if (value.loading === true) return { id, type: "note", loading: true };
+  if (value.loading === true) return { id, type: "note", url: str(value.url), loading: true };
 
   const note: Note = {
     id,
@@ -70,14 +59,12 @@ function parseNote(value: Dict): NoteEntry | null {
     siteName: str(value.siteName),
     cat: category(value.cat),
     catLabel: str(value.catLabel),
-    cover: parseCover(value.cover),
   };
 
-  const image = str(value.image);
-  return image ? { ...note, image } : note;
+  return withOptional(note, value);
 }
 
-function parseFolder(value: Dict): Folder | null {
+function parseFolder(value: JsonRecord): Folder | null {
   const id = str(value.id);
   if (!id) return null;
   return {

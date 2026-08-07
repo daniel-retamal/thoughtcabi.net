@@ -42,7 +42,13 @@ describe("searchLibrary", () => {
   });
 
   it("never matches a pending placeholder", () => {
-    const library = [makeChannel("C", [{ id: "pending", type: "note", loading: true }], "c")];
+    const library = [
+      makeChannel(
+        "C",
+        [{ id: "pending", type: "note", url: "https://example.com/x", loading: true }],
+        "c",
+      ),
+    ];
     expect(searchLibrary(library, "undefined").notes).toHaveLength(0);
   });
 });

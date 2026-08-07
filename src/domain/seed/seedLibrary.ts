@@ -1,103 +1,179 @@
 import { createId } from "@/domain/ids";
-import { recognizeLink } from "@/domain/links/recognizeLink";
-import type { Channel, Folder, Library, LibraryNode, Note, Tag } from "@/domain/model";
+import { previewFromUrl } from "@/domain/links/fromUrl";
+import { previewToNote } from "@/domain/links/linkPreview";
+import type {
+  Channel,
+  Folder,
+  Library,
+  LibraryNode,
+  Note,
+  SiteCategory,
+  Tag,
+} from "@/domain/model";
 import { TAG_PALETTE } from "@/domain/tags/palette";
 import type { IconName } from "@/icons/names";
 
 const DAY_IN_MS = 86_400_000;
 
-function seedNote(url: string, daysAgo: number): Note {
-  const recognized = recognizeLink(url);
-  if (!recognized) throw new Error(`Seed link is not recognizable: ${url}`);
-
-  return {
-    ...recognized,
-    id: createId("n"),
-    type: "note",
-    tag: "",
-    addedAt: Date.now() - daysAgo * DAY_IN_MS,
-  };
+interface SeedEntry {
+  url: string;
+  title: string;
+  siteName: string;
+  cat: SiteCategory;
+  daysAgo: number;
+  description?: string;
+  image?: string;
 }
 
-function seedFolder(name: string, children: LibraryNode[]): Folder {
-  return { id: createId("f"), type: "folder", name, children };
+function seedNote(entry: SeedEntry): Note {
+  const url = new URL(entry.url);
+
+  return previewToNote(
+    {
+      ...previewFromUrl(url),
+      title: entry.title,
+      description: entry.description ?? "",
+      siteName: entry.siteName,
+      image: entry.image ?? "",
+      cat: entry.cat,
+    },
+    { id: createId("n"), addedAt: Date.now() - entry.daysAgo * DAY_IN_MS },
+  );
+}
+
+function seedFolder(name: string, entries: SeedEntry[]): Folder {
+  return { id: createId("f"), type: "folder", name, children: entries.map(seedNote) };
 }
 
 function seedChannel(name: string, icon: IconName, children: LibraryNode[]): Channel {
   return { id: createId("ch"), name, icon, children };
 }
 
+const WIKIMEDIA = "https://upload.wikimedia.org/wikipedia/commons/thumb";
+const YOUTUBE_THUMB = "https://i.ytimg.com/vi";
+
 export function createSeedLibrary(): Library {
   return [
     seedChannel("Reading", "book-open", [
       seedFolder("Essays", [
-        seedNote("https://www.newyorker.com/culture/the-art-of-doing-nothing", 2),
-        seedNote("https://www.theatlantic.com/ideas/the-forgotten-history-of-the-index-card", 5),
-        seedNote("https://www.theatlantic.com/culture/why-we-cant-stop-organizing-things", 9),
-        seedNote("https://newyorker.com/books/on-rereading", 14),
+        {
+          url: "https://www.paulgraham.com/greatwork.html",
+          title: "How to Do Great Work",
+          siteName: "Paul Graham",
+          cat: "article",
+          daysAgo: 2,
+        },
+        {
+          url: "https://www.paulgraham.com/makersschedule.html",
+          title: "Maker's Schedule, Manager's Schedule",
+          siteName: "Paul Graham",
+          cat: "article",
+          daysAgo: 9,
+        },
       ]),
-      seedFolder("Tech & Culture", [
-        seedNote("https://www.theverge.com/software-got-soft-again", 1),
-        seedNote("https://www.wired.com/story/the-people-who-save-everything", 3),
-        seedNote("https://stratechery.com/2026/aggregation-and-the-bookmark", 4),
-        seedFolder("Newsletters", [
-          seedNote("https://everything.substack.com/p/things-i-changed-my-mind-about", 6),
-          seedNote("https://thingsworthsaving.substack.com/p/the-weekly-142", 8),
-        ]),
-      ]),
-      seedFolder("Saved for later", [
-        seedNote("https://www.nytimes.com/2026/interactive/the-quiet-revolution-in-how-we-read", 0),
-        seedNote("https://medium.com/@reader/what-i-learned-saving-5000-links", 7),
-        seedNote("https://www.nytimes.com/2026/magazine/a-year-inside-the-archive", 12),
+      seedFolder("Ideas worth keeping", [
+        {
+          url: "https://en.wikipedia.org/wiki/Commonplace_book",
+          title: "Commonplace book",
+          description:
+            "Commonplace books are personal notebooks used to compile any information the owner finds interesting or useful.",
+          siteName: "Wikipedia",
+          cat: "research",
+          image: `${WIKIMEDIA}/5/50/Commonplace_book_mid_17th_century.jpg/330px-Commonplace_book_mid_17th_century.jpg`,
+          daysAgo: 4,
+        },
+        {
+          url: "https://en.wikipedia.org/wiki/Memex",
+          title: "Memex",
+          description:
+            'A memex is a hypothetical electromechanical device for interacting with microform documents, described in Vannevar Bush\'s 1945 article "As We May Think".',
+          siteName: "Wikipedia",
+          cat: "research",
+          image: `${WIKIMEDIA}/f/fb/Memex_at_Das_Netz_exhibition_of_Deutsches_Technikmuseum.jpg/330px-Memex_at_Das_Netz_exhibition_of_Deutsches_Technikmuseum.jpg`,
+          daysAgo: 6,
+        },
+        {
+          url: "https://en.wikipedia.org/wiki/Hypertext",
+          title: "Hypertext",
+          description:
+            "Hypertext is text displayed on a computer display or other electronic devices with references to other text that the reader can immediately access.",
+          siteName: "Wikipedia",
+          cat: "research",
+          image: `${WIKIMEDIA}/1/19/Hyperlinks_scheme.svg/330px-Hyperlinks_scheme.svg.png`,
+          daysAgo: 13,
+        },
       ]),
     ]),
+
     seedChannel("Watch & Listen", "play", [
-      seedFolder("Talks & Essays", [
-        seedNote("https://www.youtube.com/watch?v=a1B2c3D4e5F", 1),
-        seedNote("https://www.youtube.com/watch?v=traffic-problem-solved", 2),
-        seedNote("https://vimeo.com/the-making-of-a-title-sequence", 6),
-      ]),
-      seedFolder("Music", [
-        seedNote("https://open.spotify.com/playlist/late-night-focus", 0),
-        seedNote("https://open.spotify.com/album/the-album-that-changed-everything", 3),
-        seedNote("https://music.apple.com/playlist/rainy-day-jazz", 5),
-      ]),
-      seedFolder("Short films", [
-        seedNote("https://vimeo.com/quiet-mornings-a-short-film", 4),
-        seedNote("https://vimeo.com/slow-light", 11),
+      seedFolder("Talks", [
+        {
+          url: "https://www.youtube.com/watch?v=6avJHaC3C2U",
+          title: "The Art of Code - Dylan Beattie",
+          description: "NDC Conferences",
+          siteName: "YouTube",
+          cat: "video",
+          image: `${YOUTUBE_THUMB}/6avJHaC3C2U/mqdefault.jpg`,
+          daysAgo: 1,
+        },
+        {
+          url: "https://www.youtube.com/watch?v=8pTEmbeENF4",
+          title: "Bret Victor   The Future of Programming",
+          description: "Joey Reid",
+          siteName: "YouTube",
+          cat: "video",
+          image: `${YOUTUBE_THUMB}/8pTEmbeENF4/maxresdefault.jpg`,
+          daysAgo: 5,
+        },
+        {
+          url: "https://www.youtube.com/watch?v=kb-m2fasdDY",
+          title:
+            "What I Wish I Had Known Before Scaling Uber to 1000 Services • Matt Ranney • GOTO 2016",
+          description: "GOTO Conferences",
+          siteName: "YouTube",
+          cat: "video",
+          image: `${YOUTUBE_THUMB}/kb-m2fasdDY/maxresdefault.jpg`,
+          daysAgo: 11,
+        },
       ]),
     ]),
+
     seedChannel("Research", "flask-conical", [
-      seedFolder("AI & memory", [
-        seedNote("https://arxiv.org/abs/2604.01821", 1),
-        seedNote("https://arxiv.org/abs/2603.11902", 4),
-        seedNote("https://arxiv.org/abs/2602.00455", 10),
-      ]),
-      seedFolder("References", [
-        seedNote("https://en.wikipedia.org/wiki/Commonplace_book", 2),
-        seedNote("https://en.wikipedia.org/wiki/Memex", 2),
-        seedNote("https://en.wikipedia.org/wiki/Zettelkasten", 8),
-      ]),
-      seedFolder("Design", [
-        seedNote("https://www.figma.com/file/thoughtcabi-design-system", 0),
-        seedNote("https://www.smashingmagazine.com/2026/designing-calm-software", 3),
+      seedFolder("Method", [
+        {
+          url: "https://en.wikipedia.org/wiki/Zettelkasten",
+          title: "Zettelkasten",
+          description:
+            "A Zettelkasten or card file consists of small items of information stored on paper slips or cards, that may be linked to each other through subject headings or other metadata.",
+          siteName: "Wikipedia",
+          cat: "research",
+          image: `${WIKIMEDIA}/3/33/Zettelkasten_%28514941699%29.jpg/330px-Zettelkasten_%28514941699%29.jpg`,
+          daysAgo: 3,
+        },
       ]),
     ]),
-    seedChannel("Dev / HN", "terminal", [
+
+    seedChannel("Dev", "terminal", [
       seedFolder("Tools", [
-        seedNote("https://github.com/thoughtcabi/core", 0),
-        seedNote("https://github.com/awesome/awesome-personal-knowledge", 2),
-        seedNote("https://github.com/rust-lang/rust-url-parser", 9),
-      ]),
-      seedFolder("Reading list", [
-        seedNote("https://news.ycombinator.com/item?id=40123456", 0),
-        seedNote("https://news.ycombinator.com/item?id=ask-how-organize", 1),
-        seedNote("https://css-tricks.com/a-complete-guide-to-css-grid", 3),
-        seedNote("https://developer.mozilla.org/en-US/docs/Web/API/URL/parse", 5),
-      ]),
-      seedFolder("Snippets", [
-        seedNote("https://stackoverflow.com/questions/how-to-parse-url-into-title-favicon", 4),
-        seedNote("https://developer.mozilla.org/en-US/docs/Web/API/structuredClone", 7),
+        {
+          url: "https://github.com/vitejs/vite",
+          title: "vitejs/vite",
+          description: "Next generation frontend tooling. It's fast!",
+          siteName: "GitHub",
+          cat: "dev",
+          image: "https://avatars.githubusercontent.com/u/65625612?v=4",
+          daysAgo: 0,
+        },
+        {
+          url: "https://github.com/microsoft/TypeScript",
+          title: "microsoft/TypeScript",
+          description:
+            "TypeScript is a superset of JavaScript that compiles to clean JavaScript output.",
+          siteName: "GitHub",
+          cat: "dev",
+          image: "https://avatars.githubusercontent.com/u/6154722?v=4",
+          daysAgo: 7,
+        },
       ]),
     ]),
   ];

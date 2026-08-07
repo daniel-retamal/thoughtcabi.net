@@ -1,11 +1,40 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { LinkPreview } from "@/domain/links/linkPreview";
 import { STORAGE_KEYS } from "@/storage/keys";
 import { App } from "./App";
 
 function sidebar(): HTMLElement {
   return document.querySelector("aside.sidebar") as HTMLElement;
+}
+
+function pasteText(text: string): void {
+  const event = new Event("paste", { bubbles: true, cancelable: true });
+  Object.defineProperty(event, "clipboardData", { value: { getData: () => text } });
+  act(() => {
+    document.dispatchEvent(event);
+  });
+}
+
+function deferredReader(): {
+  readLink: () => Promise<LinkPreview | null>;
+  resolve: (preview: LinkPreview | null) => Promise<void>;
+} {
+  let settle: (preview: LinkPreview | null) => void = () => undefined;
+  const pending = new Promise<LinkPreview | null>((resolveWith) => {
+    settle = resolveWith;
+  });
+
+  return {
+    readLink: () => pending,
+    resolve: async (preview) => {
+      await act(async () => {
+        settle(preview);
+        await pending;
+      });
+    },
+  };
 }
 
 describe("App", () => {
@@ -36,7 +65,7 @@ describe("App", () => {
   it("switches channels from the sidebar", async () => {
     render(<App />);
     await userEvent.click(within(sidebar()).getByText("Research"));
-    expect(screen.getByText("AI & memory")).toBeInTheDocument();
+    expect(screen.getByText("Method")).toBeInTheDocument();
     expect(screen.queryByText("Essays")).not.toBeInTheDocument();
   });
 
@@ -94,7 +123,7 @@ describe("App", () => {
   it("opens a note's detail and closes it again", async () => {
     render(<App />);
     await userEvent.click(screen.getByText("Essays"));
-    await userEvent.click(screen.getByText("On Rereading"));
+    await userEvent.click(screen.getByText("How to Do Great Work"));
 
     const modal = document.querySelector(".modal") as HTMLElement;
     expect(within(modal).getByText("In folder")).toBeInTheDocument();
@@ -114,5 +143,75 @@ describe("App", () => {
 
     expect(screen.getByText("A thought worth keeping")).toBeInTheDocument();
     expect(screen.getByText("Saved to")).toBeInTheDocument();
+  });
+
+  it("shows a placeholder the moment a link is pasted, then fills it in", async () => {
+    const { readLink, resolve } = deferredReader();
+    render(<App readLink={readLink} />);
+
+    pasteText("https://example.com/the-quiet-revolution");
+
+    expect(screen.getByText("Reading link…")).toBeInTheDocument();
+    expect(screen.getByText("example.com")).toBeInTheDocument();
+
+    await resolve({
+      url: "https://example.com/the-quiet-revolution",
+      domain: "example.com",
+      title: "The Quiet Revolution",
+      description: "How reading changed.",
+      siteName: "Example",
+      image: "https://example.com/og.png",
+      favicon: "https://example.com/favicon.ico",
+      cat: "article",
+    });
+
+    expect(screen.queryByText("Reading link…")).not.toBeInTheDocument();
+    expect(screen.getByText("The Quiet Revolution")).toBeInTheDocument();
+    expect(screen.getByText("How reading changed.")).toBeInTheDocument();
+    expect(screen.getByText("Saved to")).toBeInTheDocument();
+  });
+
+  it("adds nothing of its own when the page had no metadata", async () => {
+    const { readLink, resolve } = deferredReader();
+    render(<App readLink={readLink} />);
+
+    pasteText("https://example.com/bare-page");
+    await resolve({
+      url: "https://example.com/bare-page",
+      domain: "example.com",
+      title: "Bare Page",
+      description: "",
+      siteName: "",
+      image: "",
+      favicon: "",
+      cat: "link",
+    });
+
+    const card = screen.getByText("Bare Page").closest(".card") as HTMLElement;
+    expect(card.querySelector(".card-desc")).toBeNull();
+    expect(card.querySelector(".img-cover")).toBeNull();
+    expect(card.querySelector(".icon-cover img")).toHaveAttribute(
+      "src",
+      "https://example.com/favicon.ico",
+    );
+  });
+
+  it("leaves pasted text that is not a link alone", () => {
+    const { readLink } = deferredReader();
+    render(<App readLink={readLink} />);
+
+    pasteText("just a passing thought");
+
+    expect(screen.queryByText("Reading link…")).not.toBeInTheDocument();
+  });
+
+  it("does not persist a placeholder that never resolved", () => {
+    const { readLink } = deferredReader();
+    render(<App readLink={readLink} />);
+
+    pasteText("https://example.com/in-flight");
+
+    expect(screen.getByText("Reading link…")).toBeInTheDocument();
+    expect(localStorage.getItem(STORAGE_KEYS.library)).not.toContain("in-flight");
   });
 });

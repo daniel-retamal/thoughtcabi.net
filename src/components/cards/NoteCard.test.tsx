@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { fireEvent } from "@testing-library/dom";
 import userEvent from "@testing-library/user-event";
 import { makeNote, makeTag } from "@/test/factories";
 import { TAG_PALETTE } from "@/domain/tags/palette";
@@ -34,9 +35,57 @@ describe("NoteCard", () => {
     expect(screen.queryByText("Deleted tag")).not.toBeInTheDocument();
   });
 
-  it("marks a card with no thumbnail so it starts at its title", () => {
-    const { container } = renderCard(makeNote({ url: "", cover: null, domain: "" }));
-    expect(container.querySelector(".card")).toHaveClass("no-thumb");
+  it("starts at its title when there is no picture and no icon to show", () => {
+    const { container } = renderCard(makeNote({ url: "", domain: "" }));
+    expect(container.querySelector(".card")).toHaveClass("no-cover");
+    expect(container.querySelector(".cover")).toBeNull();
+  });
+
+  it("shows the site's icon in the frame when the page published no image", () => {
+    const { container } = renderCard(makeNote({ favicon: "https://example.com/touch-icon.png" }));
+    const cover = container.querySelector(".icon-cover");
+
+    expect(container.querySelector(".card")).not.toHaveClass("no-cover");
+    expect(cover?.querySelector("img")).toHaveAttribute(
+      "src",
+      "https://example.com/touch-icon.png",
+    );
+  });
+
+  it("seats the icon on a plate rather than on the field itself", () => {
+    const { container } = renderCard(makeNote({ favicon: "https://example.com/touch-icon.png" }));
+    expect(container.querySelector(".icon-cover .cover-plate img")).not.toBeNull();
+  });
+
+  it("shrinks to a small icon's own size rather than blowing it up", () => {
+    const { container } = renderCard(makeNote({ favicon: "https://example.com/tiny.png" }));
+    const icon = container.querySelector(".icon-cover img") as HTMLImageElement;
+
+    Object.defineProperty(icon, "naturalWidth", { value: 16 });
+    Object.defineProperty(icon, "naturalHeight", { value: 16 });
+    fireEvent.load(icon);
+
+    expect(icon.style.width).toBe("16px");
+  });
+
+  it("does not repeat the site icon beside the domain", () => {
+    const { container } = renderCard(makeNote({ favicon: "https://example.com/touch-icon.png" }));
+    expect(container.querySelector(".card-foot img")).toBeNull();
+  });
+
+  it("prefers the page's own image over the icon", () => {
+    const { container } = renderCard(makeNote({ siteImage: "https://example.com/og.png" }));
+    expect(container.querySelector(".img-cover")).not.toBeNull();
+    expect(container.querySelector(".icon-cover")).toBeNull();
+  });
+
+  it("never puts a monogram on a card", () => {
+    const { container } = renderCard(makeNote({ favicon: "https://example.com/gone.png" }));
+
+    fireEvent.error(container.querySelector(".icon-cover img") as HTMLImageElement);
+
+    expect(container.querySelector(".mark-letter")).toBeNull();
+    expect(container.querySelector(".cover")).toBeNull();
   });
 
   it("opens the note when the card is clicked", async () => {
@@ -61,7 +110,7 @@ describe("NoteCard", () => {
     renderCard();
     expect(screen.getByLabelText("Open original")).toBeInTheDocument();
 
-    renderCard(makeNote({ url: "", domain: "", cover: null }));
+    renderCard(makeNote({ url: "", domain: "" }));
     expect(screen.getAllByLabelText("Edit")).toHaveLength(2);
     expect(screen.getAllByLabelText("Open original")).toHaveLength(1);
   });

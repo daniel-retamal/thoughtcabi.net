@@ -1,6 +1,9 @@
-import { useState, type KeyboardEvent } from "react";
+import { useEffect, useState, type KeyboardEvent } from "react";
+import type { LinkPreview } from "@/domain/links/linkPreview";
 import type { Library, LibraryLocation, Tag } from "@/domain/model";
 import type { NoteDraft } from "@/domain/notes/buildNote";
+import type { LinkReader } from "@/links/readLink";
+import { useLinkPreview } from "@/state/useLinkPreview";
 import { useAutoFocus } from "@/hooks/useAutoFocus";
 import { Button } from "@/components/primitives/Button";
 import { Icon } from "@/components/primitives/Icon";
@@ -17,7 +20,9 @@ export interface ComposeModalProps {
   library: Library;
   tags: readonly Tag[];
   initial: NoteDraft;
-  onSave: (draft: NoteDraft) => void;
+  initialPreview: LinkPreview | null;
+  readLink: LinkReader;
+  onSave: (draft: NoteDraft, preview: LinkPreview | null) => void;
   onCancel: () => void;
 }
 
@@ -26,6 +31,8 @@ export function ComposeModal({
   library,
   tags,
   initial,
+  initialPreview,
+  readLink,
   onSave,
   onCancel,
 }: ComposeModalProps) {
@@ -39,18 +46,29 @@ export function ComposeModal({
   const [image, setImage] = useState(initial.image);
   const [destination, setDestination] = useState<LibraryLocation>(initial.destination);
 
+  const { preview, reading } = useLinkPreview(url, readLink, initialPreview);
+
+  useEffect(() => {
+    if (!preview) return;
+    setTitle((current) => current || preview.title);
+    setDescription((current) => current || preview.description);
+  }, [preview]);
+
   const canSave = title.trim().length > 0 || url.trim().length > 0 || image.length > 0;
 
   const submit = (): void => {
     if (!canSave) return;
-    onSave({
-      url: url.trim(),
-      title: title.trim(),
-      description: description.trim(),
-      tag: tag.trim(),
-      image,
-      destination,
-    });
+    onSave(
+      {
+        url: url.trim(),
+        title: title.trim(),
+        description: description.trim(),
+        tag: tag.trim(),
+        image,
+        destination,
+      },
+      preview,
+    );
   };
 
   const onSubmitShortcut = (event: KeyboardEvent): void => {
@@ -75,9 +93,9 @@ export function ComposeModal({
         />
       </Field>
 
-      <Field label="Link" hint="— optional">
+      <Field label="Link" hint={reading ? "— reading…" : "— optional"}>
         <div className="f-url-wrap">
-          <Icon name="link" />
+          <Icon name={reading ? "loader-circle" : "link"} className={reading ? "spinning" : ""} />
           <input
             value={url}
             placeholder="https://…"

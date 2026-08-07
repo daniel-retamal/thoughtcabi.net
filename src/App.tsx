@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { createId } from "@/domain/ids";
-import { recognizeLink } from "@/domain/links/recognizeLink";
+import type { LinkPreview } from "@/domain/links/linkPreview";
 import { availableColors } from "@/domain/tags/tagLibrary";
 import {
   containerAt,
@@ -12,8 +12,8 @@ import { buildNote, type NoteDraft } from "@/domain/notes/buildNote";
 import type { Channel, Folder, Note, Tag, ViewMode } from "@/domain/model";
 import { locationDropProps } from "@/dnd/dragProps";
 import type { IconName } from "@/icons/names";
+import { readLink as readLinkFromWeb, type LinkReader } from "@/links/readLink";
 import { useAppearance } from "@/hooks/useAppearance";
-import { useGlobalPaste } from "@/hooks/useGlobalPaste";
 import { useSearchShortcut } from "@/hooks/useSearchShortcut";
 import { useToasts } from "@/hooks/useToasts";
 import { useTransientIds } from "@/hooks/useTransientIds";
@@ -23,6 +23,7 @@ import { useCabinet } from "@/state/useCabinet";
 import { useLibraryDragAndDrop } from "@/state/useLibraryDragAndDrop";
 import { useLibraryView, type FolderEntry } from "@/state/useLibraryView";
 import { useNavigation } from "@/state/useNavigation";
+import { usePasteToSave } from "@/state/usePasteToSave";
 import type { Dialog } from "@/state/dialogs";
 import { DialogHost } from "@/components/DialogHost";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -35,10 +36,13 @@ import { ToastStack } from "@/components/feedback/ToastStack";
 import { Icon } from "@/components/primitives/Icon";
 import { emptyStateFor } from "@/components/library/emptyStates";
 
-const LINK_RECOGNITION_MS = 850;
 const FRESH_HIGHLIGHT_MS = 1500;
 
-export function App() {
+export interface AppProps {
+  readLink?: LinkReader;
+}
+
+export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
   const [{ library, tags }, dispatch] = useCabinet();
   const [view, setView] = usePersistentState<ViewMode>(loadViewMode, saveViewMode);
   const [dialog, setDialog] = useState<Dialog | null>(null);
@@ -55,23 +59,15 @@ export function App() {
   useSearchShortcut(searchRef);
   useLibraryDragAndDrop({ library, navigation, dispatch, pushToast });
 
-  useGlobalPaste((text) => {
-    const recognized = recognizeLink(text);
-    if (!recognized) return false;
-
-    const id = createId("l");
-    const location = navigation.location;
-    const folder = containerAt(library, location).name;
-
-    dispatch({ type: "note/addPending", location, id });
-    setTimeout(() => {
-      const note: Note = { ...recognized, id, type: "note", tag: "", addedAt: Date.now() };
-      dispatch({ type: "note/resolvePending", note });
-      fresh.mark(id);
+  usePasteToSave({
+    library,
+    location: navigation.location,
+    readLink,
+    dispatch,
+    onSaved: (note, folder, location) => {
+      fresh.mark(note.id);
       pushToast({ folder, location, note });
-    }, LINK_RECOGNITION_MS);
-
-    return true;
+    },
   });
 
   const openFolder = (folder: FolderEntry): void => {
@@ -83,16 +79,16 @@ export function App() {
     navigation.goTo({ channelId: folder.channelId, path: pathToFolder(channel, folder.id) });
   };
 
-  const saveNote = (draft: NoteDraft, editing: Note | null): void => {
+  const saveNote = (draft: NoteDraft, preview: LinkPreview | null, editing: Note | null): void => {
     if (editing) {
-      const note = buildNote(draft, { id: editing.id, addedAt: editing.addedAt });
+      const note = buildNote(draft, preview, { id: editing.id, addedAt: editing.addedAt });
       dispatch({ type: "note/move", location: draft.destination, note });
       closeDialog();
       fresh.mark(note.id);
       return;
     }
 
-    const note = buildNote(draft);
+    const note = buildNote(draft, preview);
     dispatch({ type: "note/add", location: draft.destination, note });
     closeDialog();
     fresh.mark(note.id);
@@ -251,6 +247,7 @@ export function App() {
         library={library}
         tags={tags}
         currentLocation={navigation.location}
+        readLink={readLink}
         detailLocationLabel={(note) =>
           parentContainerName(library, note.id) ?? viewState.channel.name
         }

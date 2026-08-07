@@ -53,6 +53,10 @@
   --accent-on: var(--az-bg);
   --accent-soft: color-mix(in oklab, var(--az-cream) 15%, transparent);
   --accent-softer: color-mix(in oklab, var(--az-cream) 8%, transparent);
+  --mark-field: var(--az-panel-2);
+  --mark-plate: var(--az-cream);
+  --mark-plate-ring: color-mix(in oklab, var(--az-ink) 14%, transparent);
+  --mark-letter: color-mix(in oklab, var(--az-cream) 48%, transparent);
   --shadow-lg:
     0 22px 50px -18px rgb(var(--az-shadow) / 0.75), 0 6px 16px -8px rgb(var(--az-shadow) / 0.4);
   --shadow-md: 0 14px 30px -18px rgb(var(--az-shadow) / 0.6);

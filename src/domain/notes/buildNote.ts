@@ -1,6 +1,8 @@
 import { createId } from "@/domain/ids";
+import { emptyPreview, previewToNote, type LinkPreview } from "@/domain/links/linkPreview";
+import { canonicalUrl, hostnameOf, originFaviconUrl } from "@/domain/links/url";
 import type { LibraryLocation, Note } from "@/domain/model";
-import { recognizeLink } from "@/domain/links/recognizeLink";
+import { previewFromUrl } from "@/domain/links/fromUrl";
 
 export interface NoteDraft {
   url: string;
@@ -16,36 +18,34 @@ export interface BuildNoteOptions {
   addedAt?: number;
 }
 
-const BLANK_LINK = {
-  url: "",
-  domain: "",
-  siteName: "",
-  cat: "note",
-  catLabel: "",
-  cover: null,
-} as const;
+const BLANK_LINK: LinkPreview = { ...emptyPreview("", ""), cat: "note" };
 
-export function buildNote(draft: NoteDraft, options: BuildNoteOptions = {}): Note {
-  const recognized = draft.url ? recognizeLink(draft.url) : null;
+function linkFor(draft: NoteDraft, preview: LinkPreview | null): LinkPreview {
+  const canonical = canonicalUrl(draft.url);
+  if (!canonical) return BLANK_LINK;
+  if (preview && canonicalUrl(preview.url) === canonical) return preview;
+  return previewFromUrl(new URL(canonical));
+}
 
-  const base = {
-    id: options.id ?? createId("n"),
-    type: "note",
-    addedAt: options.addedAt ?? Date.now(),
-    title: draft.title,
-    description: draft.description,
-    tag: draft.tag,
-  } as const;
+export function buildNote(
+  draft: NoteDraft,
+  preview: LinkPreview | null = null,
+  options: BuildNoteOptions = {},
+): Note {
+  const link = linkFor(draft, preview);
 
-  const note: Note = recognized
-    ? {
-        ...recognized,
-        ...base,
-        url: draft.url,
-        title: draft.title || recognized.title,
-        description: draft.description || recognized.description,
-      }
-    : { ...BLANK_LINK, ...base };
+  const note = previewToNote(
+    {
+      ...link,
+      title: draft.title || link.title,
+      description: draft.description || link.description,
+    },
+    {
+      id: options.id ?? createId("n"),
+      addedAt: options.addedAt ?? Date.now(),
+      tag: draft.tag,
+    },
+  );
 
   return draft.image ? { ...note, image: draft.image } : note;
 }
@@ -62,5 +62,18 @@ export function draftFromNote(note: Note, destination: LibraryLocation): NoteDra
 }
 
 export function hasThumbnail(note: Note): boolean {
-  return Boolean(note.image || (note.url && note.cover));
+  return Boolean(note.image || note.siteImage);
+}
+
+export function siteIconFor(note: Note): string {
+  return note.favicon || originFaviconUrl(note.url);
+}
+
+export function hasCover(note: Note): boolean {
+  return hasThumbnail(note) || Boolean(siteIconFor(note));
+}
+
+export function domainOf(rawUrl: string): string {
+  const canonical = canonicalUrl(rawUrl);
+  return canonical ? hostnameOf(new URL(canonical)) : "";
 }

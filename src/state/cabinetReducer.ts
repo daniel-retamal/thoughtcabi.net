@@ -23,7 +23,7 @@ export interface CabinetState {
 }
 
 export type CabinetAction =
-  | { type: "note/addPending"; location: LibraryLocation; id: NodeId }
+  | { type: "note/addPending"; location: LibraryLocation; id: NodeId; url: string }
   | { type: "note/resolvePending"; note: Note }
   | { type: "note/add"; location: LibraryLocation; note: Note }
   | { type: "note/move"; location: LibraryLocation; note: Note }
@@ -58,7 +58,12 @@ export function cabinetReducer(state: CabinetState, action: CabinetAction): Cabi
     case "note/addPending":
       return withLibrary(
         state,
-        addChild(library, action.location, { id: action.id, type: "note", loading: true }),
+        addChild(library, action.location, {
+          id: action.id,
+          type: "note",
+          url: action.url,
+          loading: true,
+        }),
       );
 
     case "note/resolvePending":
