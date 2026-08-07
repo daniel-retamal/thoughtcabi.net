@@ -1,0 +1,59 @@
+.toast-wrap {
+  position: fixed;
+  bottom: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 16px 11px 13px;
+  border-radius: var(--r-pill);
+  background: var(--text);
+  color: var(--bg);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  font-weight: 500;
+  animation: toastIn 0.3s var(--ease-out);
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.toast .tdot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--bg);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.toast .tdot svg {
+  width: 13px;
+  height: 13px;
+  color: var(--text);
+}
+
+.toast .tlink {
+  color: color-mix(in oklab, var(--bg) 70%, var(--accent));
+  font-weight: 600;
+  cursor: pointer;
+}

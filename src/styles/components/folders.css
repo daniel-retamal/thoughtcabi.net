@@ -1,0 +1,136 @@
+.folder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.folder-tile {
+  position: relative;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  padding: 12px;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    box-shadow 0.2s,
+    background 0.2s;
+}
+
+.folder-mosaic {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 5px;
+  height: 84px;
+  margin-bottom: 13px;
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.folder-mosaic .cell {
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.folder-mosaic .cell .cover {
+  height: 100%;
+}
+
+.folder-mosaic .cell.empty {
+  background: var(--surface-2);
+}
+
+.folder-mosaic.one {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
+.folder-meta {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.folder-meta .ficon {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.folder-meta .ficon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.folder-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.folder-name {
+  font-size: 16.5px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.folder-sub {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-top: 1px;
+}
+
+.folder-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 6px;
+  z-index: 3;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity 0.16s,
+    transform 0.16s;
+}
+
+.folder-tile:hover .folder-actions {
+  opacity: 1;
+  transform: none;
+}
+
+.folder-actions button {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.42);
+  color: #fff;
+  backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  transition:
+    background 0.14s,
+    transform 0.1s;
+}
+
+.folder-actions button:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.folder-actions button:active {
+  transform: scale(0.9);
+}
+
+.folder-actions button svg {
+  width: 15px;
+  height: 15px;
+}

@@ -1,0 +1,154 @@
+.pop-wrap {
+  position: relative;
+}
+
+.popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 320px;
+  z-index: 50;
+  background: var(--raise);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 16px;
+  animation: popIn 0.18s var(--ease-out);
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pop-title {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin: 4px 2px 10px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.pop-title .pop-note {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+  font-size: 10.5px;
+  color: color-mix(in oklab, var(--text-faint) 80%, transparent);
+}
+
+.pop-title:not(:first-child) {
+  margin-top: 18px;
+}
+
+.seg-toggle {
+  display: flex;
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 3px;
+  gap: 3px;
+}
+
+.seg-toggle button {
+  flex: 1;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: all 0.14s;
+}
+
+.seg-toggle button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.seg-toggle button.on {
+  background: var(--raise);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+}
+
+.az-palettes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.az-sw {
+  aspect-ratio: 1;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border: 1.5px solid var(--border);
+  transition:
+    transform 0.12s,
+    border-color 0.15s;
+}
+
+.az-sw:hover {
+  transform: scale(1.06);
+}
+
+.az-sw.on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-softer);
+}
+
+.az-sw .az-cream-half {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+
+.az-sw .tick {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+}
+
+.az-sw.on .tick {
+  opacity: 1;
+}
+
+.az-sw .tick svg {
+  width: 15px;
+  height: 15px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+}
+
+.az-cardsw {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.az-chip {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  flex: none;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.14);
+}

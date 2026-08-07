@@ -1,0 +1,198 @@
+body.dnd-active {
+  cursor: grabbing;
+}
+
+body.dnd-active * {
+  cursor: grabbing !important;
+  user-select: none !important;
+}
+
+body.dnd-active img,
+body.dnd-active a {
+  -webkit-user-drag: none;
+}
+
+[data-drag-kind] {
+  -webkit-user-drag: none;
+}
+
+body.dnd-active .card:hover,
+body.dnd-active .folder-tile:hover,
+body.dnd-active .row-item:hover {
+  transform: none;
+}
+
+body.dnd-active .card-actions,
+body.dnd-active .folder-actions,
+body.dnd-active .row-actions {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.dnd-source {
+  opacity: 0.32;
+  filter: saturate(0.6);
+  transition: opacity 0.12s;
+}
+
+.dnd-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9000;
+  pointer-events: none;
+  will-change: transform;
+  opacity: 0.8;
+  transform-origin: 0 0;
+  filter: drop-shadow(0 16px 30px rgba(0, 0, 0, 0.26)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.16));
+}
+
+.dnd-ghost > * {
+  margin: 0 !important;
+  pointer-events: none;
+}
+
+.dnd-ghost .card,
+.dnd-ghost .folder-tile,
+.dnd-ghost .row-item,
+.dnd-ghost .lib-row {
+  box-shadow: none;
+  transform: none;
+}
+
+.dnd-ghost .row-item {
+  width: 340px;
+  max-width: 52vw;
+  background: var(--surface);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+}
+
+.dnd-ghost .lib-row {
+  background: var(--surface);
+  border-radius: var(--r-md);
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+}
+
+.dnd-tag-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 8px 12px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.dnd-tag-ghost .tdot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.dnd-indicator {
+  position: fixed;
+  z-index: 9002;
+  display: none;
+  pointer-events: none;
+  background: var(--accent);
+  border-radius: 3px;
+  box-shadow:
+    0 0 0 2px var(--accent-softer),
+    0 1px 6px color-mix(in oklab, var(--accent) 50%, transparent);
+}
+
+.dnd-indicator::before,
+.dnd-indicator::after {
+  content: "";
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--bg);
+}
+
+.dnd-indicator::before {
+  left: -2px;
+  top: -2px;
+}
+
+.dnd-indicator::after {
+  right: -2px;
+  bottom: -2px;
+}
+
+.dnd-over {
+  position: relative;
+}
+
+.folder-tile.dnd-over,
+.row-folder.dnd-over {
+  outline: 2.5px solid var(--accent);
+  outline-offset: 2px;
+  background: var(--accent-softer);
+  box-shadow: 0 0 0 6px var(--accent-softer);
+}
+
+.lib-row.dnd-over {
+  background: var(--accent-softer);
+  box-shadow:
+    inset 0 0 0 2px var(--accent),
+    0 0 0 3px var(--accent-softer);
+  position: relative;
+  z-index: 9003;
+}
+
+.crumb.dnd-over {
+  background: var(--accent-softer);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 2px var(--accent);
+  border-radius: 8px;
+  position: relative;
+  z-index: 9003;
+}
+
+.body-inner.dnd-over {
+  outline: 2px dashed color-mix(in oklab, var(--accent) 32%, transparent);
+  outline-offset: -10px;
+  border-radius: var(--r-lg);
+}
+
+.card.dnd-over,
+.row-item.dnd-over:not(.row-folder) {
+  outline: 2.5px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-md);
+}
+
+.dnd-spring {
+  position: relative;
+  background: var(--accent-softer) !important;
+  box-shadow: inset 0 0 0 2px var(--accent) !important;
+  animation: dnd-dwell 0.6s var(--ease-out) both;
+}
+
+@keyframes dnd-dwell {
+  0% {
+    box-shadow: inset 0 0 0 2px color-mix(in oklab, var(--accent) 35%, transparent) !important;
+  }
+  100% {
+    box-shadow:
+      inset 0 0 0 2px var(--accent),
+      0 0 0 4px var(--accent-softer) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dnd-spring {
+    animation: none;
+  }
+}

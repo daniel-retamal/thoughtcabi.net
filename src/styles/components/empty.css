@@ -1,0 +1,38 @@
+.empty {
+  text-align: center;
+  padding: 64px 20px;
+  max-width: 440px;
+  margin: 20px auto;
+}
+
+.empty .eico {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  margin: 0 auto 20px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+}
+
+.empty .eico svg {
+  width: 30px;
+  height: 30px;
+}
+
+.empty h3 {
+  font-size: 23px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+}
+
+.empty p {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin: 0;
+  text-wrap: pretty;
+}

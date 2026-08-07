@@ -1,0 +1,107 @@
+:root[data-card-surface="blue"] .card,
+:root[data-card-surface="blue"] .folder-tile,
+:root[data-card-surface="blue"] .notes-list,
+:root[data-card-surface="blue"] .modal,
+:root[data-card-surface="blue"] .popover {
+  background-image: var(--grain);
+  background-attachment: fixed;
+  background-blend-mode: overlay;
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--az-cream) 15%, transparent),
+    0 18px 30px -24px rgb(var(--az-shadow) / 0.95);
+}
+
+:root[data-card-surface="blue"] .card:hover,
+:root[data-card-surface="blue"] .folder-tile:hover {
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--az-cream) 22%, transparent),
+    0 22px 40px -22px rgb(var(--az-shadow) / 1);
+}
+
+:root[data-card-surface="blue"] .row-item:hover {
+  background: color-mix(in oklab, var(--az-cream) 7%, var(--az-panel));
+}
+
+:root[data-card-surface="blue"] .row-actions {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--az-cream) 7%, var(--az-panel)) 22%
+  );
+}
+
+:root[data-card-surface="cream"] .card,
+:root[data-card-surface="cream"] .folder-tile,
+:root[data-card-surface="cream"] .notes-list,
+:root[data-card-surface="cream"] .modal,
+:root[data-card-surface="cream"] .popover,
+:root[data-card-surface="cream"] .dest-menu,
+:root[data-card-surface="cream"] .dnd-ghost .card,
+:root[data-card-surface="cream"] .dnd-ghost .row-item,
+:root[data-card-surface="cream"] .dnd-ghost .lib-row,
+:root[data-card-surface="cream"] .dnd-tag-ghost {
+  --surface: var(--az-cream);
+  --surface-2: color-mix(in oklab, var(--az-ink) 6%, var(--az-cream));
+  --raise: color-mix(in oklab, #fff 55%, var(--az-cream));
+  --text: var(--az-ink);
+  --text-muted: color-mix(in oklab, var(--az-ink) 72%, transparent);
+  --text-faint: color-mix(in oklab, var(--az-ink) 46%, transparent);
+  --border: color-mix(in oklab, var(--az-ink) 14%, transparent);
+  --border-strong: color-mix(in oklab, var(--az-ink) 24%, transparent);
+  --hairline: color-mix(in oklab, var(--az-ink) 13%, transparent);
+  --accent: var(--az-ink);
+  --accent-on: var(--az-cream);
+  --accent-soft: color-mix(in oklab, var(--az-ink) 10%, transparent);
+  --accent-softer: color-mix(in oklab, var(--az-ink) 5%, transparent);
+  background: var(--surface);
+  color: var(--text);
+}
+
+:root[data-card-surface="cream"] .card {
+  box-shadow: 0 16px 30px -24px rgb(var(--az-shadow) / 0.9);
+}
+
+:root[data-card-surface="cream"] .folder-tile {
+  box-shadow: 0 14px 26px -22px rgb(var(--az-shadow) / 0.85);
+}
+
+:root[data-card-surface="cream"] .notes-list {
+  box-shadow: 0 16px 30px -24px rgb(var(--az-shadow) / 0.9);
+}
+
+:root[data-card-surface="cream"] .card:hover,
+:root[data-card-surface="cream"] .folder-tile:hover {
+  box-shadow: 0 22px 38px -22px rgb(var(--az-shadow) / 1);
+}
+
+:root[data-card-surface="cream"] .folder-mosaic .cell.empty {
+  background: color-mix(in oklab, var(--az-ink) 7%, var(--az-cream));
+}
+
+:root[data-card-surface="cream"] .modal-close,
+:root[data-card-surface="cream"] .card-actions button,
+:root[data-card-surface="cream"] .folder-actions button {
+  background: color-mix(in oklab, var(--az-ink) 78%, transparent);
+}
+
+:root[data-card-surface="cream"] .row-item:hover {
+  background: color-mix(in oklab, var(--az-ink) 6%, var(--az-cream));
+}
+
+:root[data-card-surface="cream"] .row-actions {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--az-ink) 6%, var(--az-cream)) 22%
+  );
+}
+
+:root[data-card-surface="cream"] .seg-toggle {
+  background: color-mix(in oklab, var(--az-ink) 6%, transparent);
+  border-color: color-mix(in oklab, var(--az-ink) 14%, transparent);
+}
+
+:root[data-card-surface="cream"] .seg-toggle button.on {
+  background: var(--az-cream);
+  color: var(--az-ink);
+}

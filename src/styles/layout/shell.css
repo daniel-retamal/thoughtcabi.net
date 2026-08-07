@@ -1,0 +1,29 @@
+#root {
+  height: 100%;
+}
+
+.app {
+  display: grid;
+  grid-template-rows: var(--header-h) 1fr;
+  height: 100%;
+  min-height: 0;
+}
+
+.main {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  min-height: 0;
+}
+
+.body {
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.body-inner {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 22px 34px 90px;
+}
