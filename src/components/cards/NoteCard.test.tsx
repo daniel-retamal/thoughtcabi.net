@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { fireEvent } from "@testing-library/dom";
 import userEvent from "@testing-library/user-event";
 import { makeNote, makeTag } from "@/test/factories";
@@ -86,6 +86,31 @@ describe("NoteCard", () => {
 
     expect(container.querySelector(".mark-letter")).toBeNull();
     expect(container.querySelector(".cover")).toBeNull();
+  });
+
+  it("keeps the plate out of sight until the icon has arrived", () => {
+    const { container } = renderCard(makeNote({ favicon: "https://example.com/touch-icon.png" }));
+    expect(container.querySelector(".cover-plate")).toHaveClass("unsettled");
+
+    fireEvent.load(container.querySelector(".icon-cover img") as HTMLImageElement);
+    expect(container.querySelector(".cover-plate")).not.toHaveClass("unsettled");
+  });
+
+  it("does not reopen a frame for an icon already known to be missing", () => {
+    const note = makeNote({ favicon: "https://example.com/gone.png" });
+    const first = renderCard(note);
+    fireEvent.error(first.container.querySelector(".icon-cover img") as HTMLImageElement);
+    cleanup();
+
+    const { container } = renderCard(note);
+
+    expect(container.querySelector(".cover")).toBeNull();
+    expect(container.querySelector(".mark-plate")).toBeNull();
+  });
+
+  it("keeps the dot on the card tag, which has no tint of its own", () => {
+    const { container } = renderCard(makeNote({ tag: "To read" }));
+    expect(container.querySelector(".card-tag .tdot")).not.toBeNull();
   });
 
   it("opens the note when the card is clicked", async () => {

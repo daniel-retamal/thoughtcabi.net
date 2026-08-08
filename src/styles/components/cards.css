@@ -41,23 +41,52 @@
   gap: 4px;
   flex: 1;
   min-height: 0;
+  --title-lines: 2;
+  --desc-lines: 2;
 }
 
-.card.no-cover .card-body {
+.card:not(:has(.card-desc)) .card-body {
+  --title-lines: 4;
+}
+
+.card:not(:has(.card-foot)) .card-body {
+  --title-lines: 3;
+}
+
+.card:not(:has(.card-desc)):not(:has(.card-foot)) .card-body {
+  --title-lines: 6;
+}
+
+.card:not(:has(> .cover)) .card-body {
   padding-top: 15px;
+  --title-lines: 8;
+}
+
+.card:not(:has(> .cover)):not(:has(.card-desc)) .card-body {
+  --title-lines: 11;
+}
+
+.card:not(:has(> .cover)):not(:has(.card-foot)) .card-body {
+  --title-lines: 10;
+}
+
+.card:not(:has(> .cover)):not(:has(.card-desc)):not(:has(.card-foot)) .card-body {
+  --title-lines: 12;
 }
 
 .card-cat {
   display: flex;
   align-items: center;
   gap: 7px;
-  flex-wrap: wrap;
   flex: none;
   height: 18px;
+  min-width: 0;
 }
 
 .card-cat .card-time {
   margin-left: auto;
+  flex: none;
+  padding-left: 3px;
 }
 
 .cat-chip {
@@ -69,12 +98,15 @@
   background: var(--accent-soft);
   padding: 2px 9px;
   border-radius: var(--r-pill);
+  white-space: nowrap;
+  flex: none;
 }
 
 .card-time {
   font-family: var(--font-ui);
   font-size: 11.5px;
   color: var(--text-faint);
+  white-space: nowrap;
 }
 
 .card-title {
@@ -85,22 +117,22 @@
   color: var(--text);
   letter-spacing: -0.015em;
   text-wrap: pretty;
+  overflow-wrap: break-word;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: var(--title-lines);
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
 .card-desc {
-  flex: 0 1 auto;
-  min-height: 0;
-  margin-bottom: 8px;
+  flex: none;
   font-size: 14.5px;
   line-height: 23px;
   color: var(--text-muted);
   text-wrap: pretty;
+  overflow-wrap: break-word;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: var(--desc-lines);
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -108,7 +140,7 @@
 .card-foot {
   flex: none;
   margin-top: auto;
-  padding: 10px 0 4px;
+  padding: 14px 0 4px;
   border-top: 1px solid var(--hairline);
   display: flex;
   align-items: center;
@@ -129,18 +161,30 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  min-width: 0;
+  max-width: 100%;
   font-family: var(--font-ui);
+}
+
+.card-tag {
   font-size: 11px;
   font-weight: 600;
   color: var(--text-muted);
 }
 
-.card-tag .tdot,
-.row-tag .tdot {
+.card-tag .tdot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex: none;
+  background: var(--tint);
+}
+
+.card-tag .tname,
+.row-tag .tname {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card-actions {

@@ -209,7 +209,8 @@
 
 .modal-actions .ghost:hover {
   color: var(--text);
-  background: var(--bg);
+  background: var(--raise);
+  border-color: var(--border-strong);
 }
 
 .modal-actions .ghost.icon-only {

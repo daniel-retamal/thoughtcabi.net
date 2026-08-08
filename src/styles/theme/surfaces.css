@@ -78,10 +78,6 @@
   box-shadow: 0 22px 38px -22px rgb(var(--az-shadow) / 1);
 }
 
-:root[data-card-surface="cream"] .folder-mosaic .cell.empty {
-  background: color-mix(in oklab, var(--az-ink) 7%, var(--az-cream));
-}
-
 :root[data-card-surface="cream"] .modal-close,
 :root[data-card-surface="cream"] .card-actions button,
 :root[data-card-surface="cream"] .folder-actions button {

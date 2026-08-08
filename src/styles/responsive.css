@@ -1,5 +1,5 @@
 @media (max-width: 900px) {
-  .row-cat,
+  .row-tag-slot,
   .row-dom {
     display: none;
   }

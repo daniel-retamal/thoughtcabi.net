@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
-import { render } from "@testing-library/react";
+import { cleanup, render } from "@testing-library/react";
 import { fireEvent } from "@testing-library/dom";
-import { makeNote } from "@/test/factories";
-import type { Note } from "@/domain/model";
+import { makeNote, makeTag } from "@/test/factories";
+import type { Note, Tag } from "@/domain/model";
 import { NoteRow } from "./NoteRow";
 
-function renderRow(note: Note) {
+function renderRow(note: Note, tags: Tag[] = []) {
   const handlers = { onOpen: vi.fn(), onEdit: vi.fn(), onDelete: vi.fn() };
-  const { container } = render(<NoteRow note={note} tags={[]} fresh={false} {...handlers} />);
+  const { container } = render(<NoteRow note={note} tags={tags} fresh={false} {...handlers} />);
   return { container, slot: container.querySelector(".row-slot") as HTMLElement };
 }
 
@@ -69,10 +69,81 @@ describe("NoteRow", () => {
     expect(slot.querySelector(".mark-letter")).toHaveTextContent("Q");
   });
 
+  it("gives the tag the column instead of the source chip", () => {
+    const { container } = renderRow(makeNote({ catLabel: "Article", tag: "To read" }), [
+      makeTag("To read", "#ffc93c"),
+    ]);
+
+    expect(container.querySelector(".cat-chip")).toBeNull();
+    expect(container.querySelector(".row-tag-slot")).toHaveTextContent("To read");
+  });
+
+  it("tints the tag chip with the tag's own colour", () => {
+    const { container } = renderRow(makeNote({ tag: "To read" }), [makeTag("To read", "#ffc93c")]);
+    const chip = container.querySelector(".row-tag") as HTMLElement;
+
+    expect(chip.style.getPropertyValue("--tint")).toBe("#ffc93c");
+  });
+
+  it("leaves the dot off a chip that is already tinted", () => {
+    const { container } = renderRow(makeNote({ tag: "To read" }), [makeTag("To read", "#ffc93c")]);
+
+    expect(container.querySelector(".row-tag .tdot")).toBeNull();
+    expect(container.querySelector(".row-tag")).toHaveTextContent("To read");
+  });
+
   it("never leaves the slot empty, even for a note with no link at all", () => {
     const { slot } = renderRow(
       makeNote({ title: "A passing thought", url: "", domain: "", siteName: "" }),
     );
     expect(slot.querySelector(".mark-letter")).toHaveTextContent("A");
+  });
+
+  it("holds the plate back until the icon has actually arrived", () => {
+    const { slot } = renderRow(makeNote({ favicon: "https://example.com/icon.png" }));
+    expect(slot.querySelector(".mark-plate")).toHaveClass("unsettled");
+
+    fireEvent.load(slot.querySelector("img") as HTMLImageElement);
+    expect(slot.querySelector(".mark-plate")).not.toHaveClass("unsettled");
+  });
+
+  it("goes straight to the monogram for an icon already known to be missing", () => {
+    const note = makeNote({ domain: "quilt.internal", favicon: "https://quilt.internal/gone.png" });
+    const first = renderRow(note);
+    fireEvent.error(first.slot.querySelector("img") as HTMLImageElement);
+    cleanup();
+
+    const { slot } = renderRow(note);
+
+    expect(slot.querySelector(".mark-plate")).toBeNull();
+    expect(slot.querySelector(".mark-letter")).toHaveTextContent("Q");
+  });
+
+  it("skips a thumbnail already known to be missing rather than trying it again", () => {
+    const note = makeNote({ domain: "quilt.internal", siteImage: "https://quilt.internal/og.png" });
+    const first = renderRow(note);
+    fireEvent.error(first.slot.querySelector(".img-fill") as HTMLImageElement);
+    cleanup();
+
+    const { slot } = renderRow(note);
+
+    expect(slot.querySelector(".img-fill")).toBeNull();
+    expect(slot.querySelector(".mark-plate")).not.toBeNull();
+  });
+
+  it("shows a remembered icon at its measured size without waiting again", () => {
+    const note = makeNote({ favicon: "https://example.com/icon.png" });
+    const first = renderRow(note);
+    const measured = first.slot.querySelector("img") as HTMLImageElement;
+    Object.defineProperty(measured, "naturalWidth", { value: 16 });
+    Object.defineProperty(measured, "naturalHeight", { value: 16 });
+    fireEvent.load(measured);
+    cleanup();
+
+    const { slot } = renderRow(note);
+    const icon = slot.querySelector("img") as HTMLImageElement;
+
+    expect(slot.querySelector(".mark-plate")).not.toHaveClass("unsettled");
+    expect(icon.style.width).toBe("16px");
   });
 });

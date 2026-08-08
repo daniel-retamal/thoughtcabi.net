@@ -4,14 +4,15 @@
   justify-content: space-between;
   gap: 18px;
   padding: 6px 2px 18px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .crumbs {
   display: flex;
   align-items: center;
   gap: 3px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow: hidden;
   flex: 1 1 auto;
   min-width: 0;
   margin-left: -9px;
@@ -28,9 +29,23 @@
   transition:
     background 0.14s,
     color 0.14s;
-  max-width: 280px;
+  flex: none;
   cursor: pointer;
   user-select: none;
+}
+
+.crumb.crumb-folded {
+  letter-spacing: 0.06em;
+}
+
+.crumbs-tight .crumb.current {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.crumbs-tight .crumb.current .ctxt {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .crumb:hover {
@@ -61,14 +76,13 @@
 
 .crumb .ctxt {
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .crumb-sep {
   color: var(--text-faint);
   display: grid;
   place-items: center;
+  flex: none;
 }
 
 .crumb-sep svg {

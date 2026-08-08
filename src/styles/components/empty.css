@@ -1,11 +1,11 @@
-.empty {
+.empty-state {
   text-align: center;
   padding: 64px 20px;
   max-width: 440px;
   margin: 20px auto;
 }
 
-.empty .eico {
+.empty-state .eico {
   width: 64px;
   height: 64px;
   border-radius: 18px;
@@ -16,12 +16,12 @@
   place-items: center;
 }
 
-.empty .eico svg {
+.empty-state .eico svg {
   width: 30px;
   height: 30px;
 }
 
-.empty h3 {
+.empty-state h3 {
   font-size: 23px;
   font-weight: 600;
   color: var(--text);
@@ -29,7 +29,7 @@
   letter-spacing: -0.01em;
 }
 
-.empty p {
+.empty-state p {
   font-size: 16px;
   line-height: 1.5;
   color: var(--text-muted);

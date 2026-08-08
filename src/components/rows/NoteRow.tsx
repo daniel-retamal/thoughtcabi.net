@@ -47,10 +47,7 @@ export function NoteRow({ note, tags, fresh, onOpen, onEdit, onDelete }: NoteRow
         {note.description ? <div className="row-desc">{note.description}</div> : null}
       </div>
 
-      <div className="row-cat">
-        {hasLink ? <span className="cat-chip">{note.catLabel}</span> : null}
-        {tag ? <TagBadge tag={tag} className="row-tag" /> : null}
-      </div>
+      <div className="row-tag-slot">{tag ? <TagBadge tag={tag} className="row-tag" /> : null}</div>
 
       <div className="row-dom">
         {hasLink ? note.domain : <span className="none">— no link —</span>}

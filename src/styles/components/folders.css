@@ -18,32 +18,58 @@
 
 .folder-mosaic {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 2fr 1fr;
   grid-template-rows: 1fr 1fr;
   gap: 5px;
   height: 84px;
   margin-bottom: 13px;
-  border-radius: 7px;
-  overflow: hidden;
 }
 
 .folder-mosaic .cell {
-  border-radius: 6px;
+  border-radius: 7px;
   position: relative;
   overflow: hidden;
+  min-width: 0;
+  background: var(--mark-field);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  display: grid;
+  place-items: center;
 }
 
 .folder-mosaic .cell .cover {
   height: 100%;
 }
 
-.folder-mosaic .cell.empty {
-  background: var(--surface-2);
+.folder-mosaic .cell-folder {
+  color: var(--text-faint);
 }
 
-.folder-mosaic.one {
+.folder-mosaic .cell-folder svg {
+  width: 15px;
+  height: 15px;
+}
+
+.folder-mosaic .mosaic-mark.mark-letter {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.folder-mosaic .cell-tall {
+  grid-row: 1 / -1;
+}
+
+.folder-mosaic .cell-tall.cell-folder svg {
+  width: 21px;
+  height: 21px;
+}
+
+.folder-mosaic .cell-tall .mosaic-mark.mark-letter {
+  font-size: 22px;
+}
+
+.folder-mosaic.slots-0,
+.folder-mosaic.slots-1 {
   grid-template-columns: 1fr;
-  grid-template-rows: 1fr;
 }
 
 .folder-meta {

@@ -9,7 +9,7 @@ export interface EmptyStateProps {
 
 export function EmptyState({ icon, title, text }: EmptyStateProps) {
   return (
-    <div className="empty">
+    <div className="empty-state">
       <div className="eico">
         <Icon name={icon} />
       </div>

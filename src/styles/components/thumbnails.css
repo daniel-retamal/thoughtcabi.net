@@ -26,6 +26,7 @@
   object-fit: cover;
   object-position: 50% 40%;
   display: block;
+  transition: opacity 0.2s ease-out;
 }
 
 .cover.icon-cover {
@@ -42,6 +43,19 @@
   box-shadow:
     inset 0 0 0 1px var(--mark-plate-ring),
     var(--shadow-sm);
+  transition: opacity 0.18s ease-out;
+}
+
+.mark-plate.unsettled,
+.img-fill.unsettled {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mark-plate,
+  .cover.img-cover .img-fill {
+    transition: none;
+  }
 }
 
 .cover-plate {
@@ -54,6 +68,12 @@
   width: 32px;
   height: 32px;
   border-radius: 9px;
+}
+
+.mini-plate {
+  width: 23px;
+  height: 23px;
+  border-radius: 7px;
 }
 
 .mark-letter {
