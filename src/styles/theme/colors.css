@@ -3,6 +3,8 @@
   --tone-panel: #1a2795;
   --tone-panel-2: #16218d;
   --tone-raise: #20309f;
+  --tone-plate: #1d2ca1;
+  --tone-plate-raise: #2436aa;
   --tone-cream: #f2ecde;
   --tone-ink: #111c6e;
   --tone-shadow: 4 8 60;
@@ -13,6 +15,8 @@
   --tone-panel: #182485;
   --tone-panel-2: #141f78;
   --tone-raise: #1d2a92;
+  --tone-plate: #1b2893;
+  --tone-plate-raise: #212f9e;
   --tone-cream: #f1ebdc;
   --tone-ink: #101a66;
   --tone-shadow: 2 6 44;
@@ -23,6 +27,8 @@
   --tone-panel: #16305f;
   --tone-panel-2: #112a57;
   --tone-raise: #1b3a6e;
+  --tone-plate: #19366a;
+  --tone-plate-raise: #1f417b;
   --tone-cream: #f3efe4;
   --tone-ink: #0c2149;
   --tone-shadow: 2 10 40;
@@ -33,6 +39,8 @@
   --tone-panel: #141a38;
   --tone-panel-2: #101530;
   --tone-raise: #1b2246;
+  --tone-plate: #171d3f;
+  --tone-plate-raise: #1f264e;
   --tone-cream: #efeadc;
   --tone-ink: #0b1026;
   --tone-shadow: 0 2 20;
@@ -43,6 +51,8 @@
   --tone-panel: #067348;
   --tone-panel-2: #046941;
   --tone-raise: #0b7e51;
+  --tone-plate: #078050;
+  --tone-plate-raise: #0d8c5a;
   --tone-cream: #f3ebdd;
   --tone-ink: #03462c;
   --tone-shadow: 4 60 38;
@@ -53,6 +63,8 @@
   --tone-panel: #166448;
   --tone-panel-2: #12573e;
   --tone-raise: #1a7252;
+  --tone-plate: #197050;
+  --tone-plate-raise: #1d7f5c;
   --tone-cream: #f2eadb;
   --tone-ink: #0d4631;
   --tone-shadow: 2 44 29;
@@ -63,6 +75,8 @@
   --tone-panel: #184a39;
   --tone-panel-2: #134232;
   --tone-raise: #1d5944;
+  --tone-plate: #1b5340;
+  --tone-plate-raise: #21634c;
   --tone-cream: #f3eee4;
   --tone-ink: #0d3527;
   --tone-shadow: 2 40 27;
@@ -73,6 +87,8 @@
   --tone-panel: #133227;
   --tone-panel-2: #0f2a20;
   --tone-raise: #1a4032;
+  --tone-plate: #16382c;
+  --tone-plate-raise: #1d4738;
   --tone-cream: #f0e9db;
   --tone-ink: #0a2018;
   --tone-shadow: 0 20 13;

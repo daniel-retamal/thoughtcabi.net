@@ -3,19 +3,30 @@
 :root[data-card-surface="color"] .notes-list,
 :root[data-card-surface="color"] .modal,
 :root[data-card-surface="color"] .popover {
-  background-image: var(--grain);
-  background-attachment: fixed;
-  background-blend-mode: overlay;
-  box-shadow:
-    inset 0 1px 0 color-mix(in oklab, var(--tone-cream) 15%, transparent),
-    0 18px 30px -24px rgb(var(--tone-shadow) / 0.95);
+  --plate-lift:
+    inset 0 1px 0 color-mix(in oklab, var(--tone-cream) 18%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, var(--tone-cream) 11%, transparent),
+    0 1px 2px rgb(var(--tone-shadow) / 0.55), 0 2px 5px -3px rgb(var(--tone-shadow) / 0.55);
+  background-color: var(--tone-plate);
+  box-shadow: var(--plate-lift);
+}
+
+:root[data-card-surface="color"] .modal,
+:root[data-card-surface="color"] .popover {
+  box-shadow: var(--plate-lift), var(--shadow-lg);
+}
+
+:root[data-card-surface="color"] .popover {
+  background-color: var(--tone-plate-raise);
 }
 
 :root[data-card-surface="color"] .card:hover,
 :root[data-card-surface="color"] .folder-tile:hover {
   box-shadow:
-    inset 0 1px 0 color-mix(in oklab, var(--tone-cream) 22%, transparent),
-    0 22px 40px -22px rgb(var(--tone-shadow) / 1);
+    inset 0 1px 0 color-mix(in oklab, var(--tone-cream) 25%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, var(--tone-cream) 14%, transparent),
+    0 2px 3px rgb(var(--tone-shadow) / 0.65),
+    0 12px 22px -14px rgb(var(--tone-shadow) / 0.8);
 }
 
 :root[data-card-surface="color"] .row-item:hover {
@@ -64,20 +75,28 @@
 }
 
 :root[data-card-surface="cream"] .card {
-  box-shadow: 0 16px 30px -24px rgb(var(--tone-shadow) / 0.9);
+  box-shadow:
+    0 1px 2px rgb(var(--tone-shadow) / 0.5),
+    0 16px 30px -24px rgb(var(--tone-shadow) / 0.9);
 }
 
 :root[data-card-surface="cream"] .folder-tile {
-  box-shadow: 0 14px 26px -22px rgb(var(--tone-shadow) / 0.85);
+  box-shadow:
+    0 1px 2px rgb(var(--tone-shadow) / 0.5),
+    0 14px 26px -22px rgb(var(--tone-shadow) / 0.85);
 }
 
 :root[data-card-surface="cream"] .notes-list {
-  box-shadow: 0 16px 30px -24px rgb(var(--tone-shadow) / 0.9);
+  box-shadow:
+    0 1px 2px rgb(var(--tone-shadow) / 0.5),
+    0 16px 30px -24px rgb(var(--tone-shadow) / 0.9);
 }
 
 :root[data-card-surface="cream"] .card:hover,
 :root[data-card-surface="cream"] .folder-tile:hover {
-  box-shadow: 0 22px 38px -22px rgb(var(--tone-shadow) / 1);
+  box-shadow:
+    0 2px 3px rgb(var(--tone-shadow) / 0.6),
+    0 22px 38px -22px rgb(var(--tone-shadow) / 1);
 }
 
 :root[data-card-surface="cream"] .modal-close,
