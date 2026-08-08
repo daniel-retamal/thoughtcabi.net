@@ -19,7 +19,7 @@
 @import "./components/notices.css";
 @import "./components/dnd.css";
 
-@import "./theme/palettes.css";
+@import "./theme/colors.css";
 @import "./theme/surfaces.css";
 
 @import "./responsive.css";

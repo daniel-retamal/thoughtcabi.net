@@ -1,7 +1,7 @@
 import { withoutPendingNotes } from "@/domain/library/mutations";
 import { DEFAULT_VIEW_MODE, type Cabinet, type Preferences } from "@/domain/model";
 import { createSeedLibrary, createSeedTags } from "@/domain/seed/seedLibrary";
-import { DEFAULT_APPEARANCE } from "@/theme/azul";
+import { DEFAULT_APPEARANCE } from "@/theme/colors";
 import { STORAGE_KEYS } from "./keys";
 import { parseJson, readRaw, writeJson, writeRaw, type WriteOutcome } from "./localStore";
 import { migrateCabinet, migratePreferences } from "./migrations";

@@ -1,6 +1,6 @@
 import { DEFAULT_VIEW_MODE, type Cabinet, type Preferences } from "@/domain/model";
 import { createSeedLibrary, createSeedTags } from "@/domain/seed/seedLibrary";
-import { DEFAULT_APPEARANCE } from "@/theme/azul";
+import { DEFAULT_APPEARANCE } from "@/theme/colors";
 import { LEGACY_KEYS, STORAGE_KEYS } from "./keys";
 import { clearKey, readJson, readRaw, writeJson } from "./localStore";
 import { parseLibrary, parsePreferences, parseTags, parseViewMode } from "./parsers";
@@ -30,7 +30,7 @@ export function migratePreferences(): Preferences | null {
 
   const preferences: Preferences = {
     view: view ?? DEFAULT_VIEW_MODE,
-    palette: appearance?.palette ?? DEFAULT_APPEARANCE.palette,
+    color: appearance?.color ?? DEFAULT_APPEARANCE.color,
     cards: appearance?.cards ?? DEFAULT_APPEARANCE.cards,
   };
 

@@ -21,10 +21,10 @@ describe("usePreferences", () => {
 
     expect(result.current.preferences).toEqual({
       view: "grid",
-      palette: "bento",
+      color: "ultramarine",
       cards: "cream",
     });
-    expect(document.documentElement).toHaveAttribute("data-azul", "bento");
+    expect(document.documentElement).toHaveAttribute("data-color", "ultramarine");
     expect(document.documentElement).toHaveAttribute("data-card-surface", "cream");
   });
 
@@ -32,34 +32,34 @@ describe("usePreferences", () => {
     const { result } = renderHook(() => usePreferences());
 
     act(() => result.current.setView("list"));
-    act(() => result.current.updateAppearance({ palette: "ink" }));
+    act(() => result.current.updateAppearance({ color: "midnight" }));
 
     expect(JSON.parse(localStorage.getItem(STORAGE_KEYS.preferences) ?? "null")).toEqual({
       view: "list",
-      palette: "ink",
+      color: "midnight",
       cards: "cream",
     });
   });
 
-  it("keeps a remote palette change when this tab changes the view", () => {
+  it("keeps a remote color change when this tab changes the view", () => {
     const { result } = renderHook(() => usePreferences());
 
-    remoteWrite(JSON.stringify({ view: "grid", palette: "sapphire", cards: "blue" }));
+    remoteWrite(JSON.stringify({ view: "grid", color: "emerald", cards: "color" }));
     act(() => result.current.setView("list"));
 
     expect(result.current.preferences).toEqual({
       view: "list",
-      palette: "sapphire",
-      cards: "blue",
+      color: "emerald",
+      cards: "color",
     });
   });
 
-  it("applies an adopted palette to the document", () => {
+  it("applies an adopted color to the document", () => {
     renderHook(() => usePreferences());
 
-    remoteWrite(JSON.stringify({ view: "grid", palette: "halo", cards: "blue" }));
+    remoteWrite(JSON.stringify({ view: "grid", color: "viridian", cards: "color" }));
 
-    expect(document.documentElement).toHaveAttribute("data-azul", "halo");
-    expect(document.documentElement).toHaveAttribute("data-card-surface", "blue");
+    expect(document.documentElement).toHaveAttribute("data-color", "viridian");
+    expect(document.documentElement).toHaveAttribute("data-card-surface", "color");
   });
 });

@@ -2,7 +2,7 @@
 
 A warm, local-first cabinet for websites you want to keep. Paste a link anywhere
 and it becomes a card; organise cards into folders inside channels; label them
-with colour-anchored tags.
+with color-anchored tags.
 
 Everything lives in your browser. There is no account, no backend, and nothing
 leaves the machine.
@@ -47,15 +47,15 @@ src/
     links/       Link recognition and the site catalogue
     library/     The channel/folder/note tree: reads, immutable writes, search
     notes/       Building a card from a draft
-    tags/        The colour-anchored tag palette and its rules
+    tags/        The color-anchored tag palette and its rules
     seed/        The starter library
   storage/     localStorage boundary: keys, safe IO, schema validation
-  theme/       The Azul appearance axes and how they reach the DOM
+  theme/       The color and card-surface axes and how they reach the DOM
   dnd/         Framework-agnostic pointer drag & drop controller
   state/       Reducer, navigation, view derivation, drag wiring
   hooks/       Small reusable React hooks
   components/  UI, one component per file
-  styles/      Structure, then the theme layer that owns every colour
+  styles/      Structure, then the theme layer that owns every color
   icons/       The icon vocabulary and its Lucide bindings
 ```
 
@@ -88,7 +88,7 @@ server:
 
 - `thoughtcabi.cabinet.v1` — your stuff: the channel/folder/card tree and the tag
   list, written together so a tag can never outlive the cards carrying it
-- `thoughtcabi.prefs.v1` — this browser's preferences: `grid` or `list`, palette,
+- `thoughtcabi.prefs.v1` — this browser's preferences: `grid` or `list`, color,
   and card surface
 
 Clearing them restores the seed library. Stored data is validated on load, so a

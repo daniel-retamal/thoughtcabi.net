@@ -1,0 +1,106 @@
+:root[data-color="ultramarine"] {
+  --tone-bg: #101c86;
+  --tone-panel: #1a2795;
+  --tone-panel-2: #16218d;
+  --tone-raise: #20309f;
+  --tone-cream: #f2ecde;
+  --tone-ink: #111c6e;
+  --tone-shadow: 4 8 60;
+}
+
+:root[data-color="cobalt"] {
+  --tone-bg: #0f1a6b;
+  --tone-panel: #182485;
+  --tone-panel-2: #141f78;
+  --tone-raise: #1d2a92;
+  --tone-cream: #f1ebdc;
+  --tone-ink: #101a66;
+  --tone-shadow: 2 6 44;
+}
+
+:root[data-color="navy"] {
+  --tone-bg: #0d2350;
+  --tone-panel: #16305f;
+  --tone-panel-2: #112a57;
+  --tone-raise: #1b3a6e;
+  --tone-cream: #f3efe4;
+  --tone-ink: #0c2149;
+  --tone-shadow: 2 10 40;
+}
+
+:root[data-color="midnight"] {
+  --tone-bg: #0b1026;
+  --tone-panel: #141a38;
+  --tone-panel-2: #101530;
+  --tone-raise: #1b2246;
+  --tone-cream: #efeadc;
+  --tone-ink: #0b1026;
+  --tone-shadow: 0 2 20;
+}
+
+:root[data-color="emerald"] {
+  --tone-bg: #00603a;
+  --tone-panel: #067348;
+  --tone-panel-2: #046941;
+  --tone-raise: #0b7e51;
+  --tone-cream: #f3ebdd;
+  --tone-ink: #03462c;
+  --tone-shadow: 4 60 38;
+}
+
+:root[data-color="viridian"] {
+  --tone-bg: #0d4a34;
+  --tone-panel: #166448;
+  --tone-panel-2: #12573e;
+  --tone-raise: #1a7252;
+  --tone-cream: #f2eadb;
+  --tone-ink: #0d4631;
+  --tone-shadow: 2 44 29;
+}
+
+:root[data-color="forest"] {
+  --tone-bg: #0f3b2c;
+  --tone-panel: #184a39;
+  --tone-panel-2: #134232;
+  --tone-raise: #1d5944;
+  --tone-cream: #f3eee4;
+  --tone-ink: #0d3527;
+  --tone-shadow: 2 40 27;
+}
+
+:root[data-color="pine"] {
+  --tone-bg: #0a2018;
+  --tone-panel: #133227;
+  --tone-panel-2: #0f2a20;
+  --tone-raise: #1a4032;
+  --tone-cream: #f0e9db;
+  --tone-ink: #0a2018;
+  --tone-shadow: 0 20 13;
+}
+
+:root[data-color] {
+  --bg: var(--tone-bg);
+  --surface: var(--tone-panel);
+  --surface-2: var(--tone-panel-2);
+  --raise: var(--tone-raise);
+  --text: var(--tone-cream);
+  --text-muted: color-mix(in oklab, var(--tone-cream) 72%, transparent);
+  --text-faint: color-mix(in oklab, var(--tone-cream) 48%, transparent);
+  --border: color-mix(in oklab, var(--tone-cream) 15%, transparent);
+  --border-strong: color-mix(in oklab, var(--tone-cream) 26%, transparent);
+  --hairline: color-mix(in oklab, var(--tone-cream) 11%, transparent);
+  --accent: var(--tone-cream);
+  --accent-on: var(--tone-bg);
+  --accent-soft: color-mix(in oklab, var(--tone-cream) 15%, transparent);
+  --accent-softer: color-mix(in oklab, var(--tone-cream) 8%, transparent);
+  --mark-field: var(--tone-panel-2);
+  --mark-plate: var(--tone-cream);
+  --mark-plate-ring: color-mix(in oklab, var(--tone-ink) 14%, transparent);
+  --mark-letter: color-mix(in oklab, var(--tone-cream) 48%, transparent);
+  --danger: #ff9584;
+  --danger-soft: color-mix(in oklab, #ff9584 18%, transparent);
+  --shadow-lg:
+    0 22px 50px -18px rgb(var(--tone-shadow) / 0.75), 0 6px 16px -8px rgb(var(--tone-shadow) / 0.4);
+  --shadow-md: 0 14px 30px -18px rgb(var(--tone-shadow) / 0.6);
+  --shadow-sm: 0 1px 2px rgb(var(--tone-shadow) / 0.3);
+}

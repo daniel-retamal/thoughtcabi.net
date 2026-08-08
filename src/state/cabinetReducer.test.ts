@@ -161,7 +161,7 @@ describe("tag commands", () => {
     expect(noteAt(next, "note-a")?.tag).toBe("Later");
   });
 
-  it("recolours a tag without touching notes", () => {
+  it("recolors a tag without touching notes", () => {
     const next = reduce(initialState(), { type: "tag/recolor", name: "To read", color: RED });
     expect(next.tags[0]?.color).toBe(RED);
     expect(noteAt(next, "note-a")?.tag).toBe("To read");

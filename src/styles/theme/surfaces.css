@@ -1,32 +1,32 @@
-:root[data-card-surface="blue"] .card,
-:root[data-card-surface="blue"] .folder-tile,
-:root[data-card-surface="blue"] .notes-list,
-:root[data-card-surface="blue"] .modal,
-:root[data-card-surface="blue"] .popover {
+:root[data-card-surface="color"] .card,
+:root[data-card-surface="color"] .folder-tile,
+:root[data-card-surface="color"] .notes-list,
+:root[data-card-surface="color"] .modal,
+:root[data-card-surface="color"] .popover {
   background-image: var(--grain);
   background-attachment: fixed;
   background-blend-mode: overlay;
   box-shadow:
-    inset 0 1px 0 color-mix(in oklab, var(--az-cream) 15%, transparent),
-    0 18px 30px -24px rgb(var(--az-shadow) / 0.95);
+    inset 0 1px 0 color-mix(in oklab, var(--tone-cream) 15%, transparent),
+    0 18px 30px -24px rgb(var(--tone-shadow) / 0.95);
 }
 
-:root[data-card-surface="blue"] .card:hover,
-:root[data-card-surface="blue"] .folder-tile:hover {
+:root[data-card-surface="color"] .card:hover,
+:root[data-card-surface="color"] .folder-tile:hover {
   box-shadow:
-    inset 0 1px 0 color-mix(in oklab, var(--az-cream) 22%, transparent),
-    0 22px 40px -22px rgb(var(--az-shadow) / 1);
+    inset 0 1px 0 color-mix(in oklab, var(--tone-cream) 22%, transparent),
+    0 22px 40px -22px rgb(var(--tone-shadow) / 1);
 }
 
-:root[data-card-surface="blue"] .row-item:hover {
-  background: color-mix(in oklab, var(--az-cream) 7%, var(--az-panel));
+:root[data-card-surface="color"] .row-item:hover {
+  background: color-mix(in oklab, var(--tone-cream) 7%, var(--tone-panel));
 }
 
-:root[data-card-surface="blue"] .row-actions {
+:root[data-card-surface="color"] .row-actions {
   background: linear-gradient(
     90deg,
     transparent,
-    color-mix(in oklab, var(--az-cream) 7%, var(--az-panel)) 22%
+    color-mix(in oklab, var(--tone-cream) 7%, var(--tone-panel)) 22%
   );
 }
 
@@ -40,23 +40,23 @@
 :root[data-card-surface="cream"] .dnd-ghost .row-item,
 :root[data-card-surface="cream"] .dnd-ghost .lib-row,
 :root[data-card-surface="cream"] .dnd-tag-ghost {
-  --surface: var(--az-cream);
-  --surface-2: color-mix(in oklab, var(--az-ink) 6%, var(--az-cream));
-  --raise: color-mix(in oklab, #fff 55%, var(--az-cream));
-  --text: var(--az-ink);
-  --text-muted: color-mix(in oklab, var(--az-ink) 72%, transparent);
-  --text-faint: color-mix(in oklab, var(--az-ink) 46%, transparent);
-  --border: color-mix(in oklab, var(--az-ink) 14%, transparent);
-  --border-strong: color-mix(in oklab, var(--az-ink) 24%, transparent);
-  --hairline: color-mix(in oklab, var(--az-ink) 13%, transparent);
-  --accent: var(--az-ink);
-  --accent-on: var(--az-cream);
-  --accent-soft: color-mix(in oklab, var(--az-ink) 10%, transparent);
-  --accent-softer: color-mix(in oklab, var(--az-ink) 5%, transparent);
-  --mark-field: color-mix(in oklab, var(--az-ink) 8%, var(--az-cream));
-  --mark-plate: color-mix(in oklab, #fff 70%, var(--az-cream));
-  --mark-plate-ring: color-mix(in oklab, var(--az-ink) 12%, transparent);
-  --mark-letter: color-mix(in oklab, var(--az-ink) 46%, transparent);
+  --surface: var(--tone-cream);
+  --surface-2: color-mix(in oklab, var(--tone-ink) 6%, var(--tone-cream));
+  --raise: color-mix(in oklab, #fff 55%, var(--tone-cream));
+  --text: var(--tone-ink);
+  --text-muted: color-mix(in oklab, var(--tone-ink) 72%, transparent);
+  --text-faint: color-mix(in oklab, var(--tone-ink) 46%, transparent);
+  --border: color-mix(in oklab, var(--tone-ink) 14%, transparent);
+  --border-strong: color-mix(in oklab, var(--tone-ink) 24%, transparent);
+  --hairline: color-mix(in oklab, var(--tone-ink) 13%, transparent);
+  --accent: var(--tone-ink);
+  --accent-on: var(--tone-cream);
+  --accent-soft: color-mix(in oklab, var(--tone-ink) 10%, transparent);
+  --accent-softer: color-mix(in oklab, var(--tone-ink) 5%, transparent);
+  --mark-field: color-mix(in oklab, var(--tone-ink) 8%, var(--tone-cream));
+  --mark-plate: color-mix(in oklab, #fff 70%, var(--tone-cream));
+  --mark-plate-ring: color-mix(in oklab, var(--tone-ink) 12%, transparent);
+  --mark-letter: color-mix(in oklab, var(--tone-ink) 46%, transparent);
   --danger: #c0392b;
   --danger-soft: color-mix(in oklab, #c0392b 9%, transparent);
   background: var(--surface);
@@ -64,46 +64,46 @@
 }
 
 :root[data-card-surface="cream"] .card {
-  box-shadow: 0 16px 30px -24px rgb(var(--az-shadow) / 0.9);
+  box-shadow: 0 16px 30px -24px rgb(var(--tone-shadow) / 0.9);
 }
 
 :root[data-card-surface="cream"] .folder-tile {
-  box-shadow: 0 14px 26px -22px rgb(var(--az-shadow) / 0.85);
+  box-shadow: 0 14px 26px -22px rgb(var(--tone-shadow) / 0.85);
 }
 
 :root[data-card-surface="cream"] .notes-list {
-  box-shadow: 0 16px 30px -24px rgb(var(--az-shadow) / 0.9);
+  box-shadow: 0 16px 30px -24px rgb(var(--tone-shadow) / 0.9);
 }
 
 :root[data-card-surface="cream"] .card:hover,
 :root[data-card-surface="cream"] .folder-tile:hover {
-  box-shadow: 0 22px 38px -22px rgb(var(--az-shadow) / 1);
+  box-shadow: 0 22px 38px -22px rgb(var(--tone-shadow) / 1);
 }
 
 :root[data-card-surface="cream"] .modal-close,
 :root[data-card-surface="cream"] .card-actions button,
 :root[data-card-surface="cream"] .folder-actions button {
-  background: color-mix(in oklab, var(--az-ink) 78%, transparent);
+  background: color-mix(in oklab, var(--tone-ink) 78%, transparent);
 }
 
 :root[data-card-surface="cream"] .row-item:hover {
-  background: color-mix(in oklab, var(--az-ink) 6%, var(--az-cream));
+  background: color-mix(in oklab, var(--tone-ink) 6%, var(--tone-cream));
 }
 
 :root[data-card-surface="cream"] .row-actions {
   background: linear-gradient(
     90deg,
     transparent,
-    color-mix(in oklab, var(--az-ink) 6%, var(--az-cream)) 22%
+    color-mix(in oklab, var(--tone-ink) 6%, var(--tone-cream)) 22%
   );
 }
 
 :root[data-card-surface="cream"] .seg-toggle {
-  background: color-mix(in oklab, var(--az-ink) 6%, transparent);
-  border-color: color-mix(in oklab, var(--az-ink) 14%, transparent);
+  background: color-mix(in oklab, var(--tone-ink) 6%, transparent);
+  border-color: color-mix(in oklab, var(--tone-ink) 14%, transparent);
 }
 
 :root[data-card-surface="cream"] .seg-toggle button.on {
-  background: var(--az-cream);
-  color: var(--az-ink);
+  background: var(--tone-cream);
+  color: var(--tone-ink);
 }

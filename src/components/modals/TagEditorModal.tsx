@@ -47,12 +47,12 @@ export function TagEditorModal({
     <FormModal
       size="xs"
       kind={isEditing ? "Edit tag" : "New tag"}
-      heading={isEditing ? "Rename & recolour" : "Name your tag"}
+      heading={isEditing ? "Rename & recolor" : "Name your tag"}
       onClose={onCancel}
     >
       {paletteExhausted ? (
         <p className="tagmgr-note">
-          All {MAX_TAGS} colours are in use — delete a tag to add another.
+          All {MAX_TAGS} colors are in use — delete a tag to add another.
         </p>
       ) : null}
 
@@ -71,7 +71,7 @@ export function TagEditorModal({
         </div>
       </Field>
 
-      <Field label="Colour" hint="— one name per colour">
+      <Field label="Color" hint="— one name per color">
         <div className="palette-row">
           {TAG_PALETTE.map((swatch) => {
             const inUse = takenColors.includes(swatch);
@@ -83,7 +83,7 @@ export function TagEditorModal({
                 key={swatch}
                 className={classes}
                 style={{ background: swatch }}
-                title={inUse ? "in use" : "choose colour"}
+                title={inUse ? "in use" : "choose color"}
                 onClick={() => {
                   if (!inUse) setColor(swatch);
                 }}

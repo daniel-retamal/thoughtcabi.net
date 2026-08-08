@@ -39,7 +39,7 @@ describe("TagEditorModal", () => {
     expect(handlers.onConfirm).toHaveBeenCalledWith("Later", RED);
   });
 
-  it("marks colours already spoken for and refuses to pick them", async () => {
+  it("marks colors already spoken for and refuses to pick them", async () => {
     const { container } = renderEditor({ tags: [makeTag("Reference", AMBER)], initialColor: RED });
     const used = container.querySelectorAll(".pchip.used");
     expect(used).toHaveLength(1);
@@ -48,7 +48,7 @@ describe("TagEditorModal", () => {
     expect(container.querySelector(".pchip.used.on")).toBeNull();
   });
 
-  it("keeps the edited tag's own colour selectable", () => {
+  it("keeps the edited tag's own color selectable", () => {
     const { container } = renderEditor({
       mode: "edit",
       initialName: "Reference",
@@ -62,7 +62,7 @@ describe("TagEditorModal", () => {
     const tags = TAG_PALETTE.map((color, index) => makeTag(`t${index}`, color));
     renderEditor({ tags });
     expect(
-      screen.getByText(`All ${MAX_TAGS} colours are in use — delete a tag to add another.`),
+      screen.getByText(`All ${MAX_TAGS} colors are in use — delete a tag to add another.`),
     ).toBeInTheDocument();
     expect(screen.getByPlaceholderText("e.g. To read")).toBeDisabled();
     expect(screen.getByRole("button", { name: /create/i })).toBeDisabled();

@@ -5,7 +5,7 @@ import { STORAGE_KEYS } from "@/storage/keys";
 import { isSelfWrite, parseJson } from "@/storage/localStore";
 import { parsePreferences } from "@/storage/parsers";
 import { watchStorage } from "@/storage/watch";
-import { applyAppearance } from "@/theme/azul";
+import { applyAppearance } from "@/theme/colors";
 
 export interface PreferencesStore {
   preferences: Preferences;

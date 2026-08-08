@@ -90,7 +90,7 @@ describe("migrating from the four original keys", () => {
     localStorage.setItem(LEGACY_KEYS.view, "list");
     localStorage.setItem(LEGACY_KEYS.appearance, '{"palette":"ink","cards":"blue"}');
 
-    expect(loadPreferences()).toEqual({ view: "list", palette: "ink", cards: "blue" });
+    expect(loadPreferences()).toEqual({ view: "list", color: "midnight", cards: "color" });
     expect(localStorage.getItem(LEGACY_KEYS.view)).toBeNull();
     expect(localStorage.getItem(LEGACY_KEYS.appearance)).toBeNull();
   });
@@ -102,7 +102,7 @@ describe("migrating from the four original keys", () => {
 
   it("does not run once the new keys exist", () => {
     localStorage.setItem(LEGACY_KEYS.view, "list");
-    savePreferences({ ...DEFAULT_PREFERENCES, palette: "halo" });
+    savePreferences({ ...DEFAULT_PREFERENCES, color: "cobalt" });
 
     expect(loadPreferences().view).toBe(DEFAULT_PREFERENCES.view);
     expect(localStorage.getItem(LEGACY_KEYS.view)).toBe("list");
@@ -115,7 +115,7 @@ describe("preferences", () => {
   });
 
   it("round-trips as one JSON value", () => {
-    const preferences = { view: "list", palette: "sapphire", cards: "blue" } as const;
+    const preferences = { view: "list", color: "forest", cards: "color" } as const;
     expect(savePreferences(preferences)).toBe("ok");
     expect(loadPreferences()).toEqual(preferences);
   });
@@ -127,13 +127,13 @@ describe("preferences", () => {
   it("repairs each field on its own rather than discarding the whole value", () => {
     localStorage.setItem(
       STORAGE_KEYS.preferences,
-      '{"view":"gallery","palette":"chartreuse","cards":"blue"}',
+      '{"view":"gallery","color":"chartreuse","cards":"color"}',
     );
 
     expect(loadPreferences()).toEqual({
       view: DEFAULT_PREFERENCES.view,
-      palette: DEFAULT_PREFERENCES.palette,
-      cards: "blue",
+      color: DEFAULT_PREFERENCES.color,
+      cards: "color",
     });
   });
 });

@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { loadPreferences } from "./storage/appState";
-import { applyAppearance } from "./theme/azul";
+import { applyAppearance } from "./theme/colors";
 import "./styles/index.css";
 
 applyAppearance(loadPreferences(), document.documentElement);

@@ -62,10 +62,10 @@ export type ViewMode = "grid" | "list";
 
 export const DEFAULT_VIEW_MODE: ViewMode = "grid";
 
-export type CardSurface = "cream" | "blue";
+export type CardSurface = "cream" | "color";
 
 export interface Appearance {
-  palette: string;
+  color: string;
   cards: CardSurface;
 }
 

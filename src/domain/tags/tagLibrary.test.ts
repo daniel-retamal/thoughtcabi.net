@@ -30,23 +30,23 @@ describe("findTag", () => {
 });
 
 describe("availableColors", () => {
-  it("excludes colours already in use", () => {
+  it("excludes colors already in use", () => {
     const colors = availableColors([{ name: "a", color: RED }]);
     expect(colors).not.toContain(RED);
     expect(colors).toHaveLength(MAX_TAGS - 1);
   });
 
-  it("keeps the tag's own colour available while editing", () => {
+  it("keeps the tag's own color available while editing", () => {
     expect(availableColors([{ name: "a", color: RED }], RED)).toContain(RED);
   });
 });
 
 describe("addTag", () => {
-  it("adds a named tag on a free colour", () => {
+  it("adds a named tag on a free color", () => {
     expect(addTag([], "  To read  ", RED)).toEqual([{ name: "To read", color: RED }]);
   });
 
-  it("refuses a duplicate colour", () => {
+  it("refuses a duplicate color", () => {
     const tags = [{ name: "a", color: RED }];
     expect(addTag(tags, "b", RED)).toEqual(tags);
   });
@@ -77,7 +77,7 @@ describe("renameTag, recolorTag and removeTag", () => {
     ]);
   });
 
-  it("recolours only the matching tag", () => {
+  it("recolors only the matching tag", () => {
     expect(recolorTag(tags, "Reference", RED)[1]?.color).toBe(RED);
   });
 

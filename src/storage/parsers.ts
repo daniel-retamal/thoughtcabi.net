@@ -14,7 +14,7 @@ import {
 } from "@/domain/model";
 import { asNumber, asRecord, asText, type JsonRecord } from "@/lib/json";
 import { toIconName } from "@/icons/names";
-import { DEFAULT_APPEARANCE, isCardSurface, isPaletteId } from "@/theme/azul";
+import { DEFAULT_APPEARANCE, toCardSurface, toColorId } from "@/theme/colors";
 
 const SITE_CATEGORIES = new Set<string>([
   "video",
@@ -142,7 +142,7 @@ export function parsePreferences(value: unknown): Preferences | null {
 
   return {
     view: parseViewMode(record.view) ?? DEFAULT_VIEW_MODE,
-    palette: isPaletteId(record.palette) ? record.palette : DEFAULT_APPEARANCE.palette,
-    cards: isCardSurface(record.cards) ? record.cards : DEFAULT_APPEARANCE.cards,
+    color: toColorId(record.color ?? record.palette) ?? DEFAULT_APPEARANCE.color,
+    cards: toCardSurface(record.cards) ?? DEFAULT_APPEARANCE.cards,
   };
 }

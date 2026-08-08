@@ -157,18 +157,29 @@ describe("parseCabinet", () => {
 
 describe("parsePreferences", () => {
   it("accepts a complete value", () => {
-    expect(parsePreferences({ view: "list", palette: "ink", cards: "blue" })).toEqual({
+    expect(parsePreferences({ view: "list", color: "emerald", cards: "color" })).toEqual({
       view: "list",
-      palette: "ink",
-      cards: "blue",
+      color: "emerald",
+      cards: "color",
     });
   });
 
+  it("carries a save made under the old color names over to the new ones", () => {
+    expect(parsePreferences({ view: "grid", palette: "sapphire", cards: "blue" })).toEqual({
+      view: "grid",
+      color: "navy",
+      cards: "color",
+    });
+    expect(parsePreferences({ palette: "bento" })?.color).toBe("ultramarine");
+    expect(parsePreferences({ palette: "halo" })?.color).toBe("cobalt");
+    expect(parsePreferences({ palette: "ink" })?.color).toBe("midnight");
+  });
+
   it("defaults each field it cannot use", () => {
-    expect(parsePreferences({})).toEqual({ view: "grid", palette: "bento", cards: "cream" });
-    expect(parsePreferences({ view: "list", palette: "chartreuse" })).toEqual({
+    expect(parsePreferences({})).toEqual({ view: "grid", color: "ultramarine", cards: "cream" });
+    expect(parsePreferences({ view: "list", color: "chartreuse" })).toEqual({
       view: "list",
-      palette: "bento",
+      color: "ultramarine",
       cards: "cream",
     });
   });

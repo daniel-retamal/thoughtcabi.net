@@ -78,7 +78,7 @@ describe("NoteRow", () => {
     expect(container.querySelector(".row-tag-slot")).toHaveTextContent("To read");
   });
 
-  it("tints the tag chip with the tag's own colour", () => {
+  it("tints the tag chip with the tag's own color", () => {
     const { container } = renderRow(makeNote({ tag: "To read" }), [makeTag("To read", "#ffc93c")]);
     const chip = container.querySelector(".row-tag") as HTMLElement;
 
