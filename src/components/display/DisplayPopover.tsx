@@ -1,5 +1,6 @@
 import { useRef, type RefObject } from "react";
-import { AZUL_PALETTES, paletteById, type Appearance, type CardSurface } from "@/theme/azul";
+import type { Appearance, CardSurface } from "@/domain/model";
+import { AZUL_PALETTES, paletteById } from "@/theme/azul";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { useOnEscape } from "@/hooks/useOnEscape";
 import { Icon } from "@/components/primitives/Icon";

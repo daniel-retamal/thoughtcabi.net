@@ -1,32 +1,44 @@
 import { withoutPendingNotes } from "@/domain/library/mutations";
-import type { Library, Tag, ViewMode } from "@/domain/model";
+import { DEFAULT_VIEW_MODE, type Cabinet, type Preferences } from "@/domain/model";
 import { createSeedLibrary, createSeedTags } from "@/domain/seed/seedLibrary";
+import { DEFAULT_APPEARANCE } from "@/theme/azul";
 import { STORAGE_KEYS } from "./keys";
-import { readJson, readRaw, writeJson, writeRaw } from "./localStore";
-import { parseLibrary, parseTags, parseViewMode } from "./parsers";
+import { parseJson, readRaw, writeJson, writeRaw, type WriteOutcome } from "./localStore";
+import { migrateCabinet, migratePreferences } from "./migrations";
+import { parseCabinet, parsePreferences } from "./parsers";
 
-export const DEFAULT_VIEW_MODE: ViewMode = "grid";
+export const DEFAULT_PREFERENCES: Preferences = {
+  view: DEFAULT_VIEW_MODE,
+  ...DEFAULT_APPEARANCE,
+};
 
-export function loadLibrary(): Library {
-  return readJson(STORAGE_KEYS.library, parseLibrary) ?? createSeedLibrary();
+function seedCabinet(): Cabinet {
+  return { library: createSeedLibrary(), tags: createSeedTags() };
 }
 
-export function saveLibrary(library: Library): void {
-  writeJson(STORAGE_KEYS.library, withoutPendingNotes(library));
+export function loadCabinet(): Cabinet {
+  const raw = readRaw(STORAGE_KEYS.cabinet);
+  if (raw === null) return migrateCabinet() ?? seedCabinet();
+
+  const cabinet = parseJson(raw, parseCabinet);
+  if (cabinet) return cabinet;
+
+  writeRaw(STORAGE_KEYS.quarantine, raw);
+  return seedCabinet();
 }
 
-export function loadTags(): Tag[] {
-  return readJson(STORAGE_KEYS.tags, parseTags) ?? createSeedTags();
+export function saveCabinet(cabinet: Cabinet): WriteOutcome {
+  return writeJson(STORAGE_KEYS.cabinet, {
+    library: withoutPendingNotes(cabinet.library),
+    tags: cabinet.tags,
+  });
 }
 
-export function saveTags(tags: Tag[]): void {
-  writeJson(STORAGE_KEYS.tags, tags);
+export function loadPreferences(): Preferences {
+  const stored = parseJson(readRaw(STORAGE_KEYS.preferences), parsePreferences);
+  return stored ?? migratePreferences() ?? { ...DEFAULT_PREFERENCES };
 }
 
-export function loadViewMode(): ViewMode {
-  return parseViewMode(readRaw(STORAGE_KEYS.view)) ?? DEFAULT_VIEW_MODE;
-}
-
-export function saveViewMode(view: ViewMode): void {
-  writeRaw(STORAGE_KEYS.view, view);
+export function savePreferences(preferences: Preferences): WriteOutcome {
+  return writeJson(STORAGE_KEYS.preferences, preferences);
 }

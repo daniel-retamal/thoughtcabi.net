@@ -1,0 +1,69 @@
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin-bottom: 16px;
+  padding: 13px 13px 13px 15px;
+  border-radius: var(--r-lg);
+  border: 1px solid color-mix(in oklab, var(--danger) 46%, transparent);
+  background: var(--danger-soft);
+  box-shadow: var(--shadow-sm);
+  font-family: var(--font-ui);
+  animation: noticeIn 0.28s var(--ease-out);
+}
+
+@keyframes noticeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.notice-mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  margin-top: 1px;
+  color: var(--danger);
+}
+
+.notice-mark svg {
+  width: 16px;
+  height: 16px;
+}
+
+.notice-text {
+  flex: 1;
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.notice-dismiss {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.18s var(--ease), background 0.18s var(--ease);
+}
+
+.notice-dismiss:hover {
+  color: var(--text);
+  background: color-mix(in oklab, var(--danger) 12%, transparent);
+}
+
+.notice-dismiss svg {
+  width: 14px;
+  height: 14px;
+}

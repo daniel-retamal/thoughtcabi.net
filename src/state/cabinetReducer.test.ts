@@ -1,25 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { makeLibrary, makeNote, makeTag } from "@/test/factories";
+import { makeChannel, makeLibrary, makeNote, makeTag } from "@/test/factories";
 import { containerAt, findNode, locateNode } from "@/domain/library/tree";
-import { isFolder, isPendingNote, type Note } from "@/domain/model";
+import { isFolder, isPendingNote, type Cabinet, type Note } from "@/domain/model";
 import { TAG_PALETTE } from "@/domain/tags/palette";
-import { cabinetReducer, type CabinetAction, type CabinetState } from "./cabinetReducer";
+import { cabinetReducer, type CabinetAction } from "./cabinetReducer";
 
 const RED = TAG_PALETTE[0];
 const AMBER = TAG_PALETTE[1];
 
-function initialState(): CabinetState {
+function initialState(): Cabinet {
   return {
     library: makeLibrary(),
     tags: [makeTag("To read", RED), makeTag("Reference", AMBER)],
   };
 }
 
-function reduce(state: CabinetState, ...actions: CabinetAction[]): CabinetState {
+function reduce(state: Cabinet, ...actions: CabinetAction[]): Cabinet {
   return actions.reduce(cabinetReducer, state);
 }
 
-function noteAt(state: CabinetState, id: string): Note | undefined {
+function noteAt(state: Cabinet, id: string): Note | undefined {
   const node = findNode(state.library, id);
   return node && !isFolder(node) && node.loading !== true ? node : undefined;
 }
@@ -171,6 +171,51 @@ describe("tag commands", () => {
     const next = reduce(initialState(), { type: "tag/remove", name: "To read" });
     expect(next.tags.map((tag) => tag.name)).toEqual(["Reference"]);
     expect(noteAt(next, "note-a")?.tag).toBe("");
+  });
+});
+
+describe("adopting another tab's cabinet", () => {
+  function remoteCabinet(): Cabinet {
+    return {
+      library: [makeChannel("Remote", [makeNote({ id: "remote-note" })], "channel-remote")],
+      tags: [makeTag("Remote tag", RED)],
+    };
+  }
+
+  it("replaces both halves with the incoming pair", () => {
+    const next = reduce(initialState(), { type: "cabinet/adopt", cabinet: remoteCabinet() });
+
+    expect(next.library.map((channel) => channel.id)).toEqual(["channel-remote"]);
+    expect(next.tags.map((tag) => tag.name)).toEqual(["Remote tag"]);
+    expect(findNode(next.library, "note-a")).toBeUndefined();
+  });
+
+  it("carries a still-loading paste across the adopt", () => {
+    const pasted = reduce(initialState(), {
+      type: "note/addPending",
+      location: READING_ROOT,
+      id: "pending",
+      url: "https://example.com/in-flight",
+    });
+
+    const adopted = reduce(pasted, { type: "cabinet/adopt", cabinet: initialState() });
+
+    const placeholder = findNode(adopted.library, "pending");
+    expect(placeholder && isPendingNote(placeholder)).toBe(true);
+    expect(locateNode(adopted.library, "pending")?.channelId).toBe("channel-reading");
+  });
+
+  it("drops a placeholder whose channel the other tab deleted", () => {
+    const pasted = reduce(initialState(), {
+      type: "note/addPending",
+      location: READING_ROOT,
+      id: "pending",
+      url: "https://example.com/in-flight",
+    });
+
+    const adopted = reduce(pasted, { type: "cabinet/adopt", cabinet: remoteCabinet() });
+
+    expect(findNode(adopted.library, "pending")).toBeUndefined();
   });
 });
 

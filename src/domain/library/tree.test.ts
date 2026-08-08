@@ -15,6 +15,7 @@ import {
   locateNode,
   parentContainerName,
   pathToFolder,
+  pendingPlacements,
   requireChannel,
   splitChildren,
 } from "./tree";
@@ -133,6 +134,25 @@ describe("counting and collecting", () => {
     const { folders, notes } = splitChildren(requireChannel(library, "channel-reading"));
     expect(folders.map((f) => f.name)).toEqual(["Essays", "Empty"]);
     expect(notes.map((n) => n.id)).toEqual(["note-loose"]);
+  });
+
+  it("finds every placeholder still in flight, with the location to put it back", () => {
+    const library = makeLibrary();
+    const pending = { id: "pending", type: "note", url: "https://example.com/x", loading: true };
+    const nested = { id: "nested", type: "note", url: "https://example.com/y", loading: true };
+
+    library[0]?.children.push(pending as never);
+    const essays = library[0]?.children.find(isFolder);
+    essays?.children.push(nested as never);
+
+    expect(pendingPlacements(library)).toEqual([
+      { node: nested, location: { channelId: "channel-reading", path: ["folder-essays"] } },
+      { node: pending, location: { channelId: "channel-reading", path: [] } },
+    ]);
+  });
+
+  it("finds nothing to carry when no paste is in flight", () => {
+    expect(pendingPlacements(makeLibrary())).toEqual([]);
   });
 
   it("detects containment at any depth", () => {

@@ -83,16 +83,29 @@ guide for changing the code.
 
 ## Stored state
 
-Four `localStorage` keys, all namespaced `thoughtcabi.*`:
+Two `localStorage` keys, split by who would own the data if this ever grew a
+server:
 
-- `thoughtcabi.data.v1` — the channel/folder/card tree
-- `thoughtcabi.tags.v1` — the tag list (`{ name, color }`)
-- `thoughtcabi.view.v1` — `grid` or `list`
-- `thoughtcabi.azul.v1` — palette and card surface
+- `thoughtcabi.cabinet.v1` — your stuff: the channel/folder/card tree and the tag
+  list, written together so a tag can never outlive the cards carrying it
+- `thoughtcabi.prefs.v1` — this browser's preferences: `grid` or `list`, palette,
+  and card surface
 
 Clearing them restores the seed library. Stored data is validated on load, so a
 corrupt or hand-edited value degrades to a sensible default instead of breaking
-the app.
+the app — and the bytes that failed to parse are kept in
+`thoughtcabi.cabinet.corrupt.v1` rather than being overwritten, so nothing is lost
+without a copy.
+
+Libraries saved before this layout are migrated automatically the first time you
+open the app, and the old keys are removed only once the new one has been written.
+
+Open the cabinet in two tabs and they stay in step: whichever tab writes last, the
+other one follows rather than silently overwriting it. A link still loading in one
+tab survives a change made in the other.
+
+If the browser refuses a write — storage full, or blocked entirely in a private
+window — the app says so instead of pretending the change was saved.
 
 ## The link reader
 

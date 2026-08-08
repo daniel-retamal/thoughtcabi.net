@@ -16,6 +16,7 @@
 @import "./components/forms.css";
 @import "./components/pickers.css";
 @import "./components/toasts.css";
+@import "./components/notices.css";
 @import "./components/dnd.css";
 
 @import "./theme/palettes.css";

@@ -1,18 +1,10 @@
-import { STORAGE_KEYS } from "@/storage/keys";
-import { readJson, writeJson } from "@/storage/localStore";
+import type { Appearance, CardSurface } from "@/domain/model";
 
 export interface AzulPalette {
   id: string;
   label: string;
   field: string;
   cream: string;
-}
-
-export type CardSurface = "cream" | "blue";
-
-export interface Appearance {
-  palette: string;
-  cards: CardSurface;
 }
 
 export const AZUL_PALETTES: readonly [AzulPalette, ...AzulPalette[]] = [
@@ -28,23 +20,12 @@ export function paletteById(id: string): AzulPalette {
   return AZUL_PALETTES.find((palette) => palette.id === id) ?? AZUL_PALETTES[0];
 }
 
-function parseAppearance(value: unknown): Appearance | null {
-  if (typeof value !== "object" || value === null) return null;
-  const record = value as Record<string, unknown>;
-  const palette = AZUL_PALETTES.some((entry) => entry.id === record.palette)
-    ? (record.palette as string)
-    : DEFAULT_APPEARANCE.palette;
-  const cards: CardSurface =
-    record.cards === "cream" || record.cards === "blue" ? record.cards : DEFAULT_APPEARANCE.cards;
-  return { palette, cards };
+export function isPaletteId(value: unknown): value is string {
+  return typeof value === "string" && AZUL_PALETTES.some((palette) => palette.id === value);
 }
 
-export function loadAppearance(): Appearance {
-  return readJson(STORAGE_KEYS.appearance, parseAppearance) ?? { ...DEFAULT_APPEARANCE };
-}
-
-export function saveAppearance(appearance: Appearance): void {
-  writeJson(STORAGE_KEYS.appearance, appearance);
+export function isCardSurface(value: unknown): value is CardSurface {
+  return value === "cream" || value === "blue";
 }
 
 export function applyAppearance(appearance: Appearance, root: HTMLElement): void {

@@ -57,6 +57,8 @@
   --mark-plate: var(--az-cream);
   --mark-plate-ring: color-mix(in oklab, var(--az-ink) 14%, transparent);
   --mark-letter: color-mix(in oklab, var(--az-cream) 48%, transparent);
+  --danger: #ff9584;
+  --danger-soft: color-mix(in oklab, #ff9584 18%, transparent);
   --shadow-lg:
     0 22px 50px -18px rgb(var(--az-shadow) / 0.75), 0 6px 16px -8px rgb(var(--az-shadow) / 0.4);
   --shadow-md: 0 14px 30px -18px rgb(var(--az-shadow) / 0.6);

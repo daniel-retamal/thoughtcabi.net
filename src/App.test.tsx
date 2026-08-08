@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { LinkPreview } from "@/domain/links/linkPreview";
@@ -40,6 +40,10 @@ function deferredReader(): {
 describe("App", () => {
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("opens on the seeded library", () => {
@@ -88,7 +92,7 @@ describe("App", () => {
     await userEvent.click(screen.getByLabelText("Row view"));
 
     expect(document.querySelector(".notes-list")).toBeInTheDocument();
-    expect(localStorage.getItem(STORAGE_KEYS.view)).toBe("list");
+    expect(localStorage.getItem(STORAGE_KEYS.preferences)).toContain('"view":"list"');
   });
 
   it("creates a folder and persists it", async () => {
@@ -98,7 +102,7 @@ describe("App", () => {
     await userEvent.click(screen.getByRole("button", { name: /create/i }));
 
     expect(screen.getByText("Inbox")).toBeInTheDocument();
-    expect(localStorage.getItem(STORAGE_KEYS.library)).toContain("Inbox");
+    expect(localStorage.getItem(STORAGE_KEYS.cabinet)).toContain("Inbox");
   });
 
   it("creates a channel and opens it", async () => {
@@ -212,6 +216,25 @@ describe("App", () => {
     pasteText("https://example.com/in-flight");
 
     expect(screen.getByText("Reading link…")).toBeInTheDocument();
-    expect(localStorage.getItem(STORAGE_KEYS.library)).not.toContain("in-flight");
+    expect(localStorage.getItem(STORAGE_KEYS.cabinet)).not.toContain("in-flight");
+  });
+
+  it("warns when a save is refused for want of room, until dismissed", async () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("full", "QuotaExceededError");
+    });
+
+    render(<App />);
+
+    const notice = await screen.findByRole("alert");
+    expect(notice).toHaveTextContent(/storage is full/i);
+
+    await userEvent.click(within(notice).getByLabelText("Dismiss"));
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("says nothing about storage while writes succeed", () => {
+    render(<App />);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 });

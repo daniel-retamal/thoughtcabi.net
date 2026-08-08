@@ -1,6 +1,7 @@
 import {
   isFolder,
   isNote,
+  isPendingNote,
   type Channel,
   type Folder,
   type Library,
@@ -9,6 +10,7 @@ import {
   type Note,
   type NoteEntry,
   type NodeId,
+  type PendingNote,
 } from "@/domain/model";
 
 export type Container = Channel | Folder;
@@ -114,6 +116,21 @@ export function locateFolder(
     }
   }
   return null;
+}
+
+export interface PendingPlacement {
+  node: PendingNote;
+  location: LibraryLocation;
+}
+
+export function pendingPlacements(library: Library): PendingPlacement[] {
+  const placements: PendingPlacement[] = [];
+  eachNode(library, (node, channel, path) => {
+    if (isPendingNote(node)) {
+      placements.push({ node, location: { channelId: channel.id, path } });
+    }
+  });
+  return placements;
 }
 
 export function parentContainerName(library: Library, nodeId: NodeId): string | undefined {

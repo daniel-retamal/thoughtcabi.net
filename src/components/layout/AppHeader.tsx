@@ -1,5 +1,5 @@
 import { useRef, useState, type RefObject } from "react";
-import type { Appearance } from "@/theme/azul";
+import type { Appearance } from "@/domain/model";
 import { Icon } from "@/components/primitives/Icon";
 import { DisplayPopover } from "@/components/display/DisplayPopover";
 

@@ -227,7 +227,7 @@
 }
 
 .modal-actions .danger:hover {
-  color: #c0392b;
-  border-color: color-mix(in oklab, #c0392b 40%, var(--border));
-  background: color-mix(in oklab, #c0392b 8%, transparent);
+  color: var(--danger);
+  border-color: color-mix(in oklab, var(--danger) 40%, var(--border));
+  background: var(--danger-soft);
 }

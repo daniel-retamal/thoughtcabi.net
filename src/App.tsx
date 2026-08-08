@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createId } from "@/domain/ids";
 import type { LinkPreview } from "@/domain/links/linkPreview";
 import { availableColors } from "@/domain/tags/tagLibrary";
@@ -9,16 +9,14 @@ import {
   requireChannel,
 } from "@/domain/library/tree";
 import { buildNote, type NoteDraft } from "@/domain/notes/buildNote";
-import type { Channel, Folder, Note, Tag, ViewMode } from "@/domain/model";
+import type { Channel, Folder, Note, Tag } from "@/domain/model";
 import { locationDropProps } from "@/dnd/dragProps";
 import type { IconName } from "@/icons/names";
 import { readLink as readLinkFromWeb, type LinkReader } from "@/links/readLink";
-import { useAppearance } from "@/hooks/useAppearance";
+import { usePreferences } from "@/hooks/usePreferences";
 import { useSearchShortcut } from "@/hooks/useSearchShortcut";
 import { useToasts } from "@/hooks/useToasts";
 import { useTransientIds } from "@/hooks/useTransientIds";
-import { usePersistentState } from "@/hooks/usePersistentState";
-import { loadViewMode, saveViewMode } from "@/storage/appState";
 import { useCabinet } from "@/state/useCabinet";
 import { useLibraryDragAndDrop } from "@/state/useLibraryDragAndDrop";
 import { useLibraryView, type FolderEntry } from "@/state/useLibraryView";
@@ -32,6 +30,7 @@ import { ContentToolbar } from "@/components/layout/ContentToolbar";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { LibraryContent } from "@/components/library/LibraryContent";
 import { EmptyState } from "@/components/feedback/EmptyState";
+import { StorageNotice } from "@/components/feedback/StorageNotice";
 import { ToastStack } from "@/components/feedback/ToastStack";
 import { Icon } from "@/components/primitives/Icon";
 import { emptyStateFor } from "@/components/library/emptyStates";
@@ -43,18 +42,24 @@ export interface AppProps {
 }
 
 export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
-  const [{ library, tags }, dispatch] = useCabinet();
-  const [view, setView] = usePersistentState<ViewMode>(loadViewMode, saveViewMode);
+  const { cabinet, dispatch, storageStatus } = useCabinet();
+  const { library, tags } = cabinet;
+  const { preferences, setView, updateAppearance } = usePreferences();
   const [dialog, setDialog] = useState<Dialog | null>(null);
+  const [noticeDismissed, setNoticeDismissed] = useState(false);
 
   const navigation = useNavigation(requireChannel(library, "").id);
-  const { appearance, update: updateAppearance } = useAppearance();
   const { toasts, push: pushToast } = useToasts();
   const fresh = useTransientIds(FRESH_HIGHLIGHT_MS);
   const searchRef = useRef<HTMLInputElement>(null);
 
+  const view = preferences.view;
   const viewState = useLibraryView(library, navigation.state, view);
   const closeDialog = (): void => setDialog(null);
+
+  useEffect(() => {
+    setNoticeDismissed(false);
+  }, [storageStatus]);
 
   useSearchShortcut(searchRef);
   useLibraryDragAndDrop({ library, navigation, dispatch, pushToast });
@@ -167,7 +172,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
       <AppHeader
         query={navigation.state.query}
         searchRef={searchRef}
-        appearance={appearance}
+        appearance={preferences}
         onQueryChange={navigation.setQuery}
         onAppearanceChange={updateAppearance}
         onCompose={() => setDialog({ kind: "compose", mode: "new" })}
@@ -195,6 +200,10 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
             className="body-inner"
             {...(viewState.canReorder ? locationDropProps(navigation.location) : {})}
           >
+            {storageStatus !== "ok" && !noticeDismissed ? (
+              <StorageNotice problem={storageStatus} onDismiss={() => setNoticeDismissed(true)} />
+            ) : null}
+
             <ContentToolbar
               noteCount={viewState.notes.length}
               folderCount={viewState.folders.length}

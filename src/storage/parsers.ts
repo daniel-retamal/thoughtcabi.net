@@ -1,16 +1,20 @@
-import type {
-  Channel,
-  Folder,
-  Library,
-  LibraryNode,
-  Note,
-  NoteEntry,
-  SiteCategory,
-  Tag,
-  ViewMode,
+import {
+  DEFAULT_VIEW_MODE,
+  type Cabinet,
+  type Channel,
+  type Folder,
+  type Library,
+  type LibraryNode,
+  type Note,
+  type NoteEntry,
+  type Preferences,
+  type SiteCategory,
+  type Tag,
+  type ViewMode,
 } from "@/domain/model";
 import { asNumber, asRecord, asText, type JsonRecord } from "@/lib/json";
 import { toIconName } from "@/icons/names";
+import { DEFAULT_APPEARANCE, isCardSurface, isPaletteId } from "@/theme/azul";
 
 const SITE_CATEGORIES = new Set<string>([
   "video",
@@ -120,4 +124,25 @@ export function parseTags(value: unknown): Tag[] | null {
 
 export function parseViewMode(value: unknown): ViewMode | null {
   return value === "grid" || value === "list" ? value : null;
+}
+
+export function parseCabinet(value: unknown): Cabinet | null {
+  const record = asRecord(value);
+  if (!record) return null;
+
+  const library = parseLibrary(record.library);
+  if (!library) return null;
+
+  return { library, tags: parseTags(record.tags) ?? [] };
+}
+
+export function parsePreferences(value: unknown): Preferences | null {
+  const record = asRecord(value);
+  if (!record) return null;
+
+  return {
+    view: parseViewMode(record.view) ?? DEFAULT_VIEW_MODE,
+    palette: isPaletteId(record.palette) ? record.palette : DEFAULT_APPEARANCE.palette,
+    cards: isCardSurface(record.cards) ? record.cards : DEFAULT_APPEARANCE.cards,
+  };
 }

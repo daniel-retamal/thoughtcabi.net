@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { parseLibrary, parseTags, parseViewMode } from "./parsers";
+import {
+  parseCabinet,
+  parseLibrary,
+  parsePreferences,
+  parseTags,
+  parseViewMode,
+} from "./parsers";
 
 describe("parseLibrary", () => {
   it("accepts a well-formed library", () => {
@@ -123,5 +129,53 @@ describe("parseViewMode", () => {
     expect(parseViewMode("list")).toBe("list");
     expect(parseViewMode("gallery")).toBeNull();
     expect(parseViewMode(null)).toBeNull();
+  });
+});
+
+describe("parseCabinet", () => {
+  it("reads the library and tags out of one value", () => {
+    const cabinet = parseCabinet({
+      library: [{ id: "c", name: "C", children: [] }],
+      tags: [{ name: "Later", color: "red" }],
+    });
+    expect(cabinet?.library).toHaveLength(1);
+    expect(cabinet?.tags).toEqual([{ name: "Later", color: "red" }]);
+  });
+
+  it("rejects anything without a usable library", () => {
+    expect(parseCabinet(null)).toBeNull();
+    expect(parseCabinet([])).toBeNull();
+    expect(parseCabinet({ tags: [] })).toBeNull();
+    expect(parseCabinet({ library: [] })).toBeNull();
+  });
+
+  it("accepts a library whose tags are missing or unusable", () => {
+    expect(parseCabinet({ library: [{ id: "c", name: "C" }] })?.tags).toEqual([]);
+    expect(parseCabinet({ library: [{ id: "c", name: "C" }], tags: "nope" })?.tags).toEqual([]);
+  });
+});
+
+describe("parsePreferences", () => {
+  it("accepts a complete value", () => {
+    expect(parsePreferences({ view: "list", palette: "ink", cards: "blue" })).toEqual({
+      view: "list",
+      palette: "ink",
+      cards: "blue",
+    });
+  });
+
+  it("defaults each field it cannot use", () => {
+    expect(parsePreferences({})).toEqual({ view: "grid", palette: "bento", cards: "cream" });
+    expect(parsePreferences({ view: "list", palette: "chartreuse" })).toEqual({
+      view: "list",
+      palette: "bento",
+      cards: "cream",
+    });
+  });
+
+  it("rejects anything that is not a record", () => {
+    expect(parsePreferences(null)).toBeNull();
+    expect(parsePreferences("grid")).toBeNull();
+    expect(parsePreferences([])).toBeNull();
   });
 });

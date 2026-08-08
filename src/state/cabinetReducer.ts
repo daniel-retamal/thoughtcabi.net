@@ -13,16 +13,13 @@ import {
   replaceNode,
   updateChannel,
 } from "@/domain/library/mutations";
-import type { Channel, Library, LibraryLocation, NodeId, Note, Tag } from "@/domain/model";
+import { pendingPlacements } from "@/domain/library/tree";
+import type { Cabinet, Channel, Library, LibraryLocation, NodeId, Note, Tag } from "@/domain/model";
 import { addTag, recolorTag, removeTag, renameTag } from "@/domain/tags/tagLibrary";
 import type { IconName } from "@/icons/names";
 
-export interface CabinetState {
-  library: Library;
-  tags: Tag[];
-}
-
 export type CabinetAction =
+  | { type: "cabinet/adopt"; cabinet: Cabinet }
   | { type: "note/addPending"; location: LibraryLocation; id: NodeId; url: string }
   | { type: "note/resolvePending"; note: Note }
   | { type: "note/add"; location: LibraryLocation; note: Note }
@@ -43,18 +40,29 @@ export type CabinetAction =
   | { type: "tag/recolor"; name: string; color: string }
   | { type: "tag/remove"; name: string };
 
-function withLibrary(state: CabinetState, library: Library): CabinetState {
+function withLibrary(state: Cabinet, library: Library): Cabinet {
   return library === state.library ? state : { ...state, library };
 }
 
-function withTags(state: CabinetState, tags: Tag[]): CabinetState {
+function withTags(state: Cabinet, tags: Tag[]): Cabinet {
   return { ...state, tags };
 }
 
-export function cabinetReducer(state: CabinetState, action: CabinetAction): CabinetState {
+function adopt(state: Cabinet, incoming: Cabinet): Cabinet {
+  const library = pendingPlacements(state.library).reduce(
+    (current, placement) => addChild(current, placement.location, placement.node),
+    incoming.library,
+  );
+  return { library, tags: incoming.tags };
+}
+
+export function cabinetReducer(state: Cabinet, action: CabinetAction): Cabinet {
   const { library, tags } = state;
 
   switch (action.type) {
+    case "cabinet/adopt":
+      return adopt(state, action.cabinet);
+
     case "note/addPending":
       return withLibrary(
         state,

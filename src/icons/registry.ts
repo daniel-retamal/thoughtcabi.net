@@ -50,6 +50,7 @@ import {
   Tag as TagIcon,
   Terminal,
   Trash2,
+  TriangleAlert,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -107,6 +108,7 @@ export const ICON_COMPONENTS: Readonly<Record<IconName, LucideIcon>> = {
   tag: TagIcon,
   terminal: Terminal,
   "trash-2": Trash2,
+  "triangle-alert": TriangleAlert,
   x: X,
 };
 

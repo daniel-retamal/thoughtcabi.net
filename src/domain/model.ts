@@ -60,6 +60,24 @@ export interface Tag {
 
 export type ViewMode = "grid" | "list";
 
+export const DEFAULT_VIEW_MODE: ViewMode = "grid";
+
+export type CardSurface = "cream" | "blue";
+
+export interface Appearance {
+  palette: string;
+  cards: CardSurface;
+}
+
+export interface Preferences extends Appearance {
+  view: ViewMode;
+}
+
+export interface Cabinet {
+  library: Library;
+  tags: Tag[];
+}
+
 export interface LibraryLocation {
   channelId: NodeId;
   path: NodeId[];

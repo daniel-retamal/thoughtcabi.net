@@ -1,19 +1,23 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { makeLibrary, makeTag } from "@/test/factories";
-import { STORAGE_KEYS } from "./keys";
+import { LEGACY_KEYS, STORAGE_KEYS } from "./keys";
 import {
-  DEFAULT_VIEW_MODE,
-  loadLibrary,
-  loadTags,
-  loadViewMode,
-  saveLibrary,
-  saveTags,
-  saveViewMode,
+  DEFAULT_PREFERENCES,
+  loadCabinet,
+  loadPreferences,
+  saveCabinet,
+  savePreferences,
 } from "./appState";
 
-describe("app state persistence", () => {
+describe("the cabinet", () => {
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  it("round-trips the library and tags as one value", () => {
+    const cabinet = { library: makeLibrary(), tags: [makeTag("Later", "red")] };
+    expect(saveCabinet(cabinet)).toBe("ok");
+    expect(loadCabinet()).toEqual(cabinet);
   });
 
   it("never writes a placeholder that is still being read", () => {
@@ -25,49 +29,111 @@ describe("app state persistence", () => {
       loading: true,
     });
 
-    saveLibrary(library);
+    saveCabinet({ library, tags: [] });
 
-    expect(localStorage.getItem(STORAGE_KEYS.library)).not.toContain("in-flight");
-    expect(loadLibrary()[0]?.children.some((node) => node.id === "pending")).toBe(false);
+    expect(localStorage.getItem(STORAGE_KEYS.cabinet)).not.toContain("in-flight");
+    expect(loadCabinet().library[0]?.children.some((node) => node.id === "pending")).toBe(false);
   });
 
-  it("round-trips the library", () => {
-    const library = makeLibrary();
-    saveLibrary(library);
-    expect(loadLibrary()).toEqual(library);
-  });
-
-  it("seeds a library when storage is empty", () => {
-    const library = loadLibrary();
-    expect(library.length).toBeGreaterThan(0);
+  it("seeds when storage is empty", () => {
+    const { library, tags } = loadCabinet();
     expect(library[0]?.name).toBe("Reading");
+    expect(tags.map((tag) => tag.name)).toContain("To read");
   });
 
-  it("seeds a library when storage holds junk", () => {
-    localStorage.setItem(STORAGE_KEYS.library, "{not json");
-    expect(loadLibrary().length).toBeGreaterThan(0);
+  it("keeps the bytes it could not parse before seeding over them", () => {
+    localStorage.setItem(STORAGE_KEYS.cabinet, "{not json");
 
-    localStorage.setItem(STORAGE_KEYS.library, "[]");
-    expect(loadLibrary().length).toBeGreaterThan(0);
+    expect(loadCabinet().library.length).toBeGreaterThan(0);
+    expect(localStorage.getItem(STORAGE_KEYS.quarantine)).toBe("{not json");
   });
 
-  it("round-trips tags and seeds them when absent", () => {
-    expect(loadTags().map((tag) => tag.name)).toContain("To read");
+  it("quarantines a well-formed value that holds no channels", () => {
+    localStorage.setItem(STORAGE_KEYS.cabinet, '{"library":[],"tags":[]}');
 
+    expect(loadCabinet().library.length).toBeGreaterThan(0);
+    expect(localStorage.getItem(STORAGE_KEYS.quarantine)).toBe('{"library":[],"tags":[]}');
+  });
+
+  it("leaves no quarantine behind when storage was simply empty", () => {
+    loadCabinet();
+    expect(localStorage.getItem(STORAGE_KEYS.quarantine)).toBeNull();
+  });
+});
+
+describe("migrating from the four original keys", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("folds the old library and tags into the cabinet and drops the old keys", () => {
+    const library = makeLibrary();
     const tags = [makeTag("Later", "red")];
-    saveTags(tags);
-    expect(loadTags()).toEqual(tags);
+    localStorage.setItem(LEGACY_KEYS.library, JSON.stringify(library));
+    localStorage.setItem(LEGACY_KEYS.tags, JSON.stringify(tags));
+
+    expect(loadCabinet()).toEqual({ library, tags });
+    expect(localStorage.getItem(STORAGE_KEYS.cabinet)).toContain("On Rereading");
+    expect(localStorage.getItem(LEGACY_KEYS.library)).toBeNull();
+    expect(localStorage.getItem(LEGACY_KEYS.tags)).toBeNull();
   });
 
-  it("stores the view mode as a bare string for backwards compatibility", () => {
-    saveViewMode("list");
-    expect(localStorage.getItem(STORAGE_KEYS.view)).toBe("list");
-    expect(loadViewMode()).toBe("list");
+  it("seeds the half that is missing rather than losing the half that is there", () => {
+    localStorage.setItem(LEGACY_KEYS.tags, JSON.stringify([makeTag("Later", "red")]));
+
+    const { library, tags } = loadCabinet();
+    expect(library[0]?.name).toBe("Reading");
+    expect(tags).toEqual([makeTag("Later", "red")]);
   });
 
-  it("falls back to the default view mode", () => {
-    expect(loadViewMode()).toBe(DEFAULT_VIEW_MODE);
-    localStorage.setItem(STORAGE_KEYS.view, "gallery");
-    expect(loadViewMode()).toBe(DEFAULT_VIEW_MODE);
+  it("reads the view mode back out of its bare string and drops the old keys", () => {
+    localStorage.setItem(LEGACY_KEYS.view, "list");
+    localStorage.setItem(LEGACY_KEYS.appearance, '{"palette":"ink","cards":"blue"}');
+
+    expect(loadPreferences()).toEqual({ view: "list", palette: "ink", cards: "blue" });
+    expect(localStorage.getItem(LEGACY_KEYS.view)).toBeNull();
+    expect(localStorage.getItem(LEGACY_KEYS.appearance)).toBeNull();
+  });
+
+  it("defaults the axis that has no legacy value", () => {
+    localStorage.setItem(LEGACY_KEYS.view, "list");
+    expect(loadPreferences()).toEqual({ ...DEFAULT_PREFERENCES, view: "list" });
+  });
+
+  it("does not run once the new keys exist", () => {
+    localStorage.setItem(LEGACY_KEYS.view, "list");
+    savePreferences({ ...DEFAULT_PREFERENCES, palette: "halo" });
+
+    expect(loadPreferences().view).toBe(DEFAULT_PREFERENCES.view);
+    expect(localStorage.getItem(LEGACY_KEYS.view)).toBe("list");
+  });
+});
+
+describe("preferences", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("round-trips as one JSON value", () => {
+    const preferences = { view: "list", palette: "sapphire", cards: "blue" } as const;
+    expect(savePreferences(preferences)).toBe("ok");
+    expect(loadPreferences()).toEqual(preferences);
+  });
+
+  it("falls back to the defaults when storage is empty", () => {
+    expect(loadPreferences()).toEqual(DEFAULT_PREFERENCES);
+  });
+
+  it("repairs each field on its own rather than discarding the whole value", () => {
+    localStorage.setItem(
+      STORAGE_KEYS.preferences,
+      '{"view":"gallery","palette":"chartreuse","cards":"blue"}',
+    );
+
+    expect(loadPreferences()).toEqual({
+      view: DEFAULT_PREFERENCES.view,
+      palette: DEFAULT_PREFERENCES.palette,
+      cards: "blue",
+    });
   });
 });

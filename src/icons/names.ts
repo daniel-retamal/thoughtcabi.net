@@ -50,6 +50,7 @@ export const ICON_NAMES = [
   "tag",
   "terminal",
   "trash-2",
+  "triangle-alert",
   "x",
 ] as const;
 
