@@ -2,7 +2,7 @@ import type { IconName } from "@/icons/names";
 import { locateNode } from "@/domain/library/tree";
 import { previewFromNote, type LinkPreview } from "@/domain/links/linkPreview";
 import { draftFromNote, type NoteDraft } from "@/domain/notes/buildNote";
-import type { Channel, Library, LibraryLocation, Note, Tag } from "@/domain/model";
+import type { Cabinet, Channel, Library, LibraryLocation, Note, Tag } from "@/domain/model";
 import type { LinkReader } from "@/links/readLink";
 import type { Dialog } from "@/state/dialogs";
 import { ChannelEditorModal } from "./modals/ChannelEditorModal";
@@ -10,6 +10,7 @@ import { ComposeModal } from "./modals/ComposeModal";
 import { NamePromptModal } from "./modals/NamePromptModal";
 import { NoteDetailModal } from "./modals/NoteDetailModal";
 import { TagEditorModal } from "./modals/TagEditorModal";
+import { TransferModal, type ImportMode } from "./modals/TransferModal";
 
 const NEW_NOTE_ICON: IconName = "folder-plus";
 
@@ -29,6 +30,8 @@ export interface DialogHostProps {
   onDeleteTag: (name: string) => void;
   onCreateFolder: (name: string) => void;
   onRenameFolder: (folderId: string, name: string) => void;
+  onExportCabinet: () => void;
+  onImportCabinet: (cabinet: Cabinet, mode: ImportMode) => void;
 }
 
 export function DialogHost({
@@ -47,6 +50,8 @@ export function DialogHost({
   onDeleteTag,
   onCreateFolder,
   onRenameFolder,
+  onExportCabinet,
+  onImportCabinet,
 }: DialogHostProps) {
   if (!dialog) return null;
 
@@ -127,6 +132,17 @@ export function DialogHost({
           placeholder="e.g. Read later"
           icon={NEW_NOTE_ICON}
           onConfirm={onCreateFolder}
+          onCancel={onClose}
+        />
+      );
+
+    case "transfer":
+      return (
+        <TransferModal
+          library={library}
+          tags={tags}
+          onExport={onExportCabinet}
+          onImport={onImportCabinet}
           onCancel={onClose}
         />
       );

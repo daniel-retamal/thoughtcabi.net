@@ -48,6 +48,7 @@ src/
     library/     The channel/folder/note tree: reads, immutable writes, search
     notes/       Building a card from a draft
     tags/        The color-anchored tag palette and its rules
+    transfer/    Merging an imported cabinet into this one
     seed/        The starter library
   storage/     localStorage boundary: keys, safe IO, schema validation
   theme/       The color and card-surface axes and how they reach the DOM
@@ -79,6 +80,7 @@ guide for changing the code.
 | Move into a folder     | Drop onto the folder tile                        |
 | Open while dragging    | Hover a breadcrumb or channel for a moment       |
 | Assign a tag           | Drag the tag from the sidebar onto a card        |
+| Import a cabinet file  | Drop it on the zone in **Export & import**       |
 | Cancel a drag          | `Esc`, right-click, or drop on nothing           |
 
 ## Stored state
@@ -86,15 +88,15 @@ guide for changing the code.
 Two `localStorage` keys, split by who would own the data if this ever grew a
 server:
 
-- `thoughtcabi.cabinet.v1` — your stuff: the channel/folder/card tree and the tag
+- `thoughtcabinet.cabinet.v1` — your stuff: the channel/folder/card tree and the tag
   list, written together so a tag can never outlive the cards carrying it
-- `thoughtcabi.prefs.v1` — this browser's preferences: `grid` or `list`, color,
+- `thoughtcabinet.prefs.v1` — this browser's preferences: `grid` or `list`, color,
   and card surface
 
 Clearing them restores the seed library. Stored data is validated on load, so a
 corrupt or hand-edited value degrades to a sensible default instead of breaking
 the app — and the bytes that failed to parse are kept in
-`thoughtcabi.cabinet.corrupt.v1` rather than being overwritten, so nothing is lost
+`thoughtcabinet.cabinet.corrupt.v1` rather than being overwritten, so nothing is lost
 without a copy.
 
 Libraries saved before this layout are migrated automatically the first time you
@@ -106,6 +108,33 @@ tab survives a change made in the other.
 
 If the browser refuses a write — storage full, or blocked entirely in a private
 window — the app says so instead of pretending the change was saved.
+
+## Taking your cabinet with you
+
+The archive button in the header opens **Export & import**.
+
+**Export** writes one plain JSON file — `thoughtcabinet-2026-08-08.json` — holding
+every channel, folder, card and tag. Nothing else: your color and card surface
+belong to this browser, not to the cabinet, so they stay behind. The file is
+readable, diffable, and yours; put it in Dropbox, a git repo, or an email to
+yourself.
+
+**Import** takes that file back, by drop or by picker, and tells you what is in
+it before it touches anything:
+
+- **Merge** keeps everything you have. A channel whose name you already use
+  pours its cards into yours; anything else arrives as a new channel. Imported
+  cards get fresh ids, so importing the same file twice never collides — it
+  duplicates, which is at least visible and undoable.
+- **Replace** swaps your cabinet for the one in the file.
+
+Tags come across too. One that shares a name with a tag you already have keeps
+yours; one whose color is taken gets the next free one; and if the palette is
+full (§ eight colors, one name each) the tag is dropped and its cards arrive
+untagged rather than carrying a label the sidebar cannot show.
+
+A file that is not JSON, or has no channels in it, is explained rather than
+half-imported.
 
 ## The link reader
 

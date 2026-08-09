@@ -16,10 +16,13 @@ import {
 import { pendingPlacements } from "@/domain/library/tree";
 import type { Cabinet, Channel, Library, LibraryLocation, NodeId, Note, Tag } from "@/domain/model";
 import { addTag, recolorTag, removeTag, renameTag } from "@/domain/tags/tagLibrary";
+import { mergeCabinets } from "@/domain/transfer/mergeCabinets";
 import type { IconName } from "@/icons/names";
 
 export type CabinetAction =
   | { type: "cabinet/adopt"; cabinet: Cabinet }
+  | { type: "cabinet/replace"; cabinet: Cabinet }
+  | { type: "cabinet/merge"; cabinet: Cabinet }
   | { type: "note/addPending"; location: LibraryLocation; id: NodeId; url: string }
   | { type: "note/resolvePending"; note: Note }
   | { type: "note/add"; location: LibraryLocation; note: Note }
@@ -61,7 +64,11 @@ export function cabinetReducer(state: Cabinet, action: CabinetAction): Cabinet {
 
   switch (action.type) {
     case "cabinet/adopt":
+    case "cabinet/replace":
       return adopt(state, action.cabinet);
+
+    case "cabinet/merge":
+      return mergeCabinets(state, action.cabinet);
 
     case "note/addPending":
       return withLibrary(

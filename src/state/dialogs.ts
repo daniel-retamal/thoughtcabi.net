@@ -9,4 +9,5 @@ export type Dialog =
   | { kind: "tag"; mode: "new"; color: string }
   | { kind: "tag"; mode: "edit"; tag: Tag }
   | { kind: "new-folder" }
-  | { kind: "rename-folder"; folder: Folder };
+  | { kind: "rename-folder"; folder: Folder }
+  | { kind: "transfer" };

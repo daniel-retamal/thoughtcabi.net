@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { LinkPreview } from "@/domain/links/linkPreview";
+import { TAG_PALETTE } from "@/domain/tags/palette";
+import { serializeCabinet } from "@/storage/cabinetFile";
 import { STORAGE_KEYS } from "@/storage/keys";
 import { App } from "./App";
 
@@ -236,5 +238,110 @@ describe("App", () => {
   it("says nothing about storage while writes succeed", () => {
     render(<App />);
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  describe("export and import", () => {
+    function stubDownload(): { downloads: string[] } {
+      const downloads: string[] = [];
+      Object.defineProperty(URL, "createObjectURL", {
+        value: () => "blob:cabinet",
+        configurable: true,
+        writable: true,
+      });
+      Object.defineProperty(URL, "revokeObjectURL", {
+        value: () => undefined,
+        configurable: true,
+        writable: true,
+      });
+      vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
+        this: HTMLAnchorElement,
+      ) {
+        downloads.push(this.download);
+      });
+      return { downloads };
+    }
+
+    function cabinetFile(): File {
+      const text = serializeCabinet(
+        {
+          library: [
+            {
+              id: "ch-file",
+              name: "Recipes",
+              icon: "hash",
+              children: [
+                {
+                  id: "n-file",
+                  type: "note",
+                  title: "Sourdough, slowly",
+                  description: "",
+                  tag: "Later",
+                  addedAt: 1_700_000_000_000,
+                  url: "https://example.com/sourdough",
+                  domain: "example.com",
+                  siteName: "Example",
+                  cat: "article",
+                  catLabel: "Article",
+                },
+              ],
+            },
+          ],
+          tags: [{ name: "Later", color: TAG_PALETTE[4] }],
+        },
+        Date.UTC(2026, 7, 8),
+      );
+      return new File([text], "backup.json", { type: "application/json" });
+    }
+
+    async function openTransfer(): Promise<void> {
+      await userEvent.click(screen.getByLabelText("Export and import"));
+      await userEvent.upload(
+        screen.getByLabelText("Drop a cabinet file, or click to choose"),
+        cabinetFile(),
+      );
+      await screen.findByText("backup.json");
+    }
+
+    it("downloads the cabinet as a dated file", async () => {
+      const { downloads } = stubDownload();
+      render(<App />);
+
+      await userEvent.click(screen.getByLabelText("Export and import"));
+      await userEvent.click(screen.getByRole("button", { name: "Download" }));
+
+      expect(downloads).toEqual([expect.stringMatching(/^thoughtcabinet-\d{4}-\d{2}-\d{2}\.json$/)]);
+    });
+
+    it("merges an imported file in beside what is already saved", async () => {
+      render(<App />);
+
+      await openTransfer();
+      await userEvent.click(screen.getByRole("button", { name: "Merge" }));
+
+      expect(screen.getByText("Sourdough, slowly")).toBeInTheDocument();
+      expect(within(sidebar()).getByText("Recipes")).toBeInTheDocument();
+      expect(within(sidebar()).getByText("Reading")).toBeInTheDocument();
+      expect(within(sidebar()).getByText("Later")).toBeInTheDocument();
+      expect(localStorage.getItem(STORAGE_KEYS.cabinet)).toContain("Sourdough");
+    });
+
+    it("replaces the whole cabinet when asked to", async () => {
+      render(<App />);
+
+      await openTransfer();
+      await userEvent.click(screen.getByRole("button", { name: "Replace" }));
+
+      expect(screen.getByText("Sourdough, slowly")).toBeInTheDocument();
+      expect(within(sidebar()).queryByText("Reading")).not.toBeInTheDocument();
+    });
+
+    it("gives an imported card an id of its own when merging", async () => {
+      render(<App />);
+
+      await openTransfer();
+      await userEvent.click(screen.getByRole("button", { name: "Merge" }));
+
+      expect(localStorage.getItem(STORAGE_KEYS.cabinet)).not.toContain("n-file");
+    });
   });
 });

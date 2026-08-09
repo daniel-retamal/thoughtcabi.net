@@ -13,6 +13,7 @@ import {
   Coffee,
   Compass,
   Copy,
+  Download,
   ExternalLink,
   FileText,
   FlaskConical,
@@ -51,6 +52,7 @@ import {
   Terminal,
   Trash2,
   TriangleAlert,
+  Upload,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -71,6 +73,7 @@ export const ICON_COMPONENTS: Readonly<Record<IconName, LucideIcon>> = {
   coffee: Coffee,
   compass: Compass,
   copy: Copy,
+  download: Download,
   "external-link": ExternalLink,
   "file-text": FileText,
   "flask-conical": FlaskConical,
@@ -109,6 +112,7 @@ export const ICON_COMPONENTS: Readonly<Record<IconName, LucideIcon>> = {
   terminal: Terminal,
   "trash-2": Trash2,
   "triangle-alert": TriangleAlert,
+  upload: Upload,
   x: X,
 };
 

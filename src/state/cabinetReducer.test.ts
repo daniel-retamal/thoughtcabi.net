@@ -219,6 +219,53 @@ describe("adopting another tab's cabinet", () => {
   });
 });
 
+describe("importing a cabinet file", () => {
+  const imported: Cabinet = {
+    library: [
+      makeChannel("Reading", [makeNote({ id: "arrived", title: "Arrived" })], "ch-file"),
+      makeChannel("Recipes", [], "ch-recipes"),
+    ],
+    tags: [makeTag("Later", TAG_PALETTE[2])],
+  };
+
+  it("merges into the channel that already carries the name", () => {
+    const next = reduce(initialState(), { type: "cabinet/merge", cabinet: imported });
+
+    expect(next.library.map((channel) => channel.name)).toEqual(["Reading", "Research", "Recipes"]);
+    expect(locateNode(next.library, "arrived")?.channelId).toBe("channel-reading");
+    expect(next.tags.map((tag) => tag.name)).toEqual(["To read", "Reference", "Later"]);
+  });
+
+  it("keeps what is already here when merging", () => {
+    const next = reduce(initialState(), { type: "cabinet/merge", cabinet: imported });
+
+    expect(findNode(next.library, "note-a")).toBeDefined();
+  });
+
+  it("swaps the whole cabinet when replacing", () => {
+    const next = reduce(initialState(), { type: "cabinet/replace", cabinet: imported });
+
+    expect(next.library.map((channel) => channel.id)).toEqual(["ch-file", "ch-recipes"]);
+    expect(next.tags.map((tag) => tag.name)).toEqual(["Later"]);
+  });
+
+  it("carries a still-loading paste across a replace", () => {
+    const pasted = reduce(initialState(), {
+      type: "note/addPending",
+      location: READING_ROOT,
+      id: "pending",
+      url: "https://example.com/in-flight",
+    });
+
+    const next = reduce(pasted, {
+      type: "cabinet/replace",
+      cabinet: { ...imported, library: [makeChannel("Kept", [], "channel-reading")] },
+    });
+
+    expect(findNode(next.library, "pending")).toBeDefined();
+  });
+});
+
 describe("reducer discipline", () => {
   it("never mutates the state it is given", () => {
     const state = initialState();

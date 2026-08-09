@@ -13,6 +13,7 @@ export const ICON_NAMES = [
   "coffee",
   "compass",
   "copy",
+  "download",
   "external-link",
   "file-text",
   "flask-conical",
@@ -51,6 +52,7 @@ export const ICON_NAMES = [
   "terminal",
   "trash-2",
   "triangle-alert",
+  "upload",
   "x",
 ] as const;
 

@@ -1,4 +1,4 @@
-name = "thoughtcabi-link-relay"
+name = "thoughtcabinet-link-relay"
 main = "link-relay.js"
 compatibility_date = "2025-01-01"
 workers_dev = true

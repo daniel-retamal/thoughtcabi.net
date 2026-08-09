@@ -9,6 +9,7 @@ export interface AppHeaderProps {
   appearance: Appearance;
   onQueryChange: (query: string) => void;
   onAppearanceChange: (changes: Partial<Appearance>) => void;
+  onTransfer: () => void;
   onCompose: () => void;
 }
 
@@ -18,6 +19,7 @@ export function AppHeader({
   appearance,
   onQueryChange,
   onAppearanceChange,
+  onTransfer,
   onCompose,
 }: AppHeaderProps) {
   const [displayOpen, setDisplayOpen] = useState(false);
@@ -63,6 +65,16 @@ export function AppHeader({
       </div>
 
       <div className="header-actions">
+        <button
+          type="button"
+          className="iconbtn"
+          title="Export & import"
+          aria-label="Export and import"
+          onClick={onTransfer}
+        >
+          <Icon name="archive" />
+        </button>
+
         <div className="pop-wrap">
           <button
             ref={displayButtonRef}

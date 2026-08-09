@@ -4,14 +4,19 @@ import type { LinkPreview } from "@/domain/links/linkPreview";
 import { availableColors } from "@/domain/tags/tagLibrary";
 import {
   containerAt,
+  firstChannel,
   parentContainerName,
   pathToFolder,
   requireChannel,
 } from "@/domain/library/tree";
 import { buildNote, type NoteDraft } from "@/domain/notes/buildNote";
-import type { Channel, Folder, Note, Tag } from "@/domain/model";
+import type { Cabinet, Channel, Folder, Note, Tag } from "@/domain/model";
+import { sameName } from "@/domain/transfer/mergeCabinets";
+import { withFreshIds } from "@/domain/transfer/reidentify";
 import { locationDropProps } from "@/dnd/dragProps";
 import type { IconName } from "@/icons/names";
+import { downloadTextFile } from "@/lib/files";
+import { cabinetFileName, serializeCabinet } from "@/storage/cabinetFile";
 import { readLink as readLinkFromWeb, type LinkReader } from "@/links/readLink";
 import { usePreferences } from "@/hooks/usePreferences";
 import { useSearchShortcut } from "@/hooks/useSearchShortcut";
@@ -24,6 +29,7 @@ import { useNavigation } from "@/state/useNavigation";
 import { usePasteToSave } from "@/state/usePasteToSave";
 import type { Dialog } from "@/state/dialogs";
 import { DialogHost } from "@/components/DialogHost";
+import type { ImportMode } from "@/components/modals/TransferModal";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { ContentToolbar } from "@/components/layout/ContentToolbar";
@@ -152,6 +158,34 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     closeDialog();
   };
 
+  const exportCabinet = (): void => {
+    const exportedAt = Date.now();
+    downloadTextFile(cabinetFileName(exportedAt), serializeCabinet(cabinet, exportedAt));
+  };
+
+  const replaceWith = (incoming: Cabinet): Channel => {
+    dispatch({ type: "cabinet/replace", cabinet: incoming });
+    return firstChannel(incoming.library);
+  };
+
+  const mergeIn = (incoming: Cabinet): Channel => {
+    const freshened = withFreshIds(incoming, createId);
+    dispatch({ type: "cabinet/merge", cabinet: freshened });
+    const arriving = firstChannel(freshened.library);
+    return library.find((channel) => sameName(channel.name, arriving.name)) ?? arriving;
+  };
+
+  const importCabinet = (incoming: Cabinet, mode: ImportMode): void => {
+    const landing = mode === "replace" ? replaceWith(incoming) : mergeIn(incoming);
+    closeDialog();
+    navigation.openChannel(landing.id);
+    pushToast({
+      verb: "Imported into",
+      folder: landing.name,
+      location: { channelId: landing.id, path: [] },
+    });
+  };
+
   const noteHandlers = {
     onOpen: (note: Note) => setDialog({ kind: "detail", note }),
     onEdit: (note: Note) => setDialog({ kind: "compose", mode: "edit", note }),
@@ -175,6 +209,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
         appearance={preferences}
         onQueryChange={navigation.setQuery}
         onAppearanceChange={updateAppearance}
+        onTransfer={() => setDialog({ kind: "transfer" })}
         onCompose={() => setDialog({ kind: "compose", mode: "new" })}
       />
 
@@ -280,6 +315,8 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
           dispatch({ type: "folder/rename", id: folderId, name });
           closeDialog();
         }}
+        onExportCabinet={exportCabinet}
+        onImportCabinet={importCabinet}
       />
 
       <ToastStack

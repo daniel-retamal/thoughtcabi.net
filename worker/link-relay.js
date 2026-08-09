@@ -1,6 +1,6 @@
 const MAX_BYTES = 512 * 1024;
 const TIMEOUT_MS = 10_000;
-const USER_AGENT = "thoughtcabi-linkbot/1.0 (+https://thoughtcabi.net)";
+const USER_AGENT = "thoughtcabinet-linkbot/1.0 (+https://thoughtcabi.net)";
 const CACHE_SECONDS = 3600;
 
 const PRIVATE_HOST =
