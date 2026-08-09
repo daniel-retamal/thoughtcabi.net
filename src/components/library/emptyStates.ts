@@ -22,6 +22,6 @@ export function emptyStateFor(mode: BrowseMode, navigation: NavigationState): Em
   return {
     icon: "bookmark-plus",
     title: "Nothing here yet",
-    text: "Press Ctrl V anywhere to drop in a link — or hit “Save” to add one by hand.",
+    text: "Press Ctrl V anywhere to drop in a link, or hit “Save” to add one by hand.",
   };
 }

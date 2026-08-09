@@ -17,7 +17,13 @@ export interface TagDrag {
 export type DragPayload = NodeDrag | TagDrag;
 
 export type Axis = "x" | "y";
-export type Side = "before" | "after";
+
+export interface InsertionLine {
+  axis: Axis;
+  position: number;
+  crossStart: number;
+  crossSize: number;
+}
 
 export interface AssignTagTarget {
   type: "assign-tag";
@@ -42,18 +48,14 @@ export interface ReorderTarget {
   type: "reorder";
   location: LibraryLocation;
   beforeId: NodeId | null;
-  rect: DOMRect;
-  axis: Axis;
-  side: Side;
+  line: InsertionLine;
   element: HTMLElement;
 }
 
 export interface ReorderChannelTarget {
   type: "reorder-channel";
   beforeId: NodeId | null;
-  rect: DOMRect;
-  axis: "y";
-  side: Side;
+  line: InsertionLine;
 }
 
 export type DropTarget =

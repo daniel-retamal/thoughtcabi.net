@@ -9,11 +9,22 @@ import { Thumbnail } from "./Thumbnail";
 const MAXRES = youtubeThumbnail("dQw4w9WgXcQ");
 const HQ = "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg";
 
-function renderThumbnail(note: Note) {
+function renderThumbnail(note: Note, sizes = "300px", capResolution = false) {
   const { container } = render(
-    <Thumbnail note={note} sizes="300px" fallback={<span className="gave-up" />} />,
+    <Thumbnail
+      note={note}
+      sizes={sizes}
+      capResolution={capResolution}
+      fallback={<span className="gave-up" />}
+    />,
   );
   return { container, img: container.querySelector("img") as HTMLImageElement };
+}
+
+function loadWithNaturalSize(img: HTMLImageElement, width: number, height: number): void {
+  Object.defineProperty(img, "naturalWidth", { value: width, configurable: true });
+  Object.defineProperty(img, "naturalHeight", { value: height, configurable: true });
+  fireEvent.load(img);
 }
 
 describe("Thumbnail", () => {
@@ -68,5 +79,35 @@ describe("Thumbnail", () => {
   it("prefers the user's own picture over the one the page published", () => {
     const note = makeNote({ image: "https://example.com/mine.png", siteImage: MAXRES });
     expect(renderThumbnail(note).img).toHaveAttribute("src", "https://example.com/mine.png");
+  });
+
+  it("caps a picture smaller than its slot instead of blowing it up, when asked to", () => {
+    const note = makeNote({ image: "https://example.com/small.png" });
+    const { img } = renderThumbnail(note, "640px", true);
+
+    loadWithNaturalSize(img, 400, 400);
+
+    expect(img.closest(".cover")).toHaveClass("img-capped");
+    expect(img.style.maxWidth).toBe("400px");
+    expect(img.style.maxHeight).toBe("400px");
+  });
+
+  it("leaves a picture that already fills its slot alone", () => {
+    const note = makeNote({ image: "https://example.com/big.png" });
+    const { img } = renderThumbnail(note, "640px", true);
+
+    loadWithNaturalSize(img, 1280, 720);
+
+    expect(img.closest(".cover")).not.toHaveClass("img-capped");
+    expect(img.style.maxWidth).toBe("");
+  });
+
+  it("never caps when the caller has not opted in", () => {
+    const note = makeNote({ image: "https://example.com/small.png" });
+    const { img } = renderThumbnail(note, "640px", false);
+
+    loadWithNaturalSize(img, 400, 400);
+
+    expect(img.closest(".cover")).not.toHaveClass("img-capped");
   });
 });

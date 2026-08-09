@@ -139,7 +139,7 @@ export class DragController {
     }
 
     if (target.type === "reorder" || target.type === "reorder-channel") {
-      this.indicator.show(target);
+      this.indicator.show(target.line);
       return;
     }
 

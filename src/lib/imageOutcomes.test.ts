@@ -3,6 +3,7 @@ import {
   forgetImageOutcomes,
   imageOutcomeOf,
   naturalEdgeOf,
+  naturalSizeOf,
   rememberBrokenImage,
   rememberLoadedImage,
 } from "./imageOutcomes";
@@ -11,6 +12,7 @@ describe("imageOutcomes", () => {
   it("knows nothing about a source it has never seen", () => {
     expect(imageOutcomeOf("https://example.com/new.png")).toBeNull();
     expect(naturalEdgeOf("https://example.com/new.png")).toBe(0);
+    expect(naturalSizeOf("https://example.com/new.png")).toBeNull();
   });
 
   it("keeps the longest edge of a source that loaded", () => {
@@ -18,6 +20,7 @@ describe("imageOutcomes", () => {
 
     expect(imageOutcomeOf("https://example.com/wide.png")).toBe("ok");
     expect(naturalEdgeOf("https://example.com/wide.png")).toBe(64);
+    expect(naturalSizeOf("https://example.com/wide.png")).toEqual({ width: 64, height: 32 });
   });
 
   it("remembers a source that failed", () => {

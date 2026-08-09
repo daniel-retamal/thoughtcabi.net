@@ -160,12 +160,6 @@ body.dnd-active .row-actions {
   z-index: 9003;
 }
 
-.body-inner.dnd-over {
-  outline: 2px dashed color-mix(in oklab, var(--accent) 32%, transparent);
-  outline-offset: -10px;
-  border-radius: var(--r-lg);
-}
-
 .card.dnd-over,
 .row-item.dnd-over:not(.row-folder) {
   outline: 2.5px solid var(--accent);
