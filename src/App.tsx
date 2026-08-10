@@ -2,16 +2,18 @@ import { useEffect, useRef, useState } from "react";
 import { createId } from "@/domain/ids";
 import type { LinkPreview } from "@/domain/links/linkPreview";
 import { availableColors } from "@/domain/tags/tagLibrary";
+import { notesWithTag } from "@/domain/library/search";
 import {
   containerAt,
   firstChannel,
   isCabinetEmpty,
   parentContainerName,
   pathToFolder,
+  placementOf,
   requireChannel,
 } from "@/domain/library/tree";
 import { buildNote, type NoteDraft } from "@/domain/notes/buildNote";
-import type { Cabinet, Channel, Folder, Note, Tag } from "@/domain/model";
+import type { Cabinet, Channel, Folder, LibraryLocation, Note, Tag } from "@/domain/model";
 import { sameName } from "@/domain/transfer/mergeCabinets";
 import { withFreshIds } from "@/domain/transfer/reidentify";
 import { locationDropProps } from "@/dnd/dragProps";
@@ -21,7 +23,7 @@ import { cabinetFileName, serializeCabinet } from "@/storage/cabinetFile";
 import { readLink as readLinkFromWeb, type LinkReader } from "@/links/readLink";
 import { usePreferences } from "@/hooks/usePreferences";
 import { useSearchShortcut } from "@/hooks/useSearchShortcut";
-import { useToasts } from "@/hooks/useToasts";
+import { useToasts, type ToastAction } from "@/hooks/useToasts";
 import { useTransientIds } from "@/hooks/useTransientIds";
 import { useCabinet } from "@/state/useCabinet";
 import { useLibraryDragAndDrop } from "@/state/useLibraryDragAndDrop";
@@ -79,6 +81,24 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
   useSearchShortcut(searchRef);
   useLibraryDragAndDrop({ library, navigation, dispatch, pushToast });
 
+  const viewAction = (location: LibraryLocation, note?: Note): ToastAction => ({
+    kind: "view",
+    run: () => {
+      navigation.goTo(location);
+      if (note) setDialog({ kind: "detail", note });
+    },
+  });
+
+  const announceDeletion = (subject: string, undo: () => void): void => {
+    pushToast({ verb: "Deleted", subject, action: { kind: "undo", run: undo } });
+  };
+
+  const deleteNode = (node: Folder | Note, subject: string): void => {
+    const placement = placementOf(library, node.id);
+    dispatch({ type: "node/remove", id: node.id });
+    if (placement) announceDeletion(subject, () => dispatch({ type: "node/restore", placement }));
+  };
+
   usePasteToSave({
     library,
     location: navigation.location,
@@ -86,7 +106,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     dispatch,
     onSaved: (note, folder, location) => {
       fresh.mark(note.id);
-      pushToast({ folder, location, note });
+      pushToast({ subject: folder, action: viewAction(location, note) });
     },
   });
 
@@ -113,14 +133,13 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     closeDialog();
     fresh.mark(note.id);
     pushToast({
-      folder: containerAt(library, draft.destination).name,
-      location: draft.destination,
-      note,
+      subject: containerAt(library, draft.destination).name,
+      action: viewAction(draft.destination, note),
     });
   };
 
   const deleteNote = (note: Note): void => {
-    dispatch({ type: "node/remove", id: note.id });
+    deleteNode(note, note.title || note.domain || "Untitled");
     if (dialog?.kind === "detail" && dialog.note.id === note.id) closeDialog();
   };
 
@@ -137,15 +156,14 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
   };
 
   const deleteChannel = (channel: Channel): void => {
-    const remaining = library.filter((entry) => entry.id !== channel.id);
-    const fallback = remaining[0];
-    if (!fallback) {
-      closeDialog();
-      return;
-    }
+    const index = library.findIndex((entry) => entry.id === channel.id);
+    const fallback = library.find((entry) => entry.id !== channel.id);
+    closeDialog();
+    if (!fallback) return;
+
     dispatch({ type: "channel/remove", id: channel.id });
     if (navigation.state.channelId === channel.id) navigation.enterChannel(fallback.id);
-    closeDialog();
+    announceDeletion(channel.name, () => dispatch({ type: "channel/restore", index, channel }));
   };
 
   const saveTag = (original: Tag | null, name: string, color: string): void => {
@@ -162,9 +180,14 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
   };
 
   const deleteTag = (name: string): void => {
+    const index = tags.findIndex((tag) => tag.name === name);
+    const tag = tags[index];
+    const noteIds = notesWithTag(library, name).map((note) => note.id);
+
     dispatch({ type: "tag/remove", name });
     navigation.retagActive(name, null);
     closeDialog();
+    if (tag) announceDeletion(name, () => dispatch({ type: "tag/restore", index, tag, noteIds }));
   };
 
   const exportCabinet = (): void => {
@@ -190,8 +213,8 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     navigation.openChannel(landing.id);
     pushToast({
       verb: "Imported into",
-      folder: landing.name,
-      location: { channelId: landing.id, path: [] },
+      subject: landing.name,
+      action: viewAction({ channelId: landing.id, path: [] }),
     });
   };
 
@@ -204,7 +227,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
   const folderHandlers = {
     onOpen: openFolder,
     onRename: (folder: Folder) => setDialog({ kind: "rename-folder", folder }),
-    onDelete: (folder: Folder) => dispatch({ type: "node/remove", id: folder.id }),
+    onDelete: (folder: Folder) => deleteNode(folder, folder.name),
   };
 
   const isEmpty = viewState.folders.length === 0 && viewState.notes.length === 0;
@@ -355,13 +378,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
         onImportCabinet={importCabinet}
       />
 
-      <ToastStack
-        toasts={toasts}
-        onView={(toast) => {
-          navigation.goTo(toast.location);
-          if (toast.note) setDialog({ kind: "detail", note: toast.note });
-        }}
-      />
+      <ToastStack toasts={toasts} />
     </div>
   );
 }

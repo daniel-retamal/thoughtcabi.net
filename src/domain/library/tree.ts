@@ -122,6 +122,39 @@ export function locateFolder(
   return null;
 }
 
+export interface NodePlacement {
+  location: LibraryLocation;
+  index: number;
+  node: LibraryNode;
+}
+
+function placementWithin(
+  container: Container,
+  location: LibraryLocation,
+  nodeId: NodeId,
+): NodePlacement | null {
+  const index = container.children.findIndex((child) => child.id === nodeId);
+  const node = container.children[index];
+  if (node) return { location, index, node };
+
+  for (const child of container.children) {
+    if (!isFolder(child)) continue;
+    const nested = { channelId: location.channelId, path: [...location.path, child.id] };
+    const found = placementWithin(child, nested, nodeId);
+    if (found) return found;
+  }
+
+  return null;
+}
+
+export function placementOf(library: Library, nodeId: NodeId): NodePlacement | null {
+  for (const channel of library) {
+    const found = placementWithin(channel, { channelId: channel.id, path: [] }, nodeId);
+    if (found) return found;
+  }
+  return null;
+}
+
 export interface PendingPlacement {
   node: PendingNote;
   location: LibraryLocation;

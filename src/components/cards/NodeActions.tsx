@@ -1,10 +1,6 @@
-import type { MouseEvent } from "react";
 import type { Folder, Note } from "@/domain/model";
+import { stopPropagation } from "@/lib/events";
 import { ActionButton } from "@/components/primitives/ActionButton";
-
-function stopPropagation(event: MouseEvent): void {
-  event.stopPropagation();
-}
 
 export interface NoteActionsProps {
   note: Note;

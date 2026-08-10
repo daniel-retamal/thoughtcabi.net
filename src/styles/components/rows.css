@@ -35,6 +35,29 @@
   opacity: 0;
 }
 
+.row-face {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 0 14px;
+  border-radius: var(--r-sm);
+  background: color-mix(in oklab, var(--danger) 12%, var(--surface));
+}
+
+.row-face p {
+  flex: 1;
+  margin: 0;
+  font-size: 15px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .row-slot {
   width: 72px;
   height: 50px;

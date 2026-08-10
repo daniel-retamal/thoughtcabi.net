@@ -16,6 +16,7 @@ import {
   locateNode,
   parentContainerName,
   pathToFolder,
+  placementOf,
   pendingPlacements,
   requireChannel,
   splitChildren,
@@ -101,6 +102,22 @@ describe("locating nodes", () => {
     expect(parentContainerName(library, "note-a")).toBe("Essays");
     expect(parentContainerName(library, "note-loose")).toBe("Reading");
     expect(parentContainerName(library, "ghost")).toBeUndefined();
+  });
+
+  it("records where a node sits so it can be put back there", () => {
+    const library = makeLibrary();
+
+    const nested = placementOf(library, "note-b");
+    expect(nested?.location).toEqual({ channelId: "channel-reading", path: ["folder-essays"] });
+    expect(nested?.index).toBe(1);
+    expect(nested?.node.id).toBe("note-b");
+
+    const folder = placementOf(library, "folder-empty");
+    expect(folder?.location).toEqual({ channelId: "channel-reading", path: [] });
+    expect(folder?.index).toBe(1);
+    expect(folder?.node.id).toBe("folder-empty");
+
+    expect(placementOf(library, "ghost")).toBeNull();
   });
 
   it("returns folders only from findFolder", () => {

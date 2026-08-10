@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { makeFolder, makeNote } from "@/test/factories";
 import type { Folder } from "@/domain/model";
 import { FolderTile } from "./FolderTile";
@@ -8,7 +9,7 @@ function renderTile(folder: Folder) {
   const handlers = { onOpen: vi.fn(), onRename: vi.fn(), onDelete: vi.fn() };
   const { container } = render(<FolderTile folder={folder} {...handlers} />);
   const mosaic = container.querySelector(".folder-mosaic") as HTMLElement;
-  return { container, mosaic, cells: [...mosaic.children] };
+  return { container, handlers, mosaic, cells: [...mosaic.children] };
 }
 
 describe("FolderTile", () => {
@@ -64,5 +65,47 @@ describe("FolderTile", () => {
       makeFolder("Mixed", [makeFolder("Inside", [makeNote(), makeNote()]), makeNote()]),
     );
     expect(container.querySelector(".folder-sub")).toHaveTextContent("1 folder · 1 item");
+  });
+
+  it("asks on its own face before it takes saves down with it", async () => {
+    const { handlers } = renderTile(
+      makeFolder("Typography", [makeFolder("Inside", [makeNote(), makeNote()]), makeNote()]),
+    );
+
+    await userEvent.click(screen.getByLabelText("Delete folder"));
+    expect(handlers.onDelete).not.toHaveBeenCalled();
+    expect(screen.getByText("Delete 3 saves?")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Delete" }));
+    expect(handlers.onDelete).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not open the folder it is asking about", async () => {
+    const { handlers } = renderTile(makeFolder("Typography", [makeNote()]));
+
+    await userEvent.click(screen.getByLabelText("Delete folder"));
+    await userEvent.click(screen.getByText("Delete 1 save?"));
+
+    expect(handlers.onOpen).not.toHaveBeenCalled();
+  });
+
+  it("keeps the folder when asked to, and on a click anywhere else", async () => {
+    const { handlers } = renderTile(makeFolder("Typography", [makeNote()]));
+
+    await userEvent.click(screen.getByLabelText("Delete folder"));
+    await userEvent.click(screen.getByRole("button", { name: "Keep" }));
+    expect(screen.queryByText("Delete 1 save?")).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByLabelText("Delete folder"));
+    await userEvent.click(document.body);
+    expect(screen.queryByText("Delete 1 save?")).not.toBeInTheDocument();
+    expect(handlers.onDelete).not.toHaveBeenCalled();
+  });
+
+  it("deletes an empty folder on the first click, since nothing is lost", async () => {
+    const { handlers } = renderTile(makeFolder("Scratch", []));
+
+    await userEvent.click(screen.getByLabelText("Delete folder"));
+    expect(handlers.onDelete).toHaveBeenCalledTimes(1);
   });
 });

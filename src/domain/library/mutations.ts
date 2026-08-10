@@ -30,6 +30,10 @@ function withChannelChildren(
   return library.map((channel) => ({ ...channel, children: transform(channel.children) }));
 }
 
+function clampIndex(index: number, length: number): number {
+  return Math.min(Math.max(index, 0), length);
+}
+
 export function insertAt(
   library: Library,
   location: LibraryLocation,
@@ -38,7 +42,7 @@ export function insertAt(
 ): Library {
   const insertInto = (nodes: readonly LibraryNode[]): LibraryNode[] => {
     const next = [...nodes];
-    next.splice(Math.min(Math.max(index, 0), next.length), 0, node);
+    next.splice(clampIndex(index, next.length), 0, node);
     return next;
   };
 
@@ -190,6 +194,12 @@ export function reorderChannels(
 
 export function addChannel(library: Library, channel: Channel): Library {
   return [...library, channel];
+}
+
+export function insertChannel(library: Library, index: number, channel: Channel): Library {
+  const next = [...library];
+  next.splice(clampIndex(index, next.length), 0, channel);
+  return next;
 }
 
 export function updateChannel(

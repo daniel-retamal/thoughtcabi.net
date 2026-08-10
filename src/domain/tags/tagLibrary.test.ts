@@ -6,6 +6,7 @@ import {
   availableColors,
   canAddTag,
   findTag,
+  insertTag,
   isPaletteFull,
   recolorTag,
   removeTag,
@@ -83,6 +84,15 @@ describe("renameTag, recolorTag and removeTag", () => {
 
   it("removes only the matching tag", () => {
     expect(removeTag(tags, "To read")).toEqual([{ name: "Reference", color: AMBER }]);
+  });
+
+  it("puts a removed tag back in the place it held", () => {
+    const without = removeTag(tags, "To read");
+    expect(insertTag(without, 0, { name: "To read", color: RED })).toEqual(tags);
+  });
+
+  it("will not insert a name that is already there", () => {
+    expect(insertTag(tags, 0, { name: "Reference", color: RED })).toEqual(tags);
   });
 
   it("leaves the input arrays alone", () => {

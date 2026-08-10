@@ -6,6 +6,7 @@ import {
   addChild,
   createFolder,
   insertAt,
+  insertChannel,
   moveIntoFolder,
   moveToLocation,
   patchNotes,
@@ -222,6 +223,18 @@ describe("channels", () => {
     const only: Library = [makeChannel("Only", [], "only")];
     expect(removeChannel(only, "only")).toBe(only);
     expect(removeChannel(makeLibrary(), "channel-research")).toHaveLength(1);
+  });
+
+  it("puts a channel back where it was standing", () => {
+    const library = makeLibrary();
+    const restored = insertChannel(removeChannel(library, "channel-reading"), 0, library[0]!);
+    expect(restored.map((c) => c.id)).toEqual(["channel-reading", "channel-research"]);
+  });
+
+  it("clamps a restore index that no longer fits", () => {
+    const library = makeLibrary();
+    expect(insertChannel(library, 99, makeChannel("Late", [], "late")).at(-1)?.id).toBe("late");
+    expect(insertChannel(library, -3, makeChannel("Early", [], "early"))[0]?.id).toBe("early");
   });
 
   it("ignores reordering an unknown channel", () => {

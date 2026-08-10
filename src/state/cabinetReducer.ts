@@ -2,6 +2,8 @@ import {
   addChannel,
   addChild,
   createFolder,
+  insertAt,
+  insertChannel,
   moveIntoFolder,
   moveToLocation,
   patchNotes,
@@ -13,9 +15,9 @@ import {
   replaceNode,
   updateChannel,
 } from "@/domain/library/mutations";
-import { pendingPlacements } from "@/domain/library/tree";
+import { pendingPlacements, type NodePlacement } from "@/domain/library/tree";
 import type { Cabinet, Channel, Library, LibraryLocation, NodeId, Note, Tag } from "@/domain/model";
-import { addTag, recolorTag, removeTag, renameTag } from "@/domain/tags/tagLibrary";
+import { addTag, insertTag, recolorTag, removeTag, renameTag } from "@/domain/tags/tagLibrary";
 import { mergeCabinets } from "@/domain/transfer/mergeCabinets";
 import type { IconName } from "@/icons/names";
 
@@ -28,12 +30,14 @@ export type CabinetAction =
   | { type: "note/add"; location: LibraryLocation; note: Note }
   | { type: "note/move"; location: LibraryLocation; note: Note }
   | { type: "node/remove"; id: NodeId }
+  | { type: "node/restore"; placement: NodePlacement }
   | { type: "node/moveIntoFolder"; id: NodeId; folderId: NodeId }
   | { type: "node/moveToLocation"; id: NodeId; location: LibraryLocation }
   | { type: "node/reorder"; id: NodeId; location: LibraryLocation; beforeId: NodeId | null }
   | { type: "channel/add"; channel: Channel }
   | { type: "channel/update"; id: NodeId; name: string; icon: IconName }
   | { type: "channel/remove"; id: NodeId }
+  | { type: "channel/restore"; index: number; channel: Channel }
   | { type: "channel/reorder"; id: NodeId; beforeId: NodeId | null }
   | { type: "folder/add"; location: LibraryLocation; id: NodeId; name: string }
   | { type: "folder/rename"; id: NodeId; name: string }
@@ -41,7 +45,8 @@ export type CabinetAction =
   | { type: "tag/add"; name: string; color: string }
   | { type: "tag/rename"; from: string; to: string }
   | { type: "tag/recolor"; name: string; color: string }
-  | { type: "tag/remove"; name: string };
+  | { type: "tag/remove"; name: string }
+  | { type: "tag/restore"; index: number; tag: Tag; noteIds: readonly NodeId[] };
 
 function withLibrary(state: Cabinet, library: Library): Cabinet {
   return library === state.library ? state : { ...state, library };
@@ -99,6 +104,11 @@ export function cabinetReducer(state: Cabinet, action: CabinetAction): Cabinet {
     case "node/remove":
       return withLibrary(state, removeNode(library, action.id));
 
+    case "node/restore": {
+      const { location, index, node } = action.placement;
+      return withLibrary(state, insertAt(library, location, node, index));
+    }
+
     case "node/moveIntoFolder":
       return withLibrary(state, moveIntoFolder(library, action.id, action.folderId));
 
@@ -122,6 +132,9 @@ export function cabinetReducer(state: Cabinet, action: CabinetAction): Cabinet {
 
     case "channel/remove":
       return withLibrary(state, removeChannel(library, action.id));
+
+    case "channel/restore":
+      return withLibrary(state, insertChannel(library, action.index, action.channel));
 
     case "channel/reorder":
       return withLibrary(state, reorderChannels(library, action.id, action.beforeId));
@@ -160,6 +173,16 @@ export function cabinetReducer(state: Cabinet, action: CabinetAction): Cabinet {
         library: patchNotes(library, (note) => (note.tag === action.name ? { tag: "" } : null)),
         tags: removeTag(tags, action.name),
       };
+
+    case "tag/restore": {
+      const wore = new Set(action.noteIds);
+      return {
+        library: patchNotes(library, (note) =>
+          wore.has(note.id) ? { tag: action.tag.name } : null,
+        ),
+        tags: insertTag(tags, action.index, action.tag),
+      };
+    }
 
     default:
       return state;

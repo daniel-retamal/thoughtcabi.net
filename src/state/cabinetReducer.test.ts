@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { makeChannel, makeLibrary, makeNote, makeTag } from "@/test/factories";
-import { containerAt, findNode, locateNode } from "@/domain/library/tree";
+import { containerAt, findNode, locateNode, placementOf } from "@/domain/library/tree";
 import { isFolder, isPendingNote, type Cabinet, type Note } from "@/domain/model";
 import { TAG_PALETTE } from "@/domain/tags/palette";
 import { cabinetReducer, type CabinetAction } from "./cabinetReducer";
@@ -94,6 +94,31 @@ describe("note commands", () => {
     const next = reduce(initialState(), { type: "node/remove", id: "note-a" });
     expect(findNode(next.library, "note-a")).toBeUndefined();
   });
+
+  it("puts a removed node back at the index it held", () => {
+    const state = initialState();
+    const placement = placementOf(state.library, "note-b")!;
+
+    const removed = reduce(state, { type: "node/remove", id: "note-b" });
+    const restored = reduce(removed, { type: "node/restore", placement });
+
+    expect(containerAt(restored.library, placement.location).children.map((c) => c.id)).toEqual([
+      "note-a",
+      "note-b",
+    ]);
+  });
+
+  it("puts a whole folder back, with everything that was inside it", () => {
+    const state = initialState();
+    const placement = placementOf(state.library, "folder-essays")!;
+
+    const removed = reduce(state, { type: "node/remove", id: "folder-essays" });
+    expect(findNode(removed.library, "note-a")).toBeUndefined();
+
+    const restored = reduce(removed, { type: "node/restore", placement });
+    expect(noteAt(restored, "note-a")?.title).toBe("On Rereading");
+    expect(containerAt(restored.library, READING_ROOT).children[0]?.id).toBe("folder-essays");
+  });
 });
 
 describe("folder commands", () => {
@@ -134,6 +159,20 @@ describe("channel commands", () => {
       "channel-research",
     ]);
   });
+
+  it("puts a deleted channel back where it stood, contents and all", () => {
+    const state = initialState();
+    const channel = state.library[0]!;
+
+    const removed = reduce(state, { type: "channel/remove", id: channel.id });
+    const restored = reduce(removed, { type: "channel/restore", index: 0, channel });
+
+    expect(restored.library.map((entry) => entry.id)).toEqual([
+      "channel-reading",
+      "channel-research",
+    ]);
+    expect(noteAt(restored, "note-a")?.title).toBe("On Rereading");
+  });
 });
 
 describe("tag commands", () => {
@@ -171,6 +210,20 @@ describe("tag commands", () => {
     const next = reduce(initialState(), { type: "tag/remove", name: "To read" });
     expect(next.tags.map((tag) => tag.name)).toEqual(["Reference"]);
     expect(noteAt(next, "note-a")?.tag).toBe("");
+  });
+
+  it("puts a deleted tag back in its place, and back on its notes", () => {
+    const removed = reduce(initialState(), { type: "tag/remove", name: "To read" });
+    const restored = reduce(removed, {
+      type: "tag/restore",
+      index: 0,
+      tag: makeTag("To read", RED),
+      noteIds: ["note-a"],
+    });
+
+    expect(restored.tags).toEqual([makeTag("To read", RED), makeTag("Reference", AMBER)]);
+    expect(noteAt(restored, "note-a")?.tag).toBe("To read");
+    expect(noteAt(restored, "note-b")?.tag).toBe("");
   });
 });
 

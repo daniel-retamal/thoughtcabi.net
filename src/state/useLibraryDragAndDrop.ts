@@ -27,10 +27,12 @@ export function useLibraryDragAndDrop({
 }: LibraryDragAndDropOptions): void {
   const originRef = useRef<NavigationState | null>(null);
 
-  const locationName = (location: LibraryLocation): string => containerAt(library, location).name;
-
-  const announceMove = (drag: DragPayload, location: LibraryLocation): void => {
-    pushToast({ verb: movedVerb(drag), folder: locationName(location), location });
+  const announceMove = (drag: DragPayload, location: LibraryLocation, name?: string): void => {
+    pushToast({
+      verb: movedVerb(drag),
+      subject: name ?? containerAt(library, location).name,
+      action: { kind: "view", run: () => navigation.goTo(location) },
+    });
   };
 
   const onDrop = (drag: DragPayload, target: DropTarget): void => {
@@ -61,13 +63,7 @@ export function useLibraryDragAndDrop({
       case "into-folder": {
         dispatch({ type: "node/moveIntoFolder", id: drag.id, folderId: target.folderId });
         const folder = locateFolder(library, target.folderId);
-        if (folder) {
-          pushToast({
-            verb: movedVerb(drag),
-            folder: folder.name,
-            location: folder.location,
-          });
-        }
+        if (folder) announceMove(drag, folder.location, folder.name);
         return;
       }
 

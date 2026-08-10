@@ -1,8 +1,12 @@
+import { useRef } from "react";
 import { isFolder, isNote, type Folder, type Note } from "@/domain/model";
-import { directCounts } from "@/domain/library/tree";
+import { collectNotes, directCounts } from "@/domain/library/tree";
 import { folderDragProps } from "@/dnd/dragProps";
+import { useArmed } from "@/hooks/useArmed";
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 import { Icon } from "@/components/primitives/Icon";
 import type { FolderHandlers } from "@/components/handlers";
+import { DeleteFace } from "./DeleteFace";
 import { FolderActions } from "./NodeActions";
 import { MosaicCell } from "./MosaicCell";
 import { folderTileSummary } from "./folderSummary";
@@ -36,15 +40,36 @@ function fillsMosaicHeight(index: number, slots: number): boolean {
 
 export function FolderTile({ folder, onOpen, onRename, onDelete }: FolderTileProps) {
   const previews = previewNodes(folder);
+  const tileRef = useRef<HTMLDivElement>(null);
+  const confirm = useArmed();
+  const saves = collectNotes(folder).length;
+
+  useOnClickOutside([tileRef], confirm.disarm);
 
   return (
-    <div className="folder-tile" {...folderDragProps(folder)} onClick={() => onOpen(folder)}>
+    <div
+      ref={tileRef}
+      className={confirm.armed ? "folder-tile confirming" : "folder-tile"}
+      {...folderDragProps(folder)}
+      onClick={() => {
+        if (!confirm.armed) onOpen(folder);
+      }}
+    >
       <FolderActions
         folder={folder}
         className="folder-actions"
         onRename={onRename}
-        onDelete={onDelete}
+        onDelete={() => (saves > 0 ? confirm.arm() : onDelete(folder))}
       />
+
+      {confirm.armed ? (
+        <DeleteFace
+          count={saves}
+          className="folder-face"
+          onConfirm={() => onDelete(folder)}
+          onKeep={confirm.disarm}
+        />
+      ) : null}
 
       <div className={`folder-mosaic slots-${previews.length}`}>
         {previews.length === 0 ? <div className="cell cell-tall" /> : null}

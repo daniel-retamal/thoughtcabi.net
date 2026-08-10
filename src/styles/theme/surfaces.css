@@ -69,6 +69,7 @@
   --mark-plate-ring: color-mix(in oklab, var(--tone-ink) 12%, transparent);
   --mark-letter: color-mix(in oklab, var(--tone-ink) 46%, transparent);
   --danger: #c0392b;
+  --danger-on: var(--tone-cream);
   --danger-soft: color-mix(in oklab, #c0392b 9%, transparent);
   background: var(--surface);
   color: var(--text);

@@ -1,5 +1,5 @@
 import type { IconName } from "@/icons/names";
-import { locateNode } from "@/domain/library/tree";
+import { collectNotes, locateNode } from "@/domain/library/tree";
 import { previewFromNote, type LinkPreview } from "@/domain/links/linkPreview";
 import { draftFromNote, type NoteDraft } from "@/domain/notes/buildNote";
 import type { Cabinet, Channel, Library, LibraryLocation, Note, Tag } from "@/domain/model";
@@ -100,6 +100,8 @@ export function DialogHost({
           mode={dialog.mode}
           initialName={channel?.name ?? ""}
           initialIcon={channel?.icon ?? "hash"}
+          canDelete={library.length > 1}
+          saveCount={channel ? collectNotes(channel).length : 0}
           onConfirm={(name, icon) => onSaveChannel(channel, name, icon)}
           onDelete={() => {
             if (channel) onDeleteChannel(channel);

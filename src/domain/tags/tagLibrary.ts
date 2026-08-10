@@ -36,6 +36,13 @@ export function addTag(tags: readonly Tag[], name: string, color: string): Tag[]
   return [...tags, { name: trimmed, color }];
 }
 
+export function insertTag(tags: readonly Tag[], index: number, tag: Tag): Tag[] {
+  if (tags.some((existing) => existing.name === tag.name)) return [...tags];
+  const next = [...tags];
+  next.splice(Math.min(Math.max(index, 0), next.length), 0, tag);
+  return next;
+}
+
 export function renameTag(tags: readonly Tag[], from: string, to: string): Tag[] {
   return tags.map((tag) => (tag.name === from ? { ...tag, name: to } : tag));
 }

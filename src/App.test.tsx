@@ -276,6 +276,22 @@ describe("App", () => {
       expect(within(content()).getByText("On Rereading")).toBeInTheDocument();
     });
 
+    it("spends the undo once, however many times it is asked", async () => {
+      withSaves();
+      render(<App />);
+
+      await userEvent.click(within(sidebarRow("Research")).getByLabelText("Edit channel"));
+      await userEvent.click(screen.getByRole("button", { name: /^delete$/i }));
+      await userEvent.click(screen.getByRole("button", { name: /delete 1 save\?/i }));
+
+      const undo = within(toast()).getByRole("button", { name: "Undo" });
+      await userEvent.click(undo);
+
+      expect(toast()).toBeNull();
+      expect(undo).not.toBeInTheDocument();
+      expect(within(sidebar()).getAllByText("Research")).toHaveLength(1);
+    });
+
     it("brings a whole channel back, contents and all", async () => {
       withSaves();
       render(<App />);
