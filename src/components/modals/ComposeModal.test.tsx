@@ -2,8 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { LinkPreview } from "@/domain/links/linkPreview";
+import type { Tag } from "@/domain/model";
 import type { NoteDraft } from "@/domain/notes/buildNote";
-import { makeLibrary } from "@/test/factories";
+import { TAG_PALETTE } from "@/domain/tags/palette";
+import { makeLibrary, makeTag } from "@/test/factories";
 import { ComposeModal } from "./ComposeModal";
 
 const URL = "https://example.com/the-quiet-revolution";
@@ -19,16 +21,20 @@ const PREVIEW: LinkPreview = {
   cat: "article",
 };
 
-function renderCompose(initial: Partial<NoteDraft> = {}, preview: LinkPreview | null = PREVIEW) {
+function renderCompose(
+  initial: Partial<NoteDraft> = {},
+  preview: LinkPreview | null = PREVIEW,
+  tags: readonly Tag[] = [],
+) {
   const library = makeLibrary();
-  const handlers = { onSave: vi.fn(), onCancel: vi.fn() };
+  const handlers = { onSave: vi.fn(), onCreateTag: vi.fn(), onCancel: vi.fn() };
   const readLink = vi.fn(() => Promise.resolve(preview));
 
   render(
     <ComposeModal
       mode="new"
       library={library}
-      tags={[]}
+      tags={tags}
       initial={{
         url: "",
         title: "",
@@ -111,5 +117,26 @@ describe("ComposeModal", () => {
     const { readLink } = renderCompose();
     await userEvent.type(titleField(), "Just a thought");
     expect(readLink).not.toHaveBeenCalled();
+  });
+
+  it("offers a first tag as a suggestion, and creates it only when chosen", async () => {
+    const { handlers } = renderCompose();
+
+    await userEvent.click(screen.getByRole("button", { name: "Read later" }));
+    await userEvent.type(titleField(), "A thought");
+    await userEvent.click(screen.getByRole("button", { name: /^save$/i }));
+
+    expect(handlers.onCreateTag).toHaveBeenCalledWith("Read later", TAG_PALETTE[2]);
+    expect(handlers.onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ tag: "Read later" }),
+      null,
+    );
+  });
+
+  it("suggests nothing once a tag of the user's own exists", () => {
+    renderCompose({}, PREVIEW, [makeTag("Later", TAG_PALETTE[4])]);
+
+    expect(screen.queryByRole("button", { name: "Read later" })).not.toBeInTheDocument();
+    expect(screen.getByText("Later")).toBeInTheDocument();
   });
 });

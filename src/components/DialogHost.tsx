@@ -24,6 +24,7 @@ export interface DialogHostProps {
   onClose: () => void;
   onEditNote: (note: Note) => void;
   onSaveNote: (draft: NoteDraft, preview: LinkPreview | null, editing: Note | null) => void;
+  onCreateTag: (name: string, color: string) => void;
   onSaveChannel: (channel: Channel | null, name: string, icon: IconName) => void;
   onDeleteChannel: (channel: Channel) => void;
   onSaveTag: (original: Tag | null, name: string, color: string) => void;
@@ -44,6 +45,7 @@ export function DialogHost({
   onClose,
   onEditNote,
   onSaveNote,
+  onCreateTag,
   onSaveChannel,
   onDeleteChannel,
   onSaveTag,
@@ -85,6 +87,7 @@ export function DialogHost({
           initialPreview={editing ? previewFromNote(editing) : null}
           readLink={readLink}
           onSave={(draft, preview) => onSaveNote(draft, preview, editing)}
+          onCreateTag={onCreateTag}
           onCancel={onClose}
         />
       );

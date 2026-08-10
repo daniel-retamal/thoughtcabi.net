@@ -71,6 +71,7 @@ export interface Appearance {
 
 export interface Preferences extends Appearance {
   view: ViewMode;
+  onboarded: boolean;
 }
 
 export interface Cabinet {

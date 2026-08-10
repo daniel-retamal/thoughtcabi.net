@@ -1,4 +1,5 @@
 import type { Channel, Tag } from "@/domain/model";
+import { Icon } from "@/components/primitives/Icon";
 import { ChannelRow } from "./ChannelRow";
 import { SidebarSection } from "./SidebarSection";
 import { TagRow } from "./TagRow";
@@ -46,7 +47,12 @@ export function Sidebar({
 
       <SidebarSection title="Tags" addLabel="New tag" onAdd={onNewTag}>
         {tags.length === 0 ? (
-          <div className="lib-empty">No tags yet</div>
+          <button type="button" className="lib-ghost" onClick={onNewTag}>
+            <span className="ring">
+              <Icon name="plus" />
+            </span>
+            Add a tag
+          </button>
         ) : (
           tags.map((tag) => (
             <TagRow

@@ -11,6 +11,7 @@ export interface PreferencesStore {
   preferences: Preferences;
   setView: (view: ViewMode) => void;
   updateAppearance: (changes: Partial<Appearance>) => void;
+  markOnboarded: () => void;
 }
 
 export function usePreferences(): PreferencesStore {
@@ -39,5 +40,9 @@ export function usePreferences(): PreferencesStore {
     setPreferences((current) => ({ ...current, ...changes }));
   }, []);
 
-  return { preferences, setView, updateAppearance };
+  const markOnboarded = useCallback(() => {
+    setPreferences((current) => ({ ...current, onboarded: true }));
+  }, []);
+
+  return { preferences, setView, updateAppearance, markOnboarded };
 }

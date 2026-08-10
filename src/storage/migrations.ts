@@ -1,5 +1,5 @@
 import { DEFAULT_VIEW_MODE, type Cabinet, type Preferences } from "@/domain/model";
-import { createSeedLibrary, createSeedTags } from "@/domain/seed/seedLibrary";
+import { createStarterCabinet } from "@/domain/seed/starterCabinet";
 import { DEFAULT_APPEARANCE } from "@/theme/colors";
 import { LEGACY_KEYS, STORAGE_KEYS } from "./keys";
 import { clearKey, readJson, readRaw, writeJson } from "./localStore";
@@ -10,9 +10,10 @@ export function migrateCabinet(): Cabinet | null {
   const tags = readJson(LEGACY_KEYS.tags, parseTags);
   if (!library && !tags) return null;
 
+  const starter = createStarterCabinet();
   const cabinet: Cabinet = {
-    library: library ?? createSeedLibrary(),
-    tags: tags ?? createSeedTags(),
+    library: library ?? starter.library,
+    tags: tags ?? starter.tags,
   };
 
   if (writeJson(STORAGE_KEYS.cabinet, cabinet) === "ok") {
@@ -32,6 +33,7 @@ export function migratePreferences(): Preferences | null {
     view: view ?? DEFAULT_VIEW_MODE,
     color: appearance?.color ?? DEFAULT_APPEARANCE.color,
     cards: appearance?.cards ?? DEFAULT_APPEARANCE.cards,
+    onboarded: false,
   };
 
   if (writeJson(STORAGE_KEYS.preferences, preferences) === "ok") {

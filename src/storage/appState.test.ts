@@ -35,10 +35,12 @@ describe("the cabinet", () => {
     expect(loadCabinet().library[0]?.children.some((node) => node.id === "pending")).toBe(false);
   });
 
-  it("seeds when storage is empty", () => {
+  it("starts with one empty channel and no tags when storage is empty", () => {
     const { library, tags } = loadCabinet();
-    expect(library[0]?.name).toBe("Reading");
-    expect(tags.map((tag) => tag.name)).toContain("To read");
+    expect(library).toHaveLength(1);
+    expect(library[0]?.name).toBe("Saved");
+    expect(library[0]?.children).toEqual([]);
+    expect(tags).toEqual([]);
   });
 
   it("keeps the bytes it could not parse before seeding over them", () => {
@@ -78,11 +80,11 @@ describe("migrating from the four original keys", () => {
     expect(localStorage.getItem(LEGACY_KEYS.tags)).toBeNull();
   });
 
-  it("seeds the half that is missing rather than losing the half that is there", () => {
+  it("starts the half that is missing rather than losing the half that is there", () => {
     localStorage.setItem(LEGACY_KEYS.tags, JSON.stringify([makeTag("Later", "red")]));
 
     const { library, tags } = loadCabinet();
-    expect(library[0]?.name).toBe("Reading");
+    expect(library[0]?.name).toBe("Saved");
     expect(tags).toEqual([makeTag("Later", "red")]);
   });
 
@@ -90,7 +92,12 @@ describe("migrating from the four original keys", () => {
     localStorage.setItem(LEGACY_KEYS.view, "list");
     localStorage.setItem(LEGACY_KEYS.appearance, '{"palette":"ink","cards":"blue"}');
 
-    expect(loadPreferences()).toEqual({ view: "list", color: "midnight", cards: "color" });
+    expect(loadPreferences()).toEqual({
+      view: "list",
+      color: "midnight",
+      cards: "color",
+      onboarded: false,
+    });
     expect(localStorage.getItem(LEGACY_KEYS.view)).toBeNull();
     expect(localStorage.getItem(LEGACY_KEYS.appearance)).toBeNull();
   });
@@ -115,7 +122,7 @@ describe("preferences", () => {
   });
 
   it("round-trips as one JSON value", () => {
-    const preferences = { view: "list", color: "forest", cards: "color" } as const;
+    const preferences = { view: "list", color: "forest", cards: "color", onboarded: true } as const;
     expect(savePreferences(preferences)).toBe("ok");
     expect(loadPreferences()).toEqual(preferences);
   });
@@ -134,6 +141,7 @@ describe("preferences", () => {
       view: DEFAULT_PREFERENCES.view,
       color: DEFAULT_PREFERENCES.color,
       cards: "color",
+      onboarded: false,
     });
   });
 });

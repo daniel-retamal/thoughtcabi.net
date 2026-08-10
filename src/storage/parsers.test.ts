@@ -1,11 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  parseCabinet,
-  parseLibrary,
-  parsePreferences,
-  parseTags,
-  parseViewMode,
-} from "./parsers";
+import { parseCabinet, parseLibrary, parsePreferences, parseTags, parseViewMode } from "./parsers";
 
 describe("parseLibrary", () => {
   it("accepts a well-formed library", () => {
@@ -157,10 +151,13 @@ describe("parseCabinet", () => {
 
 describe("parsePreferences", () => {
   it("accepts a complete value", () => {
-    expect(parsePreferences({ view: "list", color: "emerald", cards: "color" })).toEqual({
+    expect(
+      parsePreferences({ view: "list", color: "emerald", cards: "color", onboarded: true }),
+    ).toEqual({
       view: "list",
       color: "emerald",
       cards: "color",
+      onboarded: true,
     });
   });
 
@@ -169,6 +166,7 @@ describe("parsePreferences", () => {
       view: "grid",
       color: "navy",
       cards: "color",
+      onboarded: false,
     });
     expect(parsePreferences({ palette: "bento" })?.color).toBe("ultramarine");
     expect(parsePreferences({ palette: "halo" })?.color).toBe("cobalt");
@@ -176,11 +174,17 @@ describe("parsePreferences", () => {
   });
 
   it("defaults each field it cannot use", () => {
-    expect(parsePreferences({})).toEqual({ view: "grid", color: "ultramarine", cards: "cream" });
-    expect(parsePreferences({ view: "list", color: "chartreuse" })).toEqual({
+    expect(parsePreferences({})).toEqual({
+      view: "grid",
+      color: "ultramarine",
+      cards: "cream",
+      onboarded: false,
+    });
+    expect(parsePreferences({ view: "list", color: "chartreuse", onboarded: "yes" })).toEqual({
       view: "list",
       color: "ultramarine",
       cards: "cream",
+      onboarded: false,
     });
   });
 

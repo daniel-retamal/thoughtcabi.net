@@ -11,6 +11,7 @@ import {
   findFolder,
   firstChannel,
   folderContains,
+  isCabinetEmpty,
   locateFolder,
   locateNode,
   parentContainerName,
@@ -153,6 +154,15 @@ describe("counting and collecting", () => {
 
   it("finds nothing to carry when no paste is in flight", () => {
     expect(pendingPlacements(makeLibrary())).toEqual([]);
+  });
+
+  it("calls a cabinet empty only when no channel holds anything", () => {
+    expect(isCabinetEmpty([makeChannel("Saved")])).toBe(true);
+    expect(isCabinetEmpty([makeChannel("Saved"), makeChannel("Later")])).toBe(true);
+    expect(
+      isCabinetEmpty([makeChannel("Saved"), makeChannel("Later", [makeFolder("Empty")])]),
+    ).toBe(false);
+    expect(isCabinetEmpty(makeLibrary())).toBe(false);
   });
 
   it("detects containment at any depth", () => {

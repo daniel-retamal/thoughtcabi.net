@@ -28,6 +28,10 @@ export function firstChannel(library: Library): Channel {
   return channel;
 }
 
+export function isCabinetEmpty(library: Library): boolean {
+  return library.every((channel) => channel.children.length === 0);
+}
+
 export function findChannel(library: Library, channelId: NodeId): Channel | undefined {
   return library.find((channel) => channel.id === channelId);
 }

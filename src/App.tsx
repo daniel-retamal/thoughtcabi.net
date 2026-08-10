@@ -5,6 +5,7 @@ import { availableColors } from "@/domain/tags/tagLibrary";
 import {
   containerAt,
   firstChannel,
+  isCabinetEmpty,
   parentContainerName,
   pathToFolder,
   requireChannel,
@@ -35,7 +36,8 @@ import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { ContentToolbar } from "@/components/layout/ContentToolbar";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { LibraryContent } from "@/components/library/LibraryContent";
-import { EmptyState } from "@/components/feedback/EmptyState";
+import { EmptyPlate } from "@/components/feedback/EmptyPlate";
+import { EmptyQuiet } from "@/components/feedback/EmptyQuiet";
 import { StorageNotice } from "@/components/feedback/StorageNotice";
 import { ToastStack } from "@/components/feedback/ToastStack";
 import { Icon } from "@/components/primitives/Icon";
@@ -50,7 +52,7 @@ export interface AppProps {
 export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
   const { cabinet, dispatch, storageStatus } = useCabinet();
   const { library, tags } = cabinet;
-  const { preferences, setView, updateAppearance } = usePreferences();
+  const { preferences, setView, updateAppearance, markOnboarded } = usePreferences();
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [noticeDismissed, setNoticeDismissed] = useState(false);
 
@@ -61,11 +63,18 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
 
   const view = preferences.view;
   const viewState = useLibraryView(library, navigation.state, view);
+  const cabinetEmpty = isCabinetEmpty(library);
   const closeDialog = (): void => setDialog(null);
+  const openCompose = (): void => setDialog({ kind: "compose", mode: "new" });
 
   useEffect(() => {
     setNoticeDismissed(false);
   }, [storageStatus]);
+
+  useEffect(() => {
+    if (cabinetEmpty || preferences.onboarded) return;
+    markOnboarded();
+  }, [cabinetEmpty, preferences.onboarded, markOnboarded]);
 
   useSearchShortcut(searchRef);
   useLibraryDragAndDrop({ library, navigation, dispatch, pushToast });
@@ -201,6 +210,18 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
   const isEmpty = viewState.folders.length === 0 && viewState.notes.length === 0;
   const activeTagColor = tags.find((tag) => tag.name === navigation.state.activeTag)?.color;
 
+  const emptyState = isEmpty
+    ? emptyStateFor({
+        mode: viewState.mode,
+        query: navigation.state.query,
+        activeTag: navigation.state.activeTag,
+        channelName: viewState.channel.name,
+        inFolder: navigation.state.path.length > 0,
+        cabinetEmpty,
+        onboarded: preferences.onboarded,
+      })
+    : null;
+
   return (
     <div className="app">
       <AppHeader
@@ -210,7 +231,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
         onQueryChange={navigation.setQuery}
         onAppearanceChange={updateAppearance}
         onTransfer={() => setDialog({ kind: "transfer" })}
-        onCompose={() => setDialog({ kind: "compose", mode: "new" })}
+        onCompose={openCompose}
       />
 
       <div className="main">
@@ -243,6 +264,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
               noteCount={viewState.notes.length}
               folderCount={viewState.folders.length}
               view={view}
+              showTools={!cabinetEmpty}
               canCreateFolder={viewState.canReorder}
               onViewChange={setView}
               onNewFolder={() => setDialog({ kind: "new-folder" })}
@@ -266,8 +288,21 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
               )}
             </ContentToolbar>
 
-            {isEmpty ? (
-              <EmptyState {...emptyStateFor(viewState.mode, navigation.state)} />
+            {emptyState ? (
+              emptyState.kind === "plate" ? (
+                <EmptyPlate
+                  title={emptyState.title}
+                  text={emptyState.text}
+                  primer={emptyState.primer}
+                  onSaveLink={openCompose}
+                />
+              ) : (
+                <EmptyQuiet
+                  title={emptyState.title}
+                  text={emptyState.text}
+                  onClearSearch={emptyState.clearable ? () => navigation.setQuery("") : undefined}
+                />
+              )
             ) : (
               <div className="fade-swap" key={viewState.contentKey}>
                 <LibraryContent
@@ -298,6 +333,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
         onClose={closeDialog}
         onEditNote={(note) => setDialog({ kind: "compose", mode: "edit", note })}
         onSaveNote={saveNote}
+        onCreateTag={(name, color) => dispatch({ type: "tag/add", name, color })}
         onSaveChannel={saveChannel}
         onDeleteChannel={deleteChannel}
         onSaveTag={saveTag}

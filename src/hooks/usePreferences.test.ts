@@ -23,6 +23,7 @@ describe("usePreferences", () => {
       view: "grid",
       color: "ultramarine",
       cards: "cream",
+      onboarded: false,
     });
     expect(document.documentElement).toHaveAttribute("data-color", "ultramarine");
     expect(document.documentElement).toHaveAttribute("data-card-surface", "cream");
@@ -38,7 +39,17 @@ describe("usePreferences", () => {
       view: "list",
       color: "midnight",
       cards: "cream",
+      onboarded: false,
     });
+  });
+
+  it("remembers that the cabinet has been used, once", () => {
+    const { result } = renderHook(() => usePreferences());
+
+    act(() => result.current.markOnboarded());
+
+    expect(result.current.preferences.onboarded).toBe(true);
+    expect(localStorage.getItem(STORAGE_KEYS.preferences)).toContain('"onboarded":true');
   });
 
   it("keeps a remote color change when this tab changes the view", () => {
@@ -51,6 +62,7 @@ describe("usePreferences", () => {
       view: "list",
       color: "emerald",
       cards: "color",
+      onboarded: false,
     });
   });
 

@@ -1,6 +1,6 @@
 import { withoutPendingNotes } from "@/domain/library/mutations";
 import { DEFAULT_VIEW_MODE, type Cabinet, type Preferences } from "@/domain/model";
-import { createSeedLibrary, createSeedTags } from "@/domain/seed/seedLibrary";
+import { createStarterCabinet } from "@/domain/seed/starterCabinet";
 import { DEFAULT_APPEARANCE } from "@/theme/colors";
 import { STORAGE_KEYS } from "./keys";
 import { parseJson, readRaw, writeJson, writeRaw, type WriteOutcome } from "./localStore";
@@ -9,22 +9,19 @@ import { parseCabinet, parsePreferences } from "./parsers";
 
 export const DEFAULT_PREFERENCES: Preferences = {
   view: DEFAULT_VIEW_MODE,
+  onboarded: false,
   ...DEFAULT_APPEARANCE,
 };
 
-function seedCabinet(): Cabinet {
-  return { library: createSeedLibrary(), tags: createSeedTags() };
-}
-
 export function loadCabinet(): Cabinet {
   const raw = readRaw(STORAGE_KEYS.cabinet);
-  if (raw === null) return migrateCabinet() ?? seedCabinet();
+  if (raw === null) return migrateCabinet() ?? createStarterCabinet();
 
   const cabinet = parseJson(raw, parseCabinet);
   if (cabinet) return cabinet;
 
   writeRaw(STORAGE_KEYS.quarantine, raw);
-  return seedCabinet();
+  return createStarterCabinet();
 }
 
 export function saveCabinet(cabinet: Cabinet): WriteOutcome {

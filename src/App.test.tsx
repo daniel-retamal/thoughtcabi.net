@@ -5,10 +5,29 @@ import type { LinkPreview } from "@/domain/links/linkPreview";
 import { TAG_PALETTE } from "@/domain/tags/palette";
 import { serializeCabinet } from "@/storage/cabinetFile";
 import { STORAGE_KEYS } from "@/storage/keys";
+import { makeLibrary, makeTag } from "@/test/factories";
 import { App } from "./App";
 
 function sidebar(): HTMLElement {
   return document.querySelector("aside.sidebar") as HTMLElement;
+}
+
+function content(): HTMLElement {
+  return document.querySelector(".body-inner") as HTMLElement;
+}
+
+function withSaves(): void {
+  localStorage.setItem(
+    STORAGE_KEYS.cabinet,
+    JSON.stringify({
+      library: makeLibrary(),
+      tags: [
+        makeTag("To read", TAG_PALETTE[2]),
+        makeTag("Reference", TAG_PALETTE[4]),
+        makeTag("Later", TAG_PALETTE[5]),
+      ],
+    }),
+  );
 }
 
 function pasteText(text: string): void {
@@ -48,8 +67,51 @@ describe("App", () => {
     vi.restoreAllMocks();
   });
 
-  it("opens on the seeded library", () => {
+  it("opens a brand-new cabinet on one empty channel and teaches the gesture", () => {
     render(<App />);
+
+    expect(within(sidebar()).getByText("Saved")).toBeInTheDocument();
+    expect(screen.getByText("Your cabinet is empty.")).toBeInTheDocument();
+    expect(screen.getByText("Channels")).toBeInTheDocument();
+  });
+
+  it("acts on nothing with nothing: no count, no view switch, no new folder", () => {
+    render(<App />);
+
+    expect(screen.queryByLabelText("Row view")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("New folder")).not.toBeInTheDocument();
+    expect(document.querySelector(".count-pill")).toBeNull();
+  });
+
+  it("keeps the tools but drops the count in a channel that is merely empty", async () => {
+    withSaves();
+    render(<App />);
+
+    await userEvent.click(screen.getByText("Empty", { selector: ".folder-name" }));
+
+    expect(screen.getByLabelText("Row view")).toBeInTheDocument();
+    expect(document.querySelector(".count-pill")).toBeNull();
+  });
+
+  it("stops teaching once something has been saved, even after it is deleted", async () => {
+    render(<App />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+    await userEvent.type(screen.getByPlaceholderText("What is this?"), "A thought");
+    const compose = document.querySelector(".modal") as HTMLElement;
+    await userEvent.click(within(compose).getByRole("button", { name: /^save$/i }));
+
+    await userEvent.click(screen.getByLabelText("Remove"));
+
+    expect(screen.getByText("Nothing saved.")).toBeInTheDocument();
+    expect(screen.queryByText("Your cabinet is empty.")).not.toBeInTheDocument();
+    expect(screen.queryByText("Channels")).not.toBeInTheDocument();
+  });
+
+  it("opens on what was saved last time", () => {
+    withSaves();
+    render(<App />);
+
     expect(within(sidebar()).getByText("Reading")).toBeInTheDocument();
     expect(within(sidebar()).getByText("Research")).toBeInTheDocument();
     expect(screen.getByText("Essays")).toBeInTheDocument();
@@ -57,6 +119,7 @@ describe("App", () => {
   });
 
   it("drills into a folder and back out through the breadcrumbs", async () => {
+    withSaves();
     render(<App />);
     await userEvent.click(screen.getByText("Essays"));
 
@@ -69,13 +132,35 @@ describe("App", () => {
   });
 
   it("switches channels from the sidebar", async () => {
+    withSaves();
     render(<App />);
     await userEvent.click(within(sidebar()).getByText("Research"));
-    expect(screen.getByText("Method")).toBeInTheDocument();
+    expect(screen.getByText("Zettelkasten")).toBeInTheDocument();
     expect(screen.queryByText("Essays")).not.toBeInTheDocument();
   });
 
+  it("names the empty channel it is standing in", async () => {
+    withSaves();
+    render(<App />);
+
+    await userEvent.click(screen.getByLabelText("New channel"));
+    await userEvent.type(screen.getByPlaceholderText("e.g. Inspiration"), "Recipes");
+    await userEvent.click(screen.getByRole("button", { name: /create/i }));
+
+    expect(screen.getByText("Nothing in Recipes yet.")).toBeInTheDocument();
+    expect(screen.queryByText("Your cabinet is empty.")).not.toBeInTheDocument();
+  });
+
+  it("says which folder is empty from inside it", async () => {
+    withSaves();
+    render(<App />);
+    await userEvent.click(screen.getByText("Empty", { selector: ".folder-name" }));
+
+    expect(screen.getByText("This folder is empty.")).toBeInTheDocument();
+  });
+
   it("searches across every channel", async () => {
+    withSaves();
     render(<App />);
     await userEvent.type(screen.getByLabelText("Search your cabinet"), "zettelkasten");
 
@@ -83,13 +168,19 @@ describe("App", () => {
     expect(screen.getByText("Zettelkasten")).toBeInTheDocument();
   });
 
-  it("explains an empty search", async () => {
+  it("quotes a search that found nothing, and drops it again", async () => {
+    withSaves();
     render(<App />);
     await userEvent.type(screen.getByLabelText("Search your cabinet"), "qqqqzzz");
-    expect(screen.getByText("No matches")).toBeInTheDocument();
+    expect(screen.getByText("No matches for “qqqqzzz”.")).toBeInTheDocument();
+
+    const quiet = document.querySelector(".es-quiet") as HTMLElement;
+    await userEvent.click(within(quiet).getByRole("button", { name: "Clear search" }));
+    expect(screen.getByText("Essays")).toBeInTheDocument();
   });
 
   it("remembers the row view", async () => {
+    withSaves();
     render(<App />);
     await userEvent.click(screen.getByLabelText("Row view"));
 
@@ -98,6 +189,7 @@ describe("App", () => {
   });
 
   it("creates a folder and persists it", async () => {
+    withSaves();
     render(<App />);
     await userEvent.click(screen.getByLabelText("New folder"));
     await userEvent.type(screen.getByPlaceholderText("e.g. Read later"), "Inbox");
@@ -108,28 +200,37 @@ describe("App", () => {
   });
 
   it("creates a channel and opens it", async () => {
+    withSaves();
     render(<App />);
     await userEvent.click(screen.getByLabelText("New channel"));
     await userEvent.type(screen.getByPlaceholderText("e.g. Inspiration"), "Recipes");
     await userEvent.click(screen.getByRole("button", { name: /create/i }));
 
     expect(within(sidebar()).getByText("Recipes")).toBeInTheDocument();
-    expect(screen.getByText("Nothing here yet")).toBeInTheDocument();
+  });
+
+  it("offers the action instead of reporting the absence when there are no tags", async () => {
+    render(<App />);
+
+    await userEvent.click(within(sidebar()).getByRole("button", { name: "Add a tag" }));
+    expect(screen.getByPlaceholderText("e.g. To read")).toBeInTheDocument();
   });
 
   it("filters the library by tag and clears the filter again", async () => {
+    withSaves();
     render(<App />);
-    await userEvent.click(within(sidebar()).getByText("To read"));
-    expect(screen.getByText("Nothing tagged yet")).toBeInTheDocument();
+    await userEvent.click(within(sidebar()).getByText("Later"));
+    expect(screen.getByText("Nothing tagged Later.")).toBeInTheDocument();
 
-    await userEvent.click(within(sidebar()).getByText("To read"));
+    await userEvent.click(within(sidebar()).getByText("Later"));
     expect(screen.getByText("Essays")).toBeInTheDocument();
   });
 
   it("opens a note's detail and closes it again", async () => {
+    withSaves();
     render(<App />);
     await userEvent.click(screen.getByText("Essays"));
-    await userEvent.click(screen.getByText("How to Do Great Work"));
+    await userEvent.click(screen.getByText("On Rereading"));
 
     const modal = document.querySelector(".modal") as HTMLElement;
     expect(within(modal).getByText("In folder")).toBeInTheDocument();
@@ -141,7 +242,7 @@ describe("App", () => {
 
   it("saves a note by hand into the chosen destination", async () => {
     render(<App />);
-    await userEvent.click(screen.getByRole("button", { name: /save/i }));
+    await userEvent.click(screen.getByRole("button", { name: "Save" }));
     await userEvent.type(screen.getByPlaceholderText("What is this?"), "A thought worth keeping");
 
     const compose = document.querySelector(".modal") as HTMLElement;
@@ -149,6 +250,83 @@ describe("App", () => {
 
     expect(screen.getByText("A thought worth keeping")).toBeInTheDocument();
     expect(screen.getByText("Saved to")).toBeInTheDocument();
+  });
+
+  describe("deleting", () => {
+    function toast(): HTMLElement {
+      return document.querySelector(".toast") as HTMLElement;
+    }
+
+    function sidebarRow(name: string): HTMLElement {
+      return within(sidebar()).getByText(name).closest(".lib-row") as HTMLElement;
+    }
+
+    it("takes a card back out of the bin when asked", async () => {
+      withSaves();
+      render(<App />);
+
+      await userEvent.click(screen.getByText("Essays"));
+      const card = screen.getByText("On Rereading").closest(".card") as HTMLElement;
+      await userEvent.click(within(card).getByLabelText("Remove"));
+
+      expect(card).not.toBeInTheDocument();
+      expect(toast()).toHaveTextContent("Deleted On Rereading");
+
+      await userEvent.click(within(toast()).getByRole("button", { name: "Undo" }));
+      expect(within(content()).getByText("On Rereading")).toBeInTheDocument();
+    });
+
+    it("brings a whole channel back, contents and all", async () => {
+      withSaves();
+      render(<App />);
+
+      await userEvent.click(within(sidebarRow("Research")).getByLabelText("Edit channel"));
+      await userEvent.click(screen.getByRole("button", { name: /^delete$/i }));
+      await userEvent.click(screen.getByRole("button", { name: /delete 1 save\?/i }));
+
+      expect(within(sidebar()).queryByText("Research")).not.toBeInTheDocument();
+
+      await userEvent.click(within(toast()).getByRole("button", { name: "Undo" }));
+      await userEvent.click(within(sidebar()).getByText("Research"));
+      expect(screen.getByText("Zettelkasten")).toBeInTheDocument();
+    });
+
+    it("will not let the last channel go", async () => {
+      render(<App />);
+
+      await userEvent.click(within(sidebarRow("Saved")).getByLabelText("Edit channel"));
+
+      expect(screen.getByRole("button", { name: /delete/i })).toBeDisabled();
+      expect(screen.getByText(/keeps at least one channel/)).toBeInTheDocument();
+    });
+
+    it("gives a tag back to the cards that wore it", async () => {
+      withSaves();
+      render(<App />);
+
+      await userEvent.click(within(sidebarRow("To read")).getByLabelText("Edit tag"));
+      await userEvent.click(screen.getByRole("button", { name: /^delete$/i }));
+      expect(within(sidebar()).queryByText("To read")).not.toBeInTheDocument();
+
+      await userEvent.click(within(toast()).getByRole("button", { name: "Undo" }));
+      await userEvent.click(within(sidebar()).getByText("To read"));
+      expect(screen.getByText("On Rereading")).toBeInTheDocument();
+    });
+
+    it("asks on the folder itself before emptying it, then offers the way back", async () => {
+      withSaves();
+      render(<App />);
+
+      const tile = screen.getByText("Essays").closest(".folder-tile") as HTMLElement;
+      await userEvent.click(within(tile).getByLabelText("Delete folder"));
+      await userEvent.click(within(tile).getByRole("button", { name: "Delete" }));
+
+      expect(tile).not.toBeInTheDocument();
+      expect(toast()).toHaveTextContent("Deleted Essays");
+
+      await userEvent.click(within(toast()).getByRole("button", { name: "Undo" }));
+      expect(within(content()).getByText("Essays")).toBeInTheDocument();
+    });
   });
 
   it("shows a placeholder the moment a link is pasted, then fills it in", async () => {
@@ -309,10 +487,13 @@ describe("App", () => {
       await userEvent.click(screen.getByLabelText("Export and import"));
       await userEvent.click(screen.getByRole("button", { name: "Download" }));
 
-      expect(downloads).toEqual([expect.stringMatching(/^thoughtcabinet-\d{4}-\d{2}-\d{2}\.json$/)]);
+      expect(downloads).toEqual([
+        expect.stringMatching(/^thoughtcabinet-\d{4}-\d{2}-\d{2}\.json$/),
+      ]);
     });
 
     it("merges an imported file in beside what is already saved", async () => {
+      withSaves();
       render(<App />);
 
       await openTransfer();
@@ -326,6 +507,7 @@ describe("App", () => {
     });
 
     it("replaces the whole cabinet when asked to", async () => {
+      withSaves();
       render(<App />);
 
       await openTransfer();

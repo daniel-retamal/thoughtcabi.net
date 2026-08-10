@@ -144,5 +144,6 @@ export function parsePreferences(value: unknown): Preferences | null {
     view: parseViewMode(record.view) ?? DEFAULT_VIEW_MODE,
     color: toColorId(record.color ?? record.palette) ?? DEFAULT_APPEARANCE.color,
     cards: toCardSurface(record.cards) ?? DEFAULT_APPEARANCE.cards,
+    onboarded: record.onboarded === true,
   };
 }

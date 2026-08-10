@@ -8,6 +8,7 @@ export interface ContentToolbarProps {
   noteCount: number;
   folderCount: number;
   view: ViewMode;
+  showTools: boolean;
   canCreateFolder: boolean;
   onViewChange: (view: ViewMode) => void;
   onNewFolder: () => void;
@@ -18,18 +19,25 @@ export function ContentToolbar({
   noteCount,
   folderCount,
   view,
+  showTools,
   canCreateFolder,
   onViewChange,
   onNewFolder,
 }: ContentToolbarProps) {
+  if (!showTools) {
+    return <div className="toolbar">{children}</div>;
+  }
+
   return (
     <div className="toolbar">
       {children}
       <div className="tools-right">
-        <span className="count-pill">
-          {pluralize(noteCount, "item")}
-          {folderCount ? ` · ${folderCount} folders` : ""}
-        </span>
+        {noteCount + folderCount > 0 ? (
+          <span className="count-pill">
+            {pluralize(noteCount, "item")}
+            {folderCount ? ` · ${folderCount} folders` : ""}
+          </span>
+        ) : null}
 
         {canCreateFolder ? (
           <button

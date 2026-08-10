@@ -145,10 +145,37 @@
   height: 14px;
 }
 
-.lib-empty {
-  font-family: var(--font-ui);
-  font-size: 12.5px;
+.lib-ghost {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 8px 8px 11px;
+  border-radius: var(--r-md);
   color: var(--text-faint);
-  font-style: italic;
-  padding: 6px 12px;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  transition:
+    background 0.14s,
+    color 0.14s;
+}
+
+.lib-ghost:hover {
+  background: var(--surface-2);
+  color: var(--text-muted);
+}
+
+.lib-ghost .ring {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 1px dashed color-mix(in oklab, var(--text) 30%, transparent);
+}
+
+.lib-ghost .ring svg {
+  width: 13px;
+  height: 13px;
 }

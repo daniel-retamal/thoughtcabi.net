@@ -23,6 +23,7 @@ export interface ComposeModalProps {
   initialPreview: LinkPreview | null;
   readLink: LinkReader;
   onSave: (draft: NoteDraft, preview: LinkPreview | null) => void;
+  onCreateTag: (name: string, color: string) => void;
   onCancel: () => void;
 }
 
@@ -34,6 +35,7 @@ export function ComposeModal({
   initialPreview,
   readLink,
   onSave,
+  onCreateTag,
   onCancel,
 }: ComposeModalProps) {
   const isEditing = mode === "edit";
@@ -110,7 +112,7 @@ export function ComposeModal({
       </Field>
 
       <Field label="Tag" hint="— optional">
-        <TagPicker tags={tags} value={tag} onChange={setTag} />
+        <TagPicker tags={tags} value={tag} onChange={setTag} onCreate={onCreateTag} />
       </Field>
 
       <Field label="Description" hint="— optional">

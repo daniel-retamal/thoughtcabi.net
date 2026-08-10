@@ -1,6 +1,12 @@
 import type { Tag } from "@/domain/model";
 import { MAX_TAGS, TAG_PALETTE } from "./palette";
 
+export const TAG_SUGGESTIONS: readonly Tag[] = [
+  { name: "Inspiration", color: TAG_PALETTE[0] },
+  { name: "Read later", color: TAG_PALETTE[2] },
+  { name: "Reference", color: TAG_PALETTE[4] },
+];
+
 export function findTag(tags: readonly Tag[], name: string | null): Tag | undefined {
   if (!name) return undefined;
   return tags.find((tag) => tag.name === name);
