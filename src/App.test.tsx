@@ -292,6 +292,41 @@ describe("App", () => {
       expect(within(sidebar()).getAllByText("Research")).toHaveLength(1);
     });
 
+    it("undoes the last deletion from the keyboard", async () => {
+      withSaves();
+      render(<App />);
+
+      await userEvent.click(screen.getByText("Essays"));
+      const card = screen.getByText("On Rereading").closest(".card") as HTMLElement;
+      await userEvent.click(within(card).getByLabelText("Remove"));
+      expect(card).not.toBeInTheDocument();
+
+      await userEvent.keyboard("{Control>}z{/Control}");
+
+      expect(within(content()).getByText("On Rereading")).toBeInTheDocument();
+      expect(toast()).toBeNull();
+    });
+
+    it("leaves the keyboard undo alone once the toast has gone", async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      withSaves();
+      render(<App />);
+
+      await userEvent.click(screen.getByText("Essays"));
+      const card = screen.getByText("On Rereading").closest(".card") as HTMLElement;
+      await userEvent.click(within(card).getByLabelText("Remove"));
+
+      act(() => {
+        vi.advanceTimersByTime(9000);
+      });
+      expect(toast()).toBeNull();
+
+      await userEvent.keyboard("{Control>}z{/Control}");
+
+      expect(within(content()).queryByText("On Rereading")).not.toBeInTheDocument();
+      vi.useRealTimers();
+    });
+
     it("brings a whole channel back, contents and all", async () => {
       withSaves();
       render(<App />);

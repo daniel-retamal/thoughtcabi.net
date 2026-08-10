@@ -25,6 +25,7 @@ import { usePreferences } from "@/hooks/usePreferences";
 import { useSearchShortcut } from "@/hooks/useSearchShortcut";
 import { useToasts, type ToastAction } from "@/hooks/useToasts";
 import { useTransientIds } from "@/hooks/useTransientIds";
+import { useUndoShortcut } from "@/hooks/useUndoShortcut";
 import { useCabinet } from "@/state/useCabinet";
 import { useLibraryDragAndDrop } from "@/state/useLibraryDragAndDrop";
 import { useLibraryView, type FolderEntry } from "@/state/useLibraryView";
@@ -59,7 +60,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
   const [noticeDismissed, setNoticeDismissed] = useState(false);
 
   const navigation = useNavigation(requireChannel(library, "").id);
-  const { toasts, push: pushToast } = useToasts();
+  const { toasts, push: pushToast, undoable } = useToasts();
   const fresh = useTransientIds(FRESH_HIGHLIGHT_MS);
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -79,6 +80,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
   }, [cabinetEmpty, preferences.onboarded, markOnboarded]);
 
   useSearchShortcut(searchRef);
+  useUndoShortcut(undoable);
   useLibraryDragAndDrop({ library, navigation, dispatch, pushToast });
 
   const viewAction = (location: LibraryLocation, note?: Note): ToastAction => ({

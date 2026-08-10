@@ -1,4 +1,5 @@
 import { Icon } from "@/components/primitives/Icon";
+import { ModKey } from "@/components/primitives/ModKey";
 import { EmptyPrimer, type PrimerFact } from "./EmptyPrimer";
 
 export interface EmptyPlateProps {
@@ -13,7 +14,7 @@ export function EmptyPlate({ title, text, primer, onSaveLink }: EmptyPlateProps)
     <>
       <div className="es-plate">
         <span className="es-keys">
-          <kbd>Ctrl</kbd>
+          <ModKey />
           <kbd>V</kbd>
         </span>
         <h3>{title}</h3>

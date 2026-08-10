@@ -1,6 +1,7 @@
 import { useRef, useState, type RefObject } from "react";
 import type { Appearance } from "@/domain/model";
 import { Icon } from "@/components/primitives/Icon";
+import { ModKey } from "@/components/primitives/ModKey";
 import { DisplayPopover } from "@/components/display/DisplayPopover";
 
 export interface AppHeaderProps {
@@ -57,7 +58,7 @@ export function AppHeader({
             </button>
           ) : (
             <span className="kbd-hint">
-              <kbd>Ctrl</kbd>
+              <ModKey />
               <kbd>K</kbd>
             </span>
           )}

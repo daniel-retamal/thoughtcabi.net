@@ -1,12 +1,6 @@
 import { useEffect } from "react";
+import { isTypingInField } from "@/lib/textEntry";
 import { useLatest } from "./useLatest";
-
-const TEXT_ENTRY_TAGS = new Set(["INPUT", "TEXTAREA"]);
-
-function isTypingInField(): boolean {
-  const active = document.activeElement;
-  return active !== null && TEXT_ENTRY_TAGS.has(active.tagName);
-}
 
 export function useGlobalPaste(onText: (text: string) => boolean): void {
   const latest = useLatest(onText);

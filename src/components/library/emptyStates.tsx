@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { BrowseMode } from "@/state/useLibraryView";
 import type { PrimerFact } from "@/components/feedback/EmptyPrimer";
+import { ModKey } from "@/components/primitives/ModKey";
 
 export type EmptyStateCopy =
   | { kind: "plate"; title: string; text: string; primer: readonly PrimerFact[] | null }
@@ -79,7 +80,7 @@ export function emptyStateFor(context: EmptyStateContext): EmptyStateCopy {
     title: `Nothing in ${context.channelName} yet.`,
     text: (
       <>
-        Paste a link with <kbd>Ctrl</kbd>
+        Paste a link with <ModKey />
         <kbd>V</kbd>, or drag saves in from another channel.
       </>
     ),
