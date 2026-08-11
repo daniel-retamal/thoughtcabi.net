@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://thoughtcabi.net/sitemap.xml
