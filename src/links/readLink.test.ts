@@ -1,12 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ImageMeasurement } from "@/domain/links/imageCandidate";
-import { PUBLIC_RELAY, relayedUrl } from "./relay";
+import { relayedUrl } from "./relay";
 import { readLink, type ReadLinkDeps } from "./readLink";
 import type { ImageMeasurer } from "./measureImage";
 import type { Fetcher } from "./fetchText";
 
-const OWN_RELAY = "https://relay.example.workers.dev/?url=";
-const RELAYS = [OWN_RELAY, PUBLIC_RELAY];
+const OWN_RELAY = "/relay?url=";
+const SPARE_RELAY = "https://relay.example.com/?url=";
+const RELAYS = [OWN_RELAY, SPARE_RELAY];
 
 type Routes = Record<string, { body: string; status?: number }>;
 
@@ -70,13 +71,13 @@ describe("readLink", () => {
 
   it("falls through to the next relay when the first one fails", async () => {
     const url = "https://example.com/posts/quiet";
-    const fetcher = vi.fn(fetcherFor(relayRoute(url, ARTICLE_HTML, PUBLIC_RELAY)));
+    const fetcher = vi.fn(fetcherFor(relayRoute(url, ARTICLE_HTML, SPARE_RELAY)));
 
     const preview = await readLink(url, deps({ fetcher }));
 
     expect(preview?.title).toBe("The Quiet Revolution");
     expect(fetcher.mock.calls[0]?.[0]).toBe(relayedUrl(OWN_RELAY, url));
-    expect(fetcher.mock.calls[1]?.[0]).toBe(relayedUrl(PUBLIC_RELAY, url));
+    expect(fetcher.mock.calls[1]?.[0]).toBe(relayedUrl(SPARE_RELAY, url));
   });
 
   it("reads a youtube video straight from oembed, with no relay involved", async () => {

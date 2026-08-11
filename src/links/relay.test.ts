@@ -1,18 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
-import { PUBLIC_RELAY, fetchViaRelay, relayEndpoints, relayedUrl } from "./relay";
+import { RELAY, fetchViaRelay, relayEndpoints, relayedUrl } from "./relay";
 import type { Fetcher } from "./fetchText";
 
 describe("relayEndpoints", () => {
-  it("puts a configured relay ahead of the public one", () => {
-    expect(relayEndpoints("https://relay.example.workers.dev/?url=")).toEqual([
-      "https://relay.example.workers.dev/?url=",
-      PUBLIC_RELAY,
-    ]);
+  it("uses the relay on this origin by default", () => {
+    expect(relayEndpoints(undefined)).toEqual([RELAY]);
+    expect(relayEndpoints("   ")).toEqual([RELAY]);
   });
 
-  it("falls back to the public relay alone when none is configured", () => {
-    expect(relayEndpoints(undefined)).toEqual([PUBLIC_RELAY]);
-    expect(relayEndpoints("   ")).toEqual([PUBLIC_RELAY]);
+  it("uses a configured relay instead, and only that one", () => {
+    expect(relayEndpoints("https://relay.example.com/?url=")).toEqual([
+      "https://relay.example.com/?url=",
+    ]);
   });
 });
 

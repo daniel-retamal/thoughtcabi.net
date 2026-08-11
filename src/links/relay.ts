@@ -1,12 +1,12 @@
 import { fetchText, type Fetcher, type FetchOptions } from "./fetchText";
 
-export const PUBLIC_RELAY = "https://api.allorigins.win/raw?url={url}";
+export const RELAY = "/relay?url=";
 
 const URL_PLACEHOLDER = "{url}";
 
 export function relayEndpoints(configured = import.meta.env.VITE_LINK_RELAY): string[] {
   const own = configured?.trim();
-  return own ? [own, PUBLIC_RELAY] : [PUBLIC_RELAY];
+  return own ? [own] : [RELAY];
 }
 
 export function relayedUrl(endpoint: string, target: string): string {

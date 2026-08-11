@@ -10,11 +10,14 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
+  server: {
+    proxy: { "/relay": "http://127.0.0.1:8788" },
+  },
   test: {
     globals: true,
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
-    include: ["src/**/*.test.{ts,tsx}"],
+    include: ["src/**/*.test.{ts,tsx}", "relay/**/*.test.mjs"],
     restoreMocks: true,
     coverage: {
       provider: "v8",

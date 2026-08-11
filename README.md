@@ -164,19 +164,17 @@ the way — a web page cannot read a cross-origin response unless that origin al
 it, and almost none do. Discord solves this with a server-side crawler; WhatsApp
 solves it on your phone, where the rule does not apply.
 
-So generic pages are fetched through a relay: a stateless worker that hands over
-the bytes and nothing more. All the parsing happens here, in the browser, in
-`src/domain/links/`.
+So generic pages are fetched through a relay: a stateless service on the same
+origin that hands over the bytes and nothing more. It keeps no state and applies
+no rules — all the parsing happens here, in the browser, in `src/domain/links/`.
 
 ```sh
-cd worker && npx wrangler deploy
-echo 'VITE_LINK_RELAY=https://<your-worker>.workers.dev/?url=' > .env.local
+node relay/server.mjs   # one terminal
+npm run dev             # the other
 ```
 
-Cloudflare's free tier covers 100,000 relayed links a day, so this costs nothing to
-run. See `worker/README.md`. Without a relay configured the app falls back to a
-public proxy, and if that is unreachable too, a pasted link still becomes a card
-with its URL, domain and slug title.
+The dev server proxies `/relay` to it. When the relay cannot read a page, a
+pasted link still becomes a card with its URL, domain and slug title.
 
 Adding support for another site means one pure file under `src/domain/links/sites/`,
 one resolver under `src/links/resolvers/`, and one line in the resolver registry.

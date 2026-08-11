@@ -50,4 +50,18 @@ export default tseslint.config(
     extends: [tseslint.configs.disableTypeChecked],
     languageOptions: { globals: globals.node },
   },
+  {
+    files: ["relay/**/*.mjs"],
+    extends: [js.configs.recommended, tseslint.configs.disableTypeChecked],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: "module",
+      globals: { ...globals.node, ...globals.nodeBuiltin },
+    },
+    rules: {
+      eqeqeq: ["error", "always", { null: "ignore" }],
+      "prefer-const": "error",
+      "object-shorthand": "error",
+    },
+  },
 );
