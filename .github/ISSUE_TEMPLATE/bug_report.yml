@@ -1,0 +1,36 @@
+name: Bug report
+description: Something behaves differently than it should.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: The behaviour you saw, and the behaviour you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open a fresh cabinet
+        2. Paste a link
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: Firefox 130, Windows 11
+  - type: input
+    id: url
+    attributes:
+      label: The link involved, if there is one
+      description: A public URL, since it will be visible to everyone.
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Screenshots and console output both help.

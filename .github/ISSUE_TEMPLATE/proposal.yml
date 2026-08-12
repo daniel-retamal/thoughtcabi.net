@@ -1,0 +1,17 @@
+name: Proposal
+description: A change to what the app does, or how it looks.
+labels: [proposal]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What you were trying to do, and where the app got in the way.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would change
+    validations:
+      required: true
