@@ -1,0 +1,42 @@
+name: deploy
+on:
+  push:
+    branches: [main]
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+jobs:
+  verify:
+    uses: ./.github/workflows/verify.yml
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build
+      - name: SSH setup
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+      - name: Ship the site
+        run: |
+          REL=/var/www/thoughtcabi.net/releases/${{ github.sha }}
+          ssh deploy@${{ secrets.SSH_HOST }} "mkdir -p $REL"
+          rsync -az --delete dist/ deploy@${{ secrets.SSH_HOST }}:$REL/
+          ssh deploy@${{ secrets.SSH_HOST }} "ln -sfn $REL /var/www/thoughtcabi.net/current.new && mv -T /var/www/thoughtcabi.net/current.new /var/www/thoughtcabi.net/current"
+      - name: Ship the relay
+        run: |
+          rsync -az --exclude '*.test.mjs' relay/ deploy@${{ secrets.SSH_HOST }}:/opt/link-relay/
+          ssh deploy@${{ secrets.SSH_HOST }} "sudo systemctl restart link-relay"
+      - name: Smoke test
+        run: |
+          sleep 3
+          curl -fsS -o /dev/null https://thoughtcabi.net
+          curl -fsS -o /dev/null "https://thoughtcabi.net/relay?url=https%3A%2F%2Fexample.com"
+      - name: Prune old releases
+        run: ssh deploy@${{ secrets.SSH_HOST }} "ls -1dt /var/www/thoughtcabi.net/releases/* | tail -n +6 | xargs -r rm -rf"
