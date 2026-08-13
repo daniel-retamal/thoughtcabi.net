@@ -1,6 +1,6 @@
 .card {
   position: relative;
-  height: 341px;
+  height: 349px;
   border-radius: var(--r-lg);
   background: var(--surface);
   overflow: hidden;
@@ -14,7 +14,7 @@
   flex: none;
   margin: 9px 9px 0;
   width: auto;
-  height: 146px;
+  aspect-ratio: 16 / 10;
   border-radius: 7px;
   overflow: hidden;
 }

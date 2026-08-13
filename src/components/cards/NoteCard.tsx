@@ -11,7 +11,7 @@ import type { NoteHandlers } from "@/components/handlers";
 import { NoteActions } from "./NodeActions";
 import { Thumbnail } from "./Thumbnail";
 
-const COVER_WIDTH = "300px";
+const COVER_WIDTH = "264px";
 const DESC_LINE_HEIGHT = 23;
 const RESERVED_DESC_LINES = 2;
 
