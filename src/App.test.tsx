@@ -188,16 +188,15 @@ describe("App", () => {
     expect(localStorage.getItem(STORAGE_KEYS.preferences)).toContain('"view":"list"');
   });
 
-  it("narrows the page to a reading measure in rows, and widens it again in grid", async () => {
+  it("keeps one plate for both views, so switching moves nothing but the items", async () => {
     withSaves();
     render(<App />);
-    expect(content()).not.toHaveClass("reading");
+    const plate = content().className;
 
     await userEvent.click(screen.getByLabelText("Row view"));
-    expect(content()).toHaveClass("reading");
 
-    await userEvent.click(screen.getByLabelText("Grid view"));
-    expect(content()).not.toHaveClass("reading");
+    expect(document.querySelector(".notes-list")).toBeInTheDocument();
+    expect(content().className).toBe(plate);
   });
 
   it("creates a folder and persists it", async () => {

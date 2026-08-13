@@ -277,7 +277,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
 
         <div className="body">
           <div
-            className={view === "list" ? "body-inner reading" : "body-inner"}
+            className="body-inner"
             {...(viewState.canReorder ? locationDropProps(navigation.location) : {})}
           >
             {storageStatus !== "ok" && !noticeDismissed ? (

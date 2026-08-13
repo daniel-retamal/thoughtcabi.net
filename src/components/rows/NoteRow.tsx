@@ -58,6 +58,10 @@ export function NoteRow({
         {note.description ? <div className="row-desc">{note.description}</div> : null}
       </div>
 
+      <div className="row-kind">
+        {hasLink ? <span className="cat-chip">{note.catLabel}</span> : null}
+      </div>
+
       <div className="row-tag-slot">{tag ? <TagBadge tag={tag} className="row-tag" /> : null}</div>
 
       <div className="row-dom">
