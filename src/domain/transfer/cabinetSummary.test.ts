@@ -20,7 +20,13 @@ describe("summarizeCabinet", () => {
   });
 
   it("ignores a link that is still being read", () => {
-    const pending: PendingNote = { id: "p", type: "note", url: "https://a.com", loading: true };
+    const pending: PendingNote = {
+      id: "p",
+      type: "note",
+      url: "https://a.com",
+      addedAt: 1_700_000_000_000,
+      loading: true,
+    };
     const library = [makeChannel("Inbox", [makeNote(), pending])];
 
     expect(summarizeCabinet(library, [])).toMatchObject({ notes: 1 });

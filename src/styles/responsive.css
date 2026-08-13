@@ -1,7 +1,30 @@
-@media (max-width: 900px) {
-  .row-tag-slot,
+@container (max-width: 932px) {
+  .row-time {
+    display: none;
+  }
+}
+
+@container (max-width: 844px) {
   .row-dom {
     display: none;
+  }
+}
+
+@container (max-width: 638px) {
+  .row-item {
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+
+  .row-main {
+    flex-basis: calc(100% - 88px);
+  }
+
+  .row-tag-slot {
+    flex-basis: 100%;
+    width: auto;
+    height: 21px;
+    margin-left: 88px;
   }
 }
 
@@ -27,6 +50,8 @@
   }
 
   .body-inner {
-    padding: 18px 18px 80px;
+    --page-pad: 18px;
+    padding-top: 18px;
+    padding-bottom: 80px;
   }
 }

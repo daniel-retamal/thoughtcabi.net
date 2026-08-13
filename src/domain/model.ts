@@ -30,6 +30,7 @@ export interface PendingNote {
   id: NodeId;
   type: "note";
   url: string;
+  addedAt: number;
   loading: true;
 }
 

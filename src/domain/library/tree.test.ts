@@ -131,7 +131,13 @@ describe("counting and collecting", () => {
   it("collects notes recursively but skips pending placeholders", () => {
     const folder = makeFolder("Root", [
       makeNote({ id: "n1" }),
-      { id: "pending", type: "note", url: "https://example.com/x", loading: true },
+      {
+        id: "pending",
+        type: "note",
+        url: "https://example.com/x",
+        addedAt: 1_700_000_000_000,
+        loading: true,
+      },
       makeFolder("Nested", [makeNote({ id: "n2" })]),
     ]);
     expect(collectNotes(folder).map((note) => note.id)).toEqual(["n1", "n2"]);
@@ -156,8 +162,20 @@ describe("counting and collecting", () => {
 
   it("finds every placeholder still in flight, with the location to put it back", () => {
     const library = makeLibrary();
-    const pending = { id: "pending", type: "note", url: "https://example.com/x", loading: true };
-    const nested = { id: "nested", type: "note", url: "https://example.com/y", loading: true };
+    const pending = {
+      id: "pending",
+      type: "note",
+      url: "https://example.com/x",
+      addedAt: 1_700_000_000_000,
+      loading: true,
+    };
+    const nested = {
+      id: "nested",
+      type: "note",
+      url: "https://example.com/y",
+      addedAt: 1_700_000_000_000,
+      loading: true,
+    };
 
     library[0]?.children.push(pending as never);
     const essays = library[0]?.children.find(isFolder);

@@ -10,7 +10,7 @@ import { Thumbnail } from "@/components/cards/Thumbnail";
 import { Modal } from "./Modal";
 
 const COPIED_FEEDBACK_MS = 1400;
-const COVER_WIDTH = "640px";
+const SHOT_WIDTH = "min(612px, 88vw)";
 
 export interface NoteDetailModalProps {
   note: Note;
@@ -36,9 +36,7 @@ export function NoteDetailModal({ note, tags, location, onEdit, onClose }: NoteD
         <Icon name="x" />
       </button>
 
-      {hasThumbnail(note) ? (
-        <Thumbnail note={note} sizes={COVER_WIDTH} capResolution />
-      ) : null}
+      {hasThumbnail(note) ? <Thumbnail note={note} sizes={SHOT_WIDTH} natural /> : null}
 
       <div className="modal-body">
         <div className="m-cat">

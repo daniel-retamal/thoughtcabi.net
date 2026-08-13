@@ -6,10 +6,10 @@ import {
   type Tag,
   type ViewMode,
 } from "@/domain/model";
+import { provisionalNote } from "@/domain/notes/provisionalNote";
 import { zoneProps } from "@/dnd/dragProps";
 import { FolderTile } from "@/components/cards/FolderTile";
 import { NoteCard } from "@/components/cards/NoteCard";
-import { PendingCard } from "@/components/cards/PendingCard";
 import { FolderRow } from "@/components/rows/FolderRow";
 import { NoteRow } from "@/components/rows/NoteRow";
 import type { FolderHandlers, NoteHandlers } from "@/components/handlers";
@@ -45,17 +45,16 @@ export function LibraryContent({
         {folders.map((folder) => (
           <FolderRow key={folder.id} folder={folder} {...folderHandlers} />
         ))}
-        {notes.map((note) =>
-          isPendingNote(note) ? null : (
-            <NoteRow
-              key={note.id}
-              note={note}
-              tags={tags}
-              fresh={isFresh(note.id)}
-              {...noteHandlers}
-            />
-          ),
-        )}
+        {notes.map((note) => (
+          <NoteRow
+            key={note.id}
+            note={isPendingNote(note) ? provisionalNote(note) : note}
+            tags={tags}
+            fresh={isFresh(note.id)}
+            pending={isPendingNote(note)}
+            {...noteHandlers}
+          />
+        ))}
       </div>
     );
   }
@@ -77,19 +76,16 @@ export function LibraryContent({
         <>
           <SectionHeading icon="bookmark" label="Items" />
           <div className="notes-grid" {...gridZone}>
-            {notes.map((note) =>
-              isPendingNote(note) ? (
-                <PendingCard key={note.id} url={note.url} />
-              ) : (
-                <NoteCard
-                  key={note.id}
-                  note={note}
-                  tags={tags}
-                  fresh={isFresh(note.id)}
-                  {...noteHandlers}
-                />
-              ),
-            )}
+            {notes.map((note) => (
+              <NoteCard
+                key={note.id}
+                note={isPendingNote(note) ? provisionalNote(note) : note}
+                tags={tags}
+                fresh={isFresh(note.id)}
+                pending={isPendingNote(note)}
+                {...noteHandlers}
+              />
+            ))}
           </div>
         </>
       ) : null}

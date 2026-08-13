@@ -26,6 +26,7 @@ describe("the cabinet", () => {
       id: "pending",
       type: "note",
       url: "https://example.com/in-flight",
+      addedAt: 1_700_000_000_000,
       loading: true,
     });
 

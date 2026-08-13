@@ -48,10 +48,24 @@ describe("parseLibrary", () => {
       {
         id: "c",
         name: "C",
-        children: [{ id: "p", type: "note", url: "https://example.com/x", loading: true }],
+        children: [
+          {
+            id: "p",
+            type: "note",
+            url: "https://example.com/x",
+            addedAt: 1_700_000_000_000,
+            loading: true,
+          },
+        ],
       },
     ])?.[0]?.children[0];
-    expect(node).toEqual({ id: "p", type: "note", url: "https://example.com/x", loading: true });
+    expect(node).toEqual({
+      id: "p",
+      type: "note",
+      url: "https://example.com/x",
+      addedAt: 1_700_000_000_000,
+      loading: true,
+    });
   });
 
   it("drops children that carry no id", () => {

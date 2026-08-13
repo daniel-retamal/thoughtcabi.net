@@ -49,7 +49,15 @@ function parseNote(value: JsonRecord): NoteEntry | null {
   const id = str(value.id);
   if (!id) return null;
 
-  if (value.loading === true) return { id, type: "note", url: str(value.url), loading: true };
+  if (value.loading === true) {
+    return {
+      id,
+      type: "note",
+      url: str(value.url),
+      addedAt: num(value.addedAt, Date.now()),
+      loading: true,
+    };
+  }
 
   const note: Note = {
     id,

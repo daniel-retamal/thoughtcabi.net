@@ -33,6 +33,7 @@ describe("pending notes", () => {
       location: READING_ROOT,
       id: "pending",
       url: "https://example.com/a-page",
+      addedAt: 1_700_000_000_000,
     });
     const placeholder = findNode(withPlaceholder.library, "pending");
     expect(placeholder && isPendingNote(placeholder)).toBe(true);
@@ -50,6 +51,7 @@ describe("pending notes", () => {
       location: READING_ROOT,
       id: "pending",
       url: "https://example.com/a-page",
+      addedAt: 1_700_000_000_000,
     });
     expect(findNode(state.library, "pending")).toMatchObject({
       url: "https://example.com/a-page",
@@ -59,7 +61,13 @@ describe("pending notes", () => {
   it("ignores a resolution for a placeholder that was already deleted", () => {
     const state = reduce(
       initialState(),
-      { type: "note/addPending", location: READING_ROOT, id: "pending", url: "https://a.com/b" },
+      {
+        type: "note/addPending",
+        location: READING_ROOT,
+        id: "pending",
+        url: "https://a.com/b",
+        addedAt: 1_700_000_000_000,
+      },
       { type: "node/remove", id: "pending" },
       { type: "note/resolvePending", note: makeNote({ id: "pending", title: "Too late" }) },
     );
@@ -249,6 +257,7 @@ describe("adopting another tab's cabinet", () => {
       location: READING_ROOT,
       id: "pending",
       url: "https://example.com/in-flight",
+      addedAt: 1_700_000_000_000,
     });
 
     const adopted = reduce(pasted, { type: "cabinet/adopt", cabinet: initialState() });
@@ -264,6 +273,7 @@ describe("adopting another tab's cabinet", () => {
       location: READING_ROOT,
       id: "pending",
       url: "https://example.com/in-flight",
+      addedAt: 1_700_000_000_000,
     });
 
     const adopted = reduce(pasted, { type: "cabinet/adopt", cabinet: remoteCabinet() });
@@ -308,6 +318,7 @@ describe("importing a cabinet file", () => {
       location: READING_ROOT,
       id: "pending",
       url: "https://example.com/in-flight",
+      addedAt: 1_700_000_000_000,
     });
 
     const next = reduce(pasted, {

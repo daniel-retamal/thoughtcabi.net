@@ -25,7 +25,13 @@ export type CabinetAction =
   | { type: "cabinet/adopt"; cabinet: Cabinet }
   | { type: "cabinet/replace"; cabinet: Cabinet }
   | { type: "cabinet/merge"; cabinet: Cabinet }
-  | { type: "note/addPending"; location: LibraryLocation; id: NodeId; url: string }
+  | {
+      type: "note/addPending";
+      location: LibraryLocation;
+      id: NodeId;
+      url: string;
+      addedAt: number;
+    }
   | { type: "note/resolvePending"; note: Note }
   | { type: "note/add"; location: LibraryLocation; note: Note }
   | { type: "note/move"; location: LibraryLocation; note: Note }
@@ -82,6 +88,7 @@ export function cabinetReducer(state: Cabinet, action: CabinetAction): Cabinet {
           id: action.id,
           type: "note",
           url: action.url,
+          addedAt: action.addedAt,
           loading: true,
         }),
       );

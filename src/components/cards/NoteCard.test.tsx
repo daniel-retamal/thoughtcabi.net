@@ -79,6 +79,14 @@ describe("NoteCard", () => {
     expect(container.querySelector(".icon-cover")).toBeNull();
   });
 
+  it("declares the tile's width, which is what the frame really is", () => {
+    const { container } = renderCard(
+      makeNote({ siteImage: "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg" }),
+    );
+
+    expect(container.querySelector(".img-cover img")).toHaveAttribute("sizes", "264px");
+  });
+
   it("never puts a monogram on a card", () => {
     const { container } = renderCard(makeNote({ favicon: "https://example.com/gone.png" }));
 

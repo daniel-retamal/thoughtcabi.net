@@ -1,0 +1,8 @@
+.notes-grid,
+.folder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, min(var(--tile-w), 100%));
+  gap: var(--tile-gap);
+  justify-content: center;
+  align-items: stretch;
+}

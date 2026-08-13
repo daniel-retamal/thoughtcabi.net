@@ -1,4 +1,5 @@
 .notes-list {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: 0;

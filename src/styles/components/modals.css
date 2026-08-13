@@ -55,11 +55,6 @@
   width: min(540px, 100%);
 }
 
-.modal .cover {
-  height: 230px;
-  flex: none;
-}
-
 .modal-close {
   position: absolute;
   top: 16px;

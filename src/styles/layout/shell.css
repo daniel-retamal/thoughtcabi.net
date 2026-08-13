@@ -23,7 +23,12 @@
 }
 
 .body-inner {
-  width: min(1180px, 100%);
+  --content-max: var(--grid-max);
+  width: min(calc(var(--content-max) + var(--page-pad) * 2), 100%);
   margin: 0 auto;
-  padding: 22px 34px 90px;
+  padding: 22px var(--page-pad) 90px;
+}
+
+.body-inner.reading {
+  --content-max: var(--list-max);
 }

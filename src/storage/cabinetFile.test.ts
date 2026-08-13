@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 import { makeChannel, makeLibrary, makeNote, makeTag } from "@/test/factories";
 import type { Cabinet, PendingNote } from "@/domain/model";
 import { TAG_PALETTE } from "@/domain/tags/palette";
-import { CABINET_FILE_VERSION, cabinetFileName, readCabinetFile, serializeCabinet } from "./cabinetFile";
+import {
+  CABINET_FILE_VERSION,
+  cabinetFileName,
+  readCabinetFile,
+  serializeCabinet,
+} from "./cabinetFile";
 
 const EXPORTED_AT = Date.UTC(2026, 7, 8, 14, 30);
 
@@ -36,7 +41,13 @@ describe("serializeCabinet", () => {
   });
 
   it("leaves out a link that had not finished loading", () => {
-    const pending: PendingNote = { id: "p", type: "note", url: "https://a.com", loading: true };
+    const pending: PendingNote = {
+      id: "p",
+      type: "note",
+      url: "https://a.com",
+      addedAt: 1_700_000_000_000,
+      loading: true,
+    };
     const written = serializeCabinet(
       { library: [makeChannel("Inbox", [makeNote({ id: "real" }), pending])], tags: [] },
       EXPORTED_AT,

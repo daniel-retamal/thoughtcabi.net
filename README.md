@@ -63,7 +63,7 @@ React 18, TypeScript, Vite. Nothing to start on the side, though `node relay/ser
 ## Roadmap
 
 - [ ] Spanish translation
-- [ ] Google Drive as an export destination
+- [ ] External storage. Keep one cabinet in a place you own, and open it from any machine
 - [ ] More shades of blue. The four currently in the app are cleared by the Moralintern for civilian use; anything deeper is still before the Commission, and the greens were a concession.
 
 ## Contributing

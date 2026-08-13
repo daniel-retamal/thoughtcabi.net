@@ -106,7 +106,15 @@ describe("patchNotes", () => {
     const library: Library = [
       makeChannel(
         "C",
-        [{ id: "pending", type: "note", url: "https://example.com/x", loading: true }],
+        [
+          {
+            id: "pending",
+            type: "note",
+            url: "https://example.com/x",
+            addedAt: 1_700_000_000_000,
+            loading: true,
+          },
+        ],
         "c",
       ),
     ];
@@ -115,6 +123,7 @@ describe("patchNotes", () => {
       id: "pending",
       type: "note",
       url: "https://example.com/x",
+      addedAt: 1_700_000_000_000,
       loading: true,
     });
   });
@@ -250,11 +259,23 @@ describe("withoutPendingNotes", () => {
         "C",
         [
           makeNote({ id: "real" }),
-          { id: "p1", type: "note", url: "https://example.com/a", loading: true },
+          {
+            id: "p1",
+            type: "note",
+            url: "https://example.com/a",
+            addedAt: 1_700_000_000_000,
+            loading: true,
+          },
           makeFolder(
             "F",
             [
-              { id: "p2", type: "note", url: "https://example.com/b", loading: true },
+              {
+                id: "p2",
+                type: "note",
+                url: "https://example.com/b",
+                addedAt: 1_700_000_000_000,
+                loading: true,
+              },
               makeNote({ id: "nested" }),
             ],
             "folder-f",

@@ -107,7 +107,6 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     readLink,
     dispatch,
     onSaved: (note, folder, location) => {
-      fresh.mark(note.id);
       pushToast({ subject: folder, action: viewAction(location, note) });
     },
   });
@@ -278,7 +277,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
 
         <div className="body">
           <div
-            className="body-inner"
+            className={view === "list" ? "body-inner reading" : "body-inner"}
             {...(viewState.canReorder ? locationDropProps(navigation.location) : {})}
           >
             {storageStatus !== "ok" && !noticeDismissed ? (

@@ -9,6 +9,7 @@
 @import "./layout/toolbar.css";
 
 @import "./components/thumbnails.css";
+@import "./components/tiles.css";
 @import "./components/cards.css";
 @import "./components/folders.css";
 @import "./components/rows.css";

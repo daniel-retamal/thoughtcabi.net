@@ -45,7 +45,15 @@ describe("searchLibrary", () => {
     const library = [
       makeChannel(
         "C",
-        [{ id: "pending", type: "note", url: "https://example.com/x", loading: true }],
+        [
+          {
+            id: "pending",
+            type: "note",
+            url: "https://example.com/x",
+            addedAt: 1_700_000_000_000,
+            loading: true,
+          },
+        ],
         "c",
       ),
     ];

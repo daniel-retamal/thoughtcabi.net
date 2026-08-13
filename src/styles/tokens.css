@@ -13,6 +13,15 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --sidebar-w: 268px;
   --header-h: 62px;
+  --tile-w: 264px;
+  --tile-gap: 18px;
+  --grid-columns: 6;
+  --grid-max: calc(
+    var(--grid-columns) * var(--tile-w) + (var(--grid-columns) - 1) * var(--tile-gap)
+  );
+  --list-max: 1120px;
+  --list-measure: 580px;
+  --page-pad: 34px;
 
   --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='180' height='180' filter='url(%23n)' opacity='0.5'/></svg>");
 }
