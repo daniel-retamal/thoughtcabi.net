@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { makeChannel, makeLibrary, makeNote, makeTag } from "@/test/factories";
+import { makeLibrary, makeNote, makeShelf, makeTag } from "@/test/factories";
 import type { Cabinet, PendingNote } from "@/domain/model";
 import { TAG_PALETTE } from "@/domain/tags/palette";
 import {
@@ -49,7 +49,7 @@ describe("serializeCabinet", () => {
       loading: true,
     };
     const written = serializeCabinet(
-      { library: [makeChannel("Inbox", [makeNote({ id: "real" }), pending])], tags: [] },
+      { library: [makeShelf("Inbox", [makeNote({ id: "real" }), pending])], tags: [] },
       EXPORTED_AT,
     );
 
@@ -93,7 +93,7 @@ describe("readCabinetFile", () => {
     });
   });
 
-  it("reports a file with no channels in it", () => {
+  it("reports a file with no shelves in it", () => {
     expect(readCabinetFile(envelope({ cabinet: { library: [], tags: [] } }))).toEqual({
       ok: false,
       problem: "empty",

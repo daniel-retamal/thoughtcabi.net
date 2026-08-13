@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { LibraryLocation, NodeId } from "@/domain/model";
 
 export interface NavigationState {
-  channelId: NodeId;
+  shelfId: NodeId;
   path: NodeId[];
   query: string;
   activeTag: string | null;
@@ -11,8 +11,8 @@ export interface NavigationState {
 export interface Navigation {
   state: NavigationState;
   location: LibraryLocation;
-  openChannel: (channelId: NodeId) => void;
-  enterChannel: (channelId: NodeId) => void;
+  openShelf: (shelfId: NodeId) => void;
+  enterShelf: (shelfId: NodeId) => void;
   openFolder: (folderId: NodeId) => void;
   goTo: (location: LibraryLocation) => void;
   jumpToDepth: (depth: number) => void;
@@ -23,20 +23,20 @@ export interface Navigation {
   restore: (state: NavigationState) => void;
 }
 
-export function useNavigation(initialChannelId: NodeId): Navigation {
+export function useNavigation(initialShelfId: NodeId): Navigation {
   const [state, setState] = useState<NavigationState>({
-    channelId: initialChannelId,
+    shelfId: initialShelfId,
     path: [],
     query: "",
     activeTag: null,
   });
 
-  const openChannel = useCallback((channelId: NodeId) => {
-    setState({ channelId, path: [], query: "", activeTag: null });
+  const openShelf = useCallback((shelfId: NodeId) => {
+    setState({ shelfId, path: [], query: "", activeTag: null });
   }, []);
 
-  const enterChannel = useCallback((channelId: NodeId) => {
-    setState((current) => ({ ...current, channelId, path: [] }));
+  const enterShelf = useCallback((shelfId: NodeId) => {
+    setState((current) => ({ ...current, shelfId, path: [] }));
   }, []);
 
   const openFolder = useCallback((folderId: NodeId) => {
@@ -50,7 +50,7 @@ export function useNavigation(initialChannelId: NodeId): Navigation {
 
   const goTo = useCallback((location: LibraryLocation) => {
     setState({
-      channelId: location.channelId,
+      shelfId: location.shelfId,
       path: [...location.path],
       query: "",
       activeTag: null,
@@ -86,15 +86,15 @@ export function useNavigation(initialChannelId: NodeId): Navigation {
   }, []);
 
   const location = useMemo<LibraryLocation>(
-    () => ({ channelId: state.channelId, path: state.path }),
-    [state.channelId, state.path],
+    () => ({ shelfId: state.shelfId, path: state.path }),
+    [state.shelfId, state.path],
   );
 
   return {
     state,
     location,
-    openChannel,
-    enterChannel,
+    openShelf,
+    enterShelf,
     openFolder,
     goTo,
     jumpToDepth,

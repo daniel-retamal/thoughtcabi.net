@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { makeChannel, makeLibrary, makeNote, makeTag } from "@/test/factories";
+import { makeLibrary, makeNote, makeShelf, makeTag } from "@/test/factories";
 import { containerAt, findNode, locateNode, placementOf } from "@/domain/library/tree";
 import { isFolder, isPendingNote, type Cabinet, type Note } from "@/domain/model";
 import { TAG_PALETTE } from "@/domain/tags/palette";
@@ -24,7 +24,7 @@ function noteAt(state: Cabinet, id: string): Note | undefined {
   return node && !isFolder(node) && node.loading !== true ? node : undefined;
 }
 
-const READING_ROOT = { channelId: "channel-reading", path: [] };
+const READING_ROOT = { shelfId: "shelf-reading", path: [] };
 
 describe("pending notes", () => {
   it("adds a placeholder and swaps in the real note", () => {
@@ -88,11 +88,11 @@ describe("note commands", () => {
   it("moves an edited note to its new destination", () => {
     const next = reduce(initialState(), {
       type: "note/move",
-      location: { channelId: "channel-research", path: [] },
+      location: { shelfId: "shelf-research", path: [] },
       note: makeNote({ id: "note-a", title: "Edited" }),
     });
     expect(locateNode(next.library, "note-a")).toEqual({
-      channelId: "channel-research",
+      shelfId: "shelf-research",
       path: [],
     });
     expect(noteAt(next, "note-a")?.title).toBe("Edited");
@@ -146,38 +146,38 @@ describe("folder commands", () => {
   });
 });
 
-describe("channel commands", () => {
-  it("adds, updates, reorders and removes channels", () => {
+describe("shelf commands", () => {
+  it("adds, updates, reorders and removes shelves", () => {
     const state = reduce(
       initialState(),
-      { type: "channel/add", channel: { id: "new", name: "New", icon: "star", children: [] } },
-      { type: "channel/update", id: "new", name: "Renamed", icon: "heart" },
-      { type: "channel/reorder", id: "new", beforeId: "channel-reading" },
+      { type: "shelf/add", shelf: { id: "new", name: "New", icon: "star", children: [] } },
+      { type: "shelf/update", id: "new", name: "Renamed", icon: "heart" },
+      { type: "shelf/reorder", id: "new", beforeId: "shelf-reading" },
     );
-    expect(state.library.map((channel) => channel.id)).toEqual([
+    expect(state.library.map((shelf) => shelf.id)).toEqual([
       "new",
-      "channel-reading",
-      "channel-research",
+      "shelf-reading",
+      "shelf-research",
     ]);
     expect(state.library[0]?.name).toBe("Renamed");
 
-    const removed = reduce(state, { type: "channel/remove", id: "new" });
-    expect(removed.library.map((channel) => channel.id)).toEqual([
-      "channel-reading",
-      "channel-research",
+    const removed = reduce(state, { type: "shelf/remove", id: "new" });
+    expect(removed.library.map((shelf) => shelf.id)).toEqual([
+      "shelf-reading",
+      "shelf-research",
     ]);
   });
 
-  it("puts a deleted channel back where it stood, contents and all", () => {
+  it("puts a deleted shelf back where it stood, contents and all", () => {
     const state = initialState();
-    const channel = state.library[0]!;
+    const shelf = state.library[0]!;
 
-    const removed = reduce(state, { type: "channel/remove", id: channel.id });
-    const restored = reduce(removed, { type: "channel/restore", index: 0, channel });
+    const removed = reduce(state, { type: "shelf/remove", id: shelf.id });
+    const restored = reduce(removed, { type: "shelf/restore", index: 0, shelf });
 
     expect(restored.library.map((entry) => entry.id)).toEqual([
-      "channel-reading",
-      "channel-research",
+      "shelf-reading",
+      "shelf-research",
     ]);
     expect(noteAt(restored, "note-a")?.title).toBe("On Rereading");
   });
@@ -238,7 +238,7 @@ describe("tag commands", () => {
 describe("adopting another tab's cabinet", () => {
   function remoteCabinet(): Cabinet {
     return {
-      library: [makeChannel("Remote", [makeNote({ id: "remote-note" })], "channel-remote")],
+      library: [makeShelf("Remote", [makeNote({ id: "remote-note" })], "shelf-remote")],
       tags: [makeTag("Remote tag", RED)],
     };
   }
@@ -246,7 +246,7 @@ describe("adopting another tab's cabinet", () => {
   it("replaces both halves with the incoming pair", () => {
     const next = reduce(initialState(), { type: "cabinet/adopt", cabinet: remoteCabinet() });
 
-    expect(next.library.map((channel) => channel.id)).toEqual(["channel-remote"]);
+    expect(next.library.map((shelf) => shelf.id)).toEqual(["shelf-remote"]);
     expect(next.tags.map((tag) => tag.name)).toEqual(["Remote tag"]);
     expect(findNode(next.library, "note-a")).toBeUndefined();
   });
@@ -264,10 +264,10 @@ describe("adopting another tab's cabinet", () => {
 
     const placeholder = findNode(adopted.library, "pending");
     expect(placeholder && isPendingNote(placeholder)).toBe(true);
-    expect(locateNode(adopted.library, "pending")?.channelId).toBe("channel-reading");
+    expect(locateNode(adopted.library, "pending")?.shelfId).toBe("shelf-reading");
   });
 
-  it("drops a placeholder whose channel the other tab deleted", () => {
+  it("drops a placeholder whose shelf the other tab deleted", () => {
     const pasted = reduce(initialState(), {
       type: "note/addPending",
       location: READING_ROOT,
@@ -285,17 +285,17 @@ describe("adopting another tab's cabinet", () => {
 describe("importing a cabinet file", () => {
   const imported: Cabinet = {
     library: [
-      makeChannel("Reading", [makeNote({ id: "arrived", title: "Arrived" })], "ch-file"),
-      makeChannel("Recipes", [], "ch-recipes"),
+      makeShelf("Reading", [makeNote({ id: "arrived", title: "Arrived" })], "ch-file"),
+      makeShelf("Recipes", [], "ch-recipes"),
     ],
     tags: [makeTag("Later", TAG_PALETTE[2])],
   };
 
-  it("merges into the channel that already carries the name", () => {
+  it("merges into the shelf that already carries the name", () => {
     const next = reduce(initialState(), { type: "cabinet/merge", cabinet: imported });
 
-    expect(next.library.map((channel) => channel.name)).toEqual(["Reading", "Research", "Recipes"]);
-    expect(locateNode(next.library, "arrived")?.channelId).toBe("channel-reading");
+    expect(next.library.map((shelf) => shelf.name)).toEqual(["Reading", "Research", "Recipes"]);
+    expect(locateNode(next.library, "arrived")?.shelfId).toBe("shelf-reading");
     expect(next.tags.map((tag) => tag.name)).toEqual(["To read", "Reference", "Later"]);
   });
 
@@ -308,7 +308,7 @@ describe("importing a cabinet file", () => {
   it("swaps the whole cabinet when replacing", () => {
     const next = reduce(initialState(), { type: "cabinet/replace", cabinet: imported });
 
-    expect(next.library.map((channel) => channel.id)).toEqual(["ch-file", "ch-recipes"]);
+    expect(next.library.map((shelf) => shelf.id)).toEqual(["ch-file", "ch-recipes"]);
     expect(next.tags.map((tag) => tag.name)).toEqual(["Later"]);
   });
 
@@ -323,7 +323,7 @@ describe("importing a cabinet file", () => {
 
     const next = reduce(pasted, {
       type: "cabinet/replace",
-      cabinet: { ...imported, library: [makeChannel("Kept", [], "channel-reading")] },
+      cabinet: { ...imported, library: [makeShelf("Kept", [], "shelf-reading")] },
     });
 
     expect(findNode(next.library, "pending")).toBeDefined();

@@ -1,28 +1,28 @@
 import { describe, expect, it } from "vitest";
-import { makeChannel, makeFolder, makeLibrary, makeNote } from "@/test/factories";
+import { makeFolder, makeLibrary, makeNote, makeShelf } from "@/test/factories";
 import { isFolder, type Library } from "@/domain/model";
 import {
-  addChannel,
+  addShelf,
   addChild,
   createFolder,
   insertAt,
-  insertChannel,
+  insertShelf,
   moveIntoFolder,
   moveToLocation,
   patchNotes,
-  removeChannel,
+  removeShelf,
   removeNode,
   renameFolder,
-  reorderChannels,
+  reorderShelves,
   reorderWithinLocation,
   replaceNode,
-  updateChannel,
+  updateShelf,
   withoutPendingNotes,
 } from "./mutations";
 import { containerAt, findNode, locateNode } from "./tree";
 
-function childIds(library: Library, channelId: string, path: string[] = []): string[] {
-  return containerAt(library, { channelId, path }).children.map((child) => child.id);
+function childIds(library: Library, shelfId: string, path: string[] = []): string[] {
+  return containerAt(library, { shelfId, path }).children.map((child) => child.id);
 }
 
 describe("addChild", () => {
@@ -30,10 +30,10 @@ describe("addChild", () => {
     const library = makeLibrary();
     const next = addChild(
       library,
-      { channelId: "channel-reading", path: ["folder-essays"] },
+      { shelfId: "shelf-reading", path: ["folder-essays"] },
       makeNote({ id: "fresh" }),
     );
-    expect(childIds(next, "channel-reading", ["folder-essays"])).toEqual([
+    expect(childIds(next, "shelf-reading", ["folder-essays"])).toEqual([
       "fresh",
       "note-a",
       "note-b",
@@ -43,24 +43,24 @@ describe("addChild", () => {
   it("leaves the original library untouched", () => {
     const library = makeLibrary();
     const before = JSON.stringify(library);
-    addChild(library, { channelId: "channel-reading", path: [] }, makeNote({ id: "fresh" }));
+    addChild(library, { shelfId: "shelf-reading", path: [] }, makeNote({ id: "fresh" }));
     expect(JSON.stringify(library)).toBe(before);
   });
 
-  it("ignores an unknown channel", () => {
+  it("ignores an unknown shelf", () => {
     const library = makeLibrary();
-    expect(addChild(library, { channelId: "ghost", path: [] }, makeNote())).toBe(library);
+    expect(addChild(library, { shelfId: "ghost", path: [] }, makeNote())).toBe(library);
   });
 
   it("clamps an out-of-range insertion index", () => {
     const library = makeLibrary();
     const next = insertAt(
       library,
-      { channelId: "channel-research", path: [] },
+      { shelfId: "shelf-research", path: [] },
       makeNote({ id: "last" }),
       99,
     );
-    expect(childIds(next, "channel-research")).toEqual(["note-c", "last"]);
+    expect(childIds(next, "shelf-research")).toEqual(["note-c", "last"]);
   });
 });
 
@@ -68,7 +68,7 @@ describe("removeNode", () => {
   it("removes a note wherever it lives", () => {
     const next = removeNode(makeLibrary(), "note-a");
     expect(findNode(next, "note-a")).toBeUndefined();
-    expect(childIds(next, "channel-reading", ["folder-essays"])).toEqual(["note-b"]);
+    expect(childIds(next, "shelf-reading", ["folder-essays"])).toEqual(["note-b"]);
   });
 
   it("removes a folder together with its subtree", () => {
@@ -89,7 +89,7 @@ describe("replaceNode and renameFolder", () => {
     const next = renameFolder(makeLibrary(), "folder-essays", "Long Reads");
     const folder = findNode(next, "folder-essays");
     expect(folder && isFolder(folder) && folder.name).toBe("Long Reads");
-    expect(childIds(next, "channel-reading", ["folder-essays"])).toEqual(["note-a", "note-b"]);
+    expect(childIds(next, "shelf-reading", ["folder-essays"])).toEqual(["note-a", "note-b"]);
   });
 });
 
@@ -104,7 +104,7 @@ describe("patchNotes", () => {
 
   it("never rewrites pending placeholders", () => {
     const library: Library = [
-      makeChannel(
+      makeShelf(
         "C",
         [
           {
@@ -132,13 +132,13 @@ describe("patchNotes", () => {
 describe("moveIntoFolder", () => {
   it("moves a node to the front of the target folder", () => {
     const next = moveIntoFolder(makeLibrary(), "note-loose", "folder-empty");
-    expect(childIds(next, "channel-reading", ["folder-empty"])).toEqual(["note-loose"]);
-    expect(childIds(next, "channel-reading")).toEqual(["folder-essays", "folder-empty"]);
+    expect(childIds(next, "shelf-reading", ["folder-empty"])).toEqual(["note-loose"]);
+    expect(childIds(next, "shelf-reading")).toEqual(["folder-essays", "folder-empty"]);
   });
 
-  it("moves a node across channels", () => {
+  it("moves a node across shelves", () => {
     const next = moveIntoFolder(
-      [...makeLibrary(), makeChannel("Extra", [makeFolder("Box", [], "box")], "extra")],
+      [...makeLibrary(), makeShelf("Extra", [makeFolder("Box", [], "box")], "extra")],
       "note-c",
       "box",
     );
@@ -152,7 +152,7 @@ describe("moveIntoFolder", () => {
 
   it("refuses to move a folder into its own descendant", () => {
     const inner = makeFolder("Inner", [], "inner");
-    const library: Library = [makeChannel("C", [makeFolder("Outer", [inner], "outer")], "c")];
+    const library: Library = [makeShelf("C", [makeFolder("Outer", [inner], "outer")], "c")];
     expect(moveIntoFolder(library, "outer", "inner")).toBe(library);
   });
 
@@ -164,18 +164,18 @@ describe("moveIntoFolder", () => {
 });
 
 describe("moveToLocation", () => {
-  it("relocates a node to a channel root", () => {
+  it("relocates a node to a shelf root", () => {
     const next = moveToLocation(makeLibrary(), "note-a", {
-      channelId: "channel-research",
+      shelfId: "shelf-research",
       path: [],
     });
-    expect(childIds(next, "channel-research")).toEqual(["note-a", "note-c"]);
-    expect(locateNode(next, "note-a")).toEqual({ channelId: "channel-research", path: [] });
+    expect(childIds(next, "shelf-research")).toEqual(["note-a", "note-c"]);
+    expect(locateNode(next, "note-a")).toEqual({ shelfId: "shelf-research", path: [] });
   });
 
-  it("ignores an unknown destination channel", () => {
+  it("ignores an unknown destination shelf", () => {
     const library = makeLibrary();
-    expect(moveToLocation(library, "note-a", { channelId: "ghost", path: [] })).toBe(library);
+    expect(moveToLocation(library, "note-a", { shelfId: "ghost", path: [] })).toBe(library);
   });
 });
 
@@ -183,79 +183,79 @@ describe("reorderWithinLocation", () => {
   it("moves a sibling before another", () => {
     const next = reorderWithinLocation(
       makeLibrary(),
-      { channelId: "channel-reading", path: ["folder-essays"] },
+      { shelfId: "shelf-reading", path: ["folder-essays"] },
       "note-b",
       "note-a",
     );
-    expect(childIds(next, "channel-reading", ["folder-essays"])).toEqual(["note-b", "note-a"]);
+    expect(childIds(next, "shelf-reading", ["folder-essays"])).toEqual(["note-b", "note-a"]);
   });
 
   it("appends when there is nothing to insert before", () => {
     const next = reorderWithinLocation(
       makeLibrary(),
-      { channelId: "channel-reading", path: ["folder-essays"] },
+      { shelfId: "shelf-reading", path: ["folder-essays"] },
       "note-a",
       null,
     );
-    expect(childIds(next, "channel-reading", ["folder-essays"])).toEqual(["note-b", "note-a"]);
+    expect(childIds(next, "shelf-reading", ["folder-essays"])).toEqual(["note-b", "note-a"]);
   });
 
   it("also works as a move when the node lives elsewhere", () => {
     const next = reorderWithinLocation(
       makeLibrary(),
-      { channelId: "channel-research", path: [] },
+      { shelfId: "shelf-research", path: [] },
       "note-a",
       "note-c",
     );
-    expect(childIds(next, "channel-research")).toEqual(["note-a", "note-c"]);
-    expect(childIds(next, "channel-reading", ["folder-essays"])).toEqual(["note-b"]);
+    expect(childIds(next, "shelf-research")).toEqual(["note-a", "note-c"]);
+    expect(childIds(next, "shelf-reading", ["folder-essays"])).toEqual(["note-b"]);
   });
 });
 
-describe("channels", () => {
-  it("adds, updates and reorders channels", () => {
+describe("shelves", () => {
+  it("adds, updates and reorders shelves", () => {
     const library = makeLibrary();
-    const added = addChannel(library, makeChannel("New", [], "new"));
-    expect(added.map((c) => c.id)).toEqual(["channel-reading", "channel-research", "new"]);
+    const added = addShelf(library, makeShelf("New", [], "new"));
+    expect(added.map((c) => c.id)).toEqual(["shelf-reading", "shelf-research", "new"]);
 
-    const renamed = updateChannel(added, "new", { name: "Renamed", icon: "star" });
+    const renamed = updateShelf(added, "new", { name: "Renamed", icon: "star" });
     expect(renamed.find((c) => c.id === "new")?.name).toBe("Renamed");
 
-    const reordered = reorderChannels(renamed, "new", "channel-reading");
-    expect(reordered.map((c) => c.id)).toEqual(["new", "channel-reading", "channel-research"]);
+    const reordered = reorderShelves(renamed, "new", "shelf-reading");
+    expect(reordered.map((c) => c.id)).toEqual(["new", "shelf-reading", "shelf-research"]);
 
-    const appended = reorderChannels(reordered, "new", null);
-    expect(appended.map((c) => c.id)).toEqual(["channel-reading", "channel-research", "new"]);
+    const appended = reorderShelves(reordered, "new", null);
+    expect(appended.map((c) => c.id)).toEqual(["shelf-reading", "shelf-research", "new"]);
   });
 
-  it("never removes the last channel", () => {
-    const only: Library = [makeChannel("Only", [], "only")];
-    expect(removeChannel(only, "only")).toBe(only);
-    expect(removeChannel(makeLibrary(), "channel-research")).toHaveLength(1);
+  it("never removes the last shelf", () => {
+    const only: Library = [makeShelf("Only", [], "only")];
+    expect(removeShelf(only, "only")).toBe(only);
+    expect(removeShelf(makeLibrary(), "shelf-research")).toHaveLength(1);
   });
 
-  it("puts a channel back where it was standing", () => {
+  it("puts a shelf back where it was standing", () => {
     const library = makeLibrary();
-    const restored = insertChannel(removeChannel(library, "channel-reading"), 0, library[0]!);
-    expect(restored.map((c) => c.id)).toEqual(["channel-reading", "channel-research"]);
+    const restored = insertShelf(removeShelf(library, "shelf-reading"), 0, library[0]!);
+    expect(restored.map((c) => c.id)).toEqual(["shelf-reading", "shelf-research"]);
   });
 
   it("clamps a restore index that no longer fits", () => {
     const library = makeLibrary();
-    expect(insertChannel(library, 99, makeChannel("Late", [], "late")).at(-1)?.id).toBe("late");
-    expect(insertChannel(library, -3, makeChannel("Early", [], "early"))[0]?.id).toBe("early");
+    expect(insertShelf(library, 99, makeShelf("Late", [], "late")).at(-1)?.id).toBe("late");
+    expect(insertShelf(library, -3, makeShelf("Early", [], "early"))[0]?.id).toBe("early");
   });
 
-  it("ignores reordering an unknown channel", () => {
+  it("ignores reordering an unknown shelf", () => {
     const library = makeLibrary();
-    expect(reorderChannels(library, "ghost", null)).toBe(library);
+    expect(reorderShelves(library, "ghost", null)).toBe(library);
   });
 });
 
 describe("withoutPendingNotes", () => {
   it("prunes placeholders at every depth and leaves real notes alone", () => {
     const library: Library = [
-      makeChannel(
+      makeShelf(
         "C",
         [
           makeNote({ id: "real" }),

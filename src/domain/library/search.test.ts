@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { makeChannel, makeLibrary, makeNote } from "@/test/factories";
+import { makeLibrary, makeNote, makeShelf } from "@/test/factories";
 import { noteMatches, notesWithTag, searchLibrary } from "./search";
 
 describe("noteMatches", () => {
@@ -24,17 +24,17 @@ describe("noteMatches", () => {
 });
 
 describe("searchLibrary", () => {
-  it("returns notes and folders tagged with their channel", () => {
+  it("returns notes and folders tagged with their shelf", () => {
     const results = searchLibrary(makeLibrary(), "essays");
     expect(results.folders).toHaveLength(1);
-    expect(results.folders[0]?.channelId).toBe("channel-reading");
+    expect(results.folders[0]?.shelfId).toBe("shelf-reading");
     expect(results.notes).toHaveLength(0);
   });
 
-  it("searches across all channels, case-insensitively", () => {
+  it("searches across all shelves, case-insensitively", () => {
     const results = searchLibrary(makeLibrary(), "ZETTEL");
     expect(results.notes.map((note) => note.id)).toEqual(["note-c"]);
-    expect(results.notes[0]?.channelId).toBe("channel-research");
+    expect(results.notes[0]?.shelfId).toBe("shelf-research");
   });
 
   it("returns nothing for a blank query", () => {
@@ -43,7 +43,7 @@ describe("searchLibrary", () => {
 
   it("never matches a pending placeholder", () => {
     const library = [
-      makeChannel(
+      makeShelf(
         "C",
         [
           {

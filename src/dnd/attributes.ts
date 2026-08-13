@@ -5,8 +5,8 @@ export const DND_ATTR = {
   dragId: "data-drag-id",
   folderTarget: "data-folder-target",
   tagDroppable: "data-tag-droppable",
-  channelRow: "data-channel-row",
-  channelTarget: "data-channel-target",
+  shelfRow: "data-shelf-row",
+  shelfTarget: "data-shelf-target",
   crumb: "data-crumb",
   locationDrop: "data-location-drop",
   nav: "data-nav",
@@ -40,11 +40,11 @@ export function readLocation(element: Element | null): LibraryLocation | null {
     const parsed: unknown = JSON.parse(raw);
     if (typeof parsed !== "object" || parsed === null) return null;
     const record = parsed as Record<string, unknown>;
-    if (typeof record.channelId !== "string") return null;
+    if (typeof record.shelfId !== "string") return null;
     const path = Array.isArray(record.path)
       ? record.path.filter((segment): segment is string => typeof segment === "string")
       : [];
-    return { channelId: record.channelId, path };
+    return { shelfId: record.shelfId, path };
   } catch {
     return null;
   }

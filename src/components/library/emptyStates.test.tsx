@@ -6,7 +6,7 @@ const BROWSING: EmptyStateContext = {
   mode: "browsing",
   query: "",
   activeTag: null,
-  channelName: "Field notes",
+  shelfName: "Field notes",
   inFolder: false,
   cabinetEmpty: false,
   onboarded: true,
@@ -28,7 +28,7 @@ describe("emptyStateFor", () => {
     expect(copy.kind).toBe("plate");
     expect(copy.title).toBe("Your cabinet is empty.");
     if (copy.kind !== "plate") throw new Error("expected the plate");
-    expect(copy.primer?.map((fact) => fact.term)).toEqual(["Channels", "Folders", "Tags"]);
+    expect(copy.primer?.map((fact) => fact.term)).toEqual(["Shelves", "Folders", "Tags"]);
     expect(copy.primer?.[0]?.text).toContain("Field notes");
   });
 
@@ -41,12 +41,12 @@ describe("emptyStateFor", () => {
     expect(copy.text).toContain("Field notes");
   });
 
-  it("names the channel when the cabinet holds saves elsewhere", () => {
+  it("names the shelf when the cabinet holds saves elsewhere", () => {
     const copy = resolve();
 
     expect(copy.kind).toBe("quiet");
     expect(copy.title).toBe("Nothing in Field notes yet.");
-    expect(bodyText(copy)).toBe("Paste a link with CtrlV, or drag saves in from another channel.");
+    expect(bodyText(copy)).toBe("Paste a link with CtrlV, or drag saves in from another shelf.");
   });
 
   it("says where you are standing inside a folder", () => {

@@ -1,46 +1,46 @@
-import type { Channel, Tag } from "@/domain/model";
+import type { Shelf, Tag } from "@/domain/model";
 import { Icon } from "@/components/primitives/Icon";
-import { ChannelRow } from "./ChannelRow";
+import { ShelfRow } from "./ShelfRow";
 import { SidebarSection } from "./SidebarSection";
 import { TagRow } from "./TagRow";
 
 export interface SidebarProps {
-  channels: readonly Channel[];
+  shelves: readonly Shelf[];
   tags: readonly Tag[];
-  activeChannelId: string;
-  atChannelRoot: boolean;
+  activeShelfId: string;
+  atShelfRoot: boolean;
   activeTag: string | null;
-  onOpenChannel: (channel: Channel) => void;
-  onNewChannel: () => void;
-  onEditChannel: (channel: Channel) => void;
+  onOpenShelf: (shelf: Shelf) => void;
+  onNewShelf: () => void;
+  onEditShelf: (shelf: Shelf) => void;
   onSelectTag: (name: string) => void;
   onNewTag: () => void;
   onEditTag: (tag: Tag) => void;
 }
 
 export function Sidebar({
-  channels,
+  shelves,
   tags,
-  activeChannelId,
-  atChannelRoot,
+  activeShelfId,
+  atShelfRoot,
   activeTag,
-  onOpenChannel,
-  onNewChannel,
-  onEditChannel,
+  onOpenShelf,
+  onNewShelf,
+  onEditShelf,
   onSelectTag,
   onNewTag,
   onEditTag,
 }: SidebarProps) {
   return (
     <aside className="sidebar">
-      <SidebarSection title="Library" addLabel="New channel" onAdd={onNewChannel}>
-        {channels.map((channel) => (
-          <ChannelRow
-            key={channel.id}
-            channel={channel}
-            active={activeChannelId === channel.id && atChannelRoot && !activeTag}
-            onOpen={onOpenChannel}
-            onEdit={onEditChannel}
+      <SidebarSection title="Library" addLabel="New shelf" onAdd={onNewShelf}>
+        {shelves.map((shelf) => (
+          <ShelfRow
+            key={shelf.id}
+            shelf={shelf}
+            active={activeShelfId === shelf.id && atShelfRoot && !activeTag}
+            onOpen={onOpenShelf}
+            onEdit={onEditShelf}
           />
         ))}
       </SidebarSection>

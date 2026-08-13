@@ -44,8 +44,8 @@ export function useLibraryDragAndDrop({
     if (drag.kind === "tag") return;
 
     switch (target.type) {
-      case "reorder-channel":
-        dispatch({ type: "channel/reorder", id: drag.id, beforeId: target.beforeId });
+      case "reorder-shelf":
+        dispatch({ type: "shelf/reorder", id: drag.id, beforeId: target.beforeId });
         return;
 
       case "reorder": {

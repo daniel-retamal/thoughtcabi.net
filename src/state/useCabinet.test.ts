@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, renderHook } from "@testing-library/react";
-import { makeChannel, makeLibrary, makeNote, makeTag } from "@/test/factories";
+import { makeLibrary, makeNote, makeShelf, makeTag } from "@/test/factories";
 import { STORAGE_KEYS } from "@/storage/keys";
 import { useCabinet } from "./useCabinet";
 
@@ -40,12 +40,12 @@ describe("useCabinet", () => {
 
     remoteWrite(
       JSON.stringify({
-        library: [makeChannel("Remote", [makeNote({ id: "remote-note" })], "channel-remote")],
+        library: [makeShelf("Remote", [makeNote({ id: "remote-note" })], "shelf-remote")],
         tags: [makeTag("Remote tag", "red")],
       }),
     );
 
-    expect(result.current.cabinet.library.map((channel) => channel.name)).toEqual(["Remote"]);
+    expect(result.current.cabinet.library.map((shelf) => shelf.name)).toEqual(["Remote"]);
     expect(result.current.cabinet.tags.map((tag) => tag.name)).toEqual(["Remote tag"]);
   });
 

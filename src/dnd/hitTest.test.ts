@@ -30,7 +30,7 @@ function buildGrid(items: Array<{ id: string; rect: DOMRect }>): {
 
   const root = document.createElement("div");
   root.setAttribute(DND_ATTR.locationDrop, "");
-  root.setAttribute(DND_ATTR.nav, JSON.stringify({ channelId: "c1", path: [] }));
+  root.setAttribute(DND_ATTR.nav, JSON.stringify({ shelfId: "c1", path: [] }));
 
   const zone = document.createElement("div");
   zone.setAttribute(DND_ATTR.zone, "grid");
@@ -127,10 +127,10 @@ describe("resolvePlacement anchors", () => {
     expect(target.line.position).toBe(160);
   });
 
-  it("never proposes the dragged channel row as its own beforeId", () => {
+  it("never proposes the dragged shelf row as its own beforeId", () => {
     const rows = ["a", "b", "c"].map((id, i) => {
       const el = document.createElement("div");
-      el.setAttribute(DND_ATTR.channelRow, "");
+      el.setAttribute(DND_ATTR.shelfRow, "");
       el.setAttribute(DND_ATTR.dragId, id);
       stubRect(el, rect(0, 200, i * 50, i * 50 + 50));
       document.body.appendChild(el);
@@ -138,12 +138,12 @@ describe("resolvePlacement anchors", () => {
     });
 
     document.elementFromPoint = () => rows[1] as HTMLElement;
-    const drag: NodeDrag = { kind: "channel", id: "b" };
+    const drag: NodeDrag = { kind: "shelf", id: "b" };
     const target = resolveDrop({ drag, point: { x: 50, y: 40 }, previous: null, validate: () => true })
       .target;
 
-    expect(target?.type).toBe("reorder-channel");
-    if (target?.type !== "reorder-channel") throw new Error("expected reorder-channel target");
+    expect(target?.type).toBe("reorder-shelf");
+    if (target?.type !== "reorder-shelf") throw new Error("expected reorder-shelf target");
     expect(target.beforeId).not.toBe("b");
   });
 });

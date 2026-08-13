@@ -2,7 +2,6 @@ import {
   isFolder,
   isNote,
   isPendingNote,
-  type Channel,
   type Folder,
   type Library,
   type LibraryLocation,
@@ -11,33 +10,34 @@ import {
   type NoteEntry,
   type NodeId,
   type PendingNote,
+  type Shelf,
 } from "@/domain/model";
 
-export type Container = Channel | Folder;
+export type Container = Shelf | Folder;
 
 export class EmptyLibraryError extends Error {
   constructor() {
-    super("The library must always contain at least one channel");
+    super("The library must always contain at least one shelf");
     this.name = "EmptyLibraryError";
   }
 }
 
-export function firstChannel(library: Library): Channel {
-  const [channel] = library;
-  if (!channel) throw new EmptyLibraryError();
-  return channel;
+export function firstShelf(library: Library): Shelf {
+  const [shelf] = library;
+  if (!shelf) throw new EmptyLibraryError();
+  return shelf;
 }
 
 export function isCabinetEmpty(library: Library): boolean {
-  return library.every((channel) => channel.children.length === 0);
+  return library.every((shelf) => shelf.children.length === 0);
 }
 
-export function findChannel(library: Library, channelId: NodeId): Channel | undefined {
-  return library.find((channel) => channel.id === channelId);
+export function findShelf(library: Library, shelfId: NodeId): Shelf | undefined {
+  return library.find((shelf) => shelf.id === shelfId);
 }
 
-export function requireChannel(library: Library, channelId: NodeId): Channel {
-  return findChannel(library, channelId) ?? firstChannel(library);
+export function requireShelf(library: Library, shelfId: NodeId): Shelf {
+  return findShelf(library, shelfId) ?? firstShelf(library);
 }
 
 export function containerAtPath(root: Container, path: readonly NodeId[]): Container {
@@ -53,7 +53,7 @@ export function containerAtPath(root: Container, path: readonly NodeId[]): Conta
 }
 
 export function containerAt(library: Library, location: LibraryLocation): Container {
-  return containerAtPath(requireChannel(library, location.channelId), location.path);
+  return containerAtPath(requireShelf(library, location.shelfId), location.path);
 }
 
 export function pathToFolder(root: Container, folderId: NodeId): NodeId[] {
@@ -72,16 +72,16 @@ export function pathToFolder(root: Container, folderId: NodeId): NodeId[] {
 
 export function eachNode(
   library: Library,
-  visit: (node: LibraryNode, channel: Channel, path: NodeId[]) => void,
+  visit: (node: LibraryNode, shelf: Shelf, path: NodeId[]) => void,
 ): void {
-  for (const channel of library) {
+  for (const shelf of library) {
     const walk = (container: Container, path: NodeId[]): void => {
       for (const child of container.children) {
-        visit(child, channel, path);
+        visit(child, shelf, path);
         if (isFolder(child)) walk(child, [...path, child.id]);
       }
     };
-    walk(channel, []);
+    walk(shelf, []);
   }
 }
 
@@ -100,8 +100,8 @@ export function findFolder(library: Library, folderId: NodeId): Folder | undefin
 
 export function locateNode(library: Library, nodeId: NodeId): LibraryLocation | undefined {
   let location: LibraryLocation | undefined;
-  eachNode(library, (node, channel, path) => {
-    if (node.id === nodeId) location = { channelId: channel.id, path };
+  eachNode(library, (node, shelf, path) => {
+    if (node.id === nodeId) location = { shelfId: shelf.id, path };
   });
   return location;
 }
@@ -110,12 +110,12 @@ export function locateFolder(
   library: Library,
   folderId: NodeId,
 ): { location: LibraryLocation; name: string } | null {
-  for (const channel of library) {
-    const path = pathToFolder(channel, folderId);
+  for (const shelf of library) {
+    const path = pathToFolder(shelf, folderId);
     if (path.length > 0 && path[path.length - 1] === folderId) {
       return {
-        location: { channelId: channel.id, path },
-        name: containerAtPath(channel, path).name,
+        location: { shelfId: shelf.id, path },
+        name: containerAtPath(shelf, path).name,
       };
     }
   }
@@ -139,7 +139,7 @@ function placementWithin(
 
   for (const child of container.children) {
     if (!isFolder(child)) continue;
-    const nested = { channelId: location.channelId, path: [...location.path, child.id] };
+    const nested = { shelfId: location.shelfId, path: [...location.path, child.id] };
     const found = placementWithin(child, nested, nodeId);
     if (found) return found;
   }
@@ -148,8 +148,8 @@ function placementWithin(
 }
 
 export function placementOf(library: Library, nodeId: NodeId): NodePlacement | null {
-  for (const channel of library) {
-    const found = placementWithin(channel, { channelId: channel.id, path: [] }, nodeId);
+  for (const shelf of library) {
+    const found = placementWithin(shelf, { shelfId: shelf.id, path: [] }, nodeId);
     if (found) return found;
   }
   return null;
@@ -162,9 +162,9 @@ export interface PendingPlacement {
 
 export function pendingPlacements(library: Library): PendingPlacement[] {
   const placements: PendingPlacement[] = [];
-  eachNode(library, (node, channel, path) => {
+  eachNode(library, (node, shelf, path) => {
     if (isPendingNote(node)) {
-      placements.push({ node, location: { channelId: channel.id, path } });
+      placements.push({ node, location: { shelfId: shelf.id, path } });
     }
   });
   return placements;
@@ -172,14 +172,14 @@ export function pendingPlacements(library: Library): PendingPlacement[] {
 
 export function parentContainerName(library: Library, nodeId: NodeId): string | undefined {
   let name: string | undefined;
-  for (const channel of library) {
+  for (const shelf of library) {
     const walk = (container: Container, containerName: string): void => {
       for (const child of container.children) {
         if (child.id === nodeId) name = containerName;
         else if (isFolder(child)) walk(child, child.name);
       }
     };
-    walk(channel, channel.name);
+    walk(shelf, shelf.name);
   }
   return name;
 }

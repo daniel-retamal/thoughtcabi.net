@@ -12,10 +12,10 @@ export function withFreshIds(cabinet: Cabinet, createNodeId: IdFactory): Cabinet
     );
 
   return {
-    library: cabinet.library.map((channel) => ({
-      ...channel,
+    library: cabinet.library.map((shelf) => ({
+      ...shelf,
       id: createNodeId("ch"),
-      children: rebuild(channel.children),
+      children: rebuild(shelf.children),
     })),
     tags: cabinet.tags,
   };

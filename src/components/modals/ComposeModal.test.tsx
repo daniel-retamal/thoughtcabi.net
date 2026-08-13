@@ -41,7 +41,7 @@ function renderCompose(
         description: "",
         tag: "",
         image: "",
-        destination: { channelId: "channel-reading", path: [] },
+        destination: { shelfId: "shelf-reading", path: [] },
         ...initial,
       }}
       initialPreview={null}

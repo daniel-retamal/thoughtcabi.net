@@ -2,8 +2,8 @@ import {
   isFolder,
   isNote,
   type Cabinet,
-  type Channel,
   type LibraryNode,
+  type Shelf,
   type Tag,
 } from "@/domain/model";
 import { addTag, availableColors } from "@/domain/tags/tagLibrary";
@@ -40,8 +40,8 @@ export function mergeCabinets(base: Cabinet, incoming: Cabinet): Cabinet {
 
   let library = base.library;
 
-  for (const channel of incoming.library) {
-    const arriving: Channel = { ...channel, children: retag(channel.children) };
+  for (const shelf of incoming.library) {
+    const arriving: Shelf = { ...shelf, children: retag(shelf.children) };
     const index = library.findIndex((entry) => sameName(entry.name, arriving.name));
 
     library =

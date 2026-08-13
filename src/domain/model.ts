@@ -45,14 +45,14 @@ export interface Folder {
 
 export type LibraryNode = NoteEntry | Folder;
 
-export interface Channel {
+export interface Shelf {
   id: NodeId;
   name: string;
   icon: IconName;
   children: LibraryNode[];
 }
 
-export type Library = Channel[];
+export type Library = Shelf[];
 
 export interface Tag {
   name: string;
@@ -81,7 +81,7 @@ export interface Cabinet {
 }
 
 export interface LibraryLocation {
-  channelId: NodeId;
+  shelfId: NodeId;
   path: NodeId[];
 }
 
@@ -107,5 +107,5 @@ export function isNote(node: LibraryNode): node is Note {
 
 export function sameLocation(a: LibraryLocation | null, b: LibraryLocation | null): boolean {
   if (!a || !b) return false;
-  return a.channelId === b.channelId && a.path.join("/") === b.path.join("/");
+  return a.shelfId === b.shelfId && a.path.join("/") === b.path.join("/");
 }

@@ -11,34 +11,34 @@ export interface EmptyStateContext {
   mode: BrowseMode;
   query: string;
   activeTag: string | null;
-  channelName: string;
+  shelfName: string;
   inFolder: boolean;
   cabinetEmpty: boolean;
   onboarded: boolean;
 }
 
-function primerFacts(channelName: string): PrimerFact[] {
+function primerFacts(shelfName: string): PrimerFact[] {
   return [
-    { term: "Channels", text: `Shelves in the sidebar. Rename ${channelName} whenever you like.` },
-    { term: "Folders", text: "Live inside a channel, made where you are standing." },
-    { term: "Tags", text: "One color each, cutting across every channel." },
+    { term: "Shelves", text: `Listed in the sidebar. Rename ${shelfName} whenever you like.` },
+    { term: "Folders", text: "Live inside a shelf, made where you are standing." },
+    { term: "Tags", text: "One color each, cutting across every shelf." },
   ];
 }
 
-function firstLoad(channelName: string): EmptyStateCopy {
+function firstLoad(shelfName: string): EmptyStateCopy {
   return {
     kind: "plate",
     title: "Your cabinet is empty.",
     text: "Copy a link, then paste it anywhere on this page. It arrives as a card with the site's title and thumbnail.",
-    primer: primerFacts(channelName),
+    primer: primerFacts(shelfName),
   };
 }
 
-function emptied(channelName: string): EmptyStateCopy {
+function emptied(shelfName: string): EmptyStateCopy {
   return {
     kind: "plate",
     title: "Nothing saved.",
-    text: `Paste a link to start filling ${channelName} again.`,
+    text: `Paste a link to start filling ${shelfName} again.`,
     primer: null,
   };
 }
@@ -63,7 +63,7 @@ export function emptyStateFor(context: EmptyStateContext): EmptyStateCopy {
   }
 
   if (context.cabinetEmpty) {
-    return context.onboarded ? emptied(context.channelName) : firstLoad(context.channelName);
+    return context.onboarded ? emptied(context.shelfName) : firstLoad(context.shelfName);
   }
 
   if (context.inFolder) {
@@ -77,11 +77,11 @@ export function emptyStateFor(context: EmptyStateContext): EmptyStateCopy {
 
   return {
     kind: "quiet",
-    title: `Nothing in ${context.channelName} yet.`,
+    title: `Nothing in ${context.shelfName} yet.`,
     text: (
       <>
         Paste a link with <ModKey />
-        <kbd>V</kbd>, or drag saves in from another channel.
+        <kbd>V</kbd>, or drag saves in from another shelf.
       </>
     ),
     clearable: false,

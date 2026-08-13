@@ -2,17 +2,17 @@ import { useMemo } from "react";
 import { searchLibrary, notesWithTag } from "@/domain/library/search";
 import {
   containerAtPath,
-  requireChannel,
+  requireShelf,
   splitChildren,
   type Container,
 } from "@/domain/library/tree";
 import {
   isFolder,
-  type Channel,
   type Folder,
   type Library,
   type NodeId,
   type NoteEntry,
+  type Shelf,
   type ViewMode,
 } from "@/domain/model";
 import type { Crumb } from "@/components/layout/Breadcrumbs";
@@ -20,11 +20,11 @@ import type { NavigationState } from "./useNavigation";
 
 export type BrowseMode = "browsing" | "searching" | "tagged";
 
-export type FolderEntry = Folder & { channelId?: NodeId };
+export type FolderEntry = Folder & { shelfId?: NodeId };
 
 export interface LibraryView {
   mode: BrowseMode;
-  channel: Channel;
+  shelf: Shelf;
   container: Container;
   folders: FolderEntry[];
   notes: NoteEntry[];
@@ -33,24 +33,24 @@ export interface LibraryView {
   contentKey: string;
 }
 
-function buildCrumbs(channel: Channel, path: readonly string[]): Crumb[] {
+function buildCrumbs(shelf: Shelf, path: readonly string[]): Crumb[] {
   const crumbs: Crumb[] = [
     {
-      id: channel.id,
-      name: channel.name,
-      icon: channel.icon,
-      location: { channelId: channel.id, path: [] },
+      id: shelf.id,
+      name: shelf.name,
+      icon: shelf.icon,
+      location: { shelfId: shelf.id, path: [] },
     },
   ];
 
-  let container: Container = channel;
+  let container: Container = shelf;
   path.forEach((segment, depth) => {
     const next = container.children.find((child) => child.id === segment);
     if (!next || !isFolder(next)) return;
     crumbs.push({
       id: next.id,
       name: next.name,
-      location: { channelId: channel.id, path: path.slice(0, depth + 1) },
+      location: { shelfId: shelf.id, path: path.slice(0, depth + 1) },
     });
     container = next;
   });
@@ -64,9 +64,9 @@ export function useLibraryView(
   view: ViewMode,
 ): LibraryView {
   return useMemo(() => {
-    const channel = requireChannel(library, navigation.channelId);
-    const container = containerAtPath(channel, navigation.path);
-    const crumbs = buildCrumbs(channel, navigation.path);
+    const shelf = requireShelf(library, navigation.shelfId);
+    const container = containerAtPath(shelf, navigation.path);
+    const crumbs = buildCrumbs(shelf, navigation.path);
 
     const query = navigation.query.trim();
     const mode: BrowseMode = query ? "searching" : navigation.activeTag ? "tagged" : "browsing";
@@ -83,13 +83,13 @@ export function useLibraryView(
 
     return {
       mode,
-      channel,
+      shelf,
       container,
       folders,
       notes,
       crumbs,
       canReorder: mode === "browsing",
-      contentKey: `${scope}${channel.id}${navigation.path.join("/")}${view}`,
+      contentKey: `${scope}${shelf.id}${navigation.path.join("/")}${view}`,
     };
   }, [library, navigation, view]);
 }

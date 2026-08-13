@@ -36,7 +36,7 @@ describe("the cabinet", () => {
     expect(loadCabinet().library[0]?.children.some((node) => node.id === "pending")).toBe(false);
   });
 
-  it("starts with one empty channel and no tags when storage is empty", () => {
+  it("starts with one empty shelf and no tags when storage is empty", () => {
     const { library, tags } = loadCabinet();
     expect(library).toHaveLength(1);
     expect(library[0]?.name).toBe("Saved");
@@ -51,7 +51,7 @@ describe("the cabinet", () => {
     expect(localStorage.getItem(STORAGE_KEYS.quarantine)).toBe("{not json");
   });
 
-  it("quarantines a well-formed value that holds no channels", () => {
+  it("quarantines a well-formed value that holds no shelves", () => {
     localStorage.setItem(STORAGE_KEYS.cabinet, '{"library":[],"tags":[]}');
 
     expect(loadCabinet().library.length).toBeGreaterThan(0);

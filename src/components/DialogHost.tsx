@@ -2,10 +2,10 @@ import type { IconName } from "@/icons/names";
 import { collectNotes, locateNode } from "@/domain/library/tree";
 import { previewFromNote, type LinkPreview } from "@/domain/links/linkPreview";
 import { draftFromNote, type NoteDraft } from "@/domain/notes/buildNote";
-import type { Cabinet, Channel, Library, LibraryLocation, Note, Tag } from "@/domain/model";
+import type { Cabinet, Library, LibraryLocation, Note, Shelf, Tag } from "@/domain/model";
 import type { LinkReader } from "@/links/readLink";
 import type { Dialog } from "@/state/dialogs";
-import { ChannelEditorModal } from "./modals/ChannelEditorModal";
+import { ShelfEditorModal } from "./modals/ShelfEditorModal";
 import { ComposeModal } from "./modals/ComposeModal";
 import { NamePromptModal } from "./modals/NamePromptModal";
 import { NoteDetailModal } from "./modals/NoteDetailModal";
@@ -25,8 +25,8 @@ export interface DialogHostProps {
   onEditNote: (note: Note) => void;
   onSaveNote: (draft: NoteDraft, preview: LinkPreview | null, editing: Note | null) => void;
   onCreateTag: (name: string, color: string) => void;
-  onSaveChannel: (channel: Channel | null, name: string, icon: IconName) => void;
-  onDeleteChannel: (channel: Channel) => void;
+  onSaveShelf: (shelf: Shelf | null, name: string, icon: IconName) => void;
+  onDeleteShelf: (shelf: Shelf) => void;
   onSaveTag: (original: Tag | null, name: string, color: string) => void;
   onDeleteTag: (name: string) => void;
   onCreateFolder: (name: string) => void;
@@ -46,8 +46,8 @@ export function DialogHost({
   onEditNote,
   onSaveNote,
   onCreateTag,
-  onSaveChannel,
-  onDeleteChannel,
+  onSaveShelf,
+  onDeleteShelf,
   onSaveTag,
   onDeleteTag,
   onCreateFolder,
@@ -93,18 +93,18 @@ export function DialogHost({
       );
     }
 
-    case "channel": {
-      const channel = dialog.mode === "edit" ? dialog.channel : null;
+    case "shelf": {
+      const shelf = dialog.mode === "edit" ? dialog.shelf : null;
       return (
-        <ChannelEditorModal
+        <ShelfEditorModal
           mode={dialog.mode}
-          initialName={channel?.name ?? ""}
-          initialIcon={channel?.icon ?? "hash"}
+          initialName={shelf?.name ?? ""}
+          initialIcon={shelf?.icon ?? "hash"}
           canDelete={library.length > 1}
-          saveCount={channel ? collectNotes(channel).length : 0}
-          onConfirm={(name, icon) => onSaveChannel(channel, name, icon)}
+          saveCount={shelf ? collectNotes(shelf).length : 0}
+          onConfirm={(name, icon) => onSaveShelf(shelf, name, icon)}
           onDelete={() => {
-            if (channel) onDeleteChannel(channel);
+            if (shelf) onDeleteShelf(shelf);
           }}
           onCancel={onClose}
         />

@@ -9,9 +9,9 @@ import { FormActions, FormModal } from "./FormModal";
 import { Field } from "./fields/Field";
 import { IconPicker } from "./fields/IconPicker";
 
-const LAST_CHANNEL_REASON = "Your cabinet keeps at least one channel. Rename this one instead.";
+const LAST_SHELF_REASON = "Your cabinet keeps at least one shelf. Rename this one instead.";
 
-export interface ChannelEditorModalProps {
+export interface ShelfEditorModalProps {
   mode: "new" | "edit";
   initialName: string;
   initialIcon: IconName;
@@ -22,7 +22,7 @@ export interface ChannelEditorModalProps {
   onCancel: () => void;
 }
 
-export function ChannelEditorModal({
+export function ShelfEditorModal({
   mode,
   initialName,
   initialIcon,
@@ -31,7 +31,7 @@ export function ChannelEditorModal({
   onConfirm,
   onDelete,
   onCancel,
-}: ChannelEditorModalProps) {
+}: ShelfEditorModalProps) {
   const isEditing = mode === "edit";
   const nameRef = useAutoFocus<HTMLInputElement>();
   const [name, setName] = useState(initialName);
@@ -46,13 +46,13 @@ export function ChannelEditorModal({
     if (event.key === "Enter") submit();
   };
 
-  const armedLabel = saveCount > 0 ? `Delete ${pluralize(saveCount, "save")}?` : "Delete channel?";
+  const armedLabel = saveCount > 0 ? `Delete ${pluralize(saveCount, "save")}?` : "Delete shelf?";
 
   return (
     <FormModal
       size="sm"
-      kind={isEditing ? "Edit channel" : "New channel"}
-      heading={isEditing ? "Rename & restyle" : "Name your channel"}
+      kind={isEditing ? "Edit shelf" : "New shelf"}
+      heading={isEditing ? "Rename & restyle" : "Name your shelf"}
       onClose={confirm.armed ? confirm.disarm : onCancel}
     >
       <Field label="Name">
@@ -108,7 +108,7 @@ export function ChannelEditorModal({
         ) : null}
       </FormActions>
 
-      {isEditing && !canDelete ? <p className="action-note">{LAST_CHANNEL_REASON}</p> : null}
+      {isEditing && !canDelete ? <p className="action-note">{LAST_SHELF_REASON}</p> : null}
     </FormModal>
   );
 }
