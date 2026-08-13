@@ -107,7 +107,6 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     readLink,
     dispatch,
     onSaved: (note, folder, location) => {
-      fresh.mark(note.id);
       pushToast({ subject: folder, action: viewAction(location, note) });
     },
   });

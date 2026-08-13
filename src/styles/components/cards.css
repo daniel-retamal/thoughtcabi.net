@@ -108,6 +108,7 @@
   line-height: 23px;
   font-weight: 500;
   color: var(--text);
+  transition: color 0.15s ease-out;
   letter-spacing: -0.015em;
   text-wrap: pretty;
   overflow-wrap: break-word;
@@ -265,68 +266,62 @@
   }
 }
 
-.card.loading {
+.card.pending,
+.row-item.pending {
   cursor: default;
-  pointer-events: none;
 }
 
-.card.loading .card-body {
-  gap: 9px;
-  padding-top: 16px;
+.cover.holding {
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  animation: breathe 2s ease-in-out infinite;
 }
 
-.card.loading .card-cat .card-time {
-  margin-left: 0;
+.cover.holding .late {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  animation: fadeIn 0.3s var(--ease-out);
 }
 
-.card.loading .ln {
-  height: 12px;
-}
-
-.cover.pending {
-  animation: settle 1.8s ease-in-out infinite;
-}
-
-@keyframes settle {
+@keyframes breathe {
   0%,
   100% {
     opacity: 1;
   }
   50% {
-    opacity: 0.55;
+    opacity: 0.45;
   }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.card-title.provisional,
+.row-item.pending .row-title {
+  color: var(--text-faint);
+  font-style: italic;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cover.pending {
+  .cover.holding,
+  .cover.holding .late {
     animation: none;
+  }
+
+  .cover.holding {
     opacity: 0.8;
   }
-}
 
-.shimmer {
-  position: relative;
-  overflow: hidden;
-  background: var(--surface-2);
-  border-radius: 6px;
-}
-
-.shimmer::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in oklab, var(--text) 8%, transparent),
-    transparent
-  );
-  transform: translateX(-100%);
-  animation: sh 1.1s infinite;
-}
-
-@keyframes sh {
-  100% {
-    transform: translateX(100%);
+  .card-title {
+    transition: none;
   }
 }

@@ -392,14 +392,17 @@ describe("App", () => {
     });
   });
 
-  it("shows a placeholder the moment a link is pasted, then fills it in", async () => {
+  it("shows the card itself the moment a link is pasted, then fills it in", async () => {
     const { readLink, resolve } = deferredReader();
     render(<App readLink={readLink} />);
 
     pasteText("https://example.com/the-quiet-revolution");
 
-    expect(screen.getByText("Reading link…")).toBeInTheDocument();
-    expect(screen.getByText("example.com")).toBeInTheDocument();
+    const card = document.querySelector(".card.pending") as HTMLElement;
+    expect(card).toBeInTheDocument();
+    expect(within(card).getByText("example.com")).toBeInTheDocument();
+    expect(within(card).getByText("The Quiet Revolution")).toHaveClass("provisional");
+    expect(card.querySelector(".cover.holding")).toBeInTheDocument();
 
     await resolve({
       url: "https://example.com/the-quiet-revolution",
@@ -412,10 +415,29 @@ describe("App", () => {
       cat: "article",
     });
 
-    expect(screen.queryByText("Reading link…")).not.toBeInTheDocument();
-    expect(screen.getByText("The Quiet Revolution")).toBeInTheDocument();
+    expect(document.querySelector(".card.pending")).not.toBeInTheDocument();
+    expect(document.querySelector(".cover.holding")).not.toBeInTheDocument();
+    expect(screen.getByText("The Quiet Revolution")).not.toHaveClass("provisional");
     expect(screen.getByText("How reading changed.")).toBeInTheDocument();
     expect(screen.getByText("Saved to")).toBeInTheDocument();
+  });
+
+  it("keeps the pending card in the place it will stay, and never pops it in", async () => {
+    const { readLink, resolve } = deferredReader();
+    render(<App readLink={readLink} />);
+
+    pasteText("https://example.com/the-quiet-revolution");
+    const before = [...document.querySelectorAll(".notes-grid > .card")].indexOf(
+      document.querySelector(".card.pending") as HTMLElement,
+    );
+
+    await resolve(null);
+
+    const cards = [...document.querySelectorAll(".notes-grid > .card")];
+    const resolved = screen.getByText("The Quiet Revolution").closest(".card") as HTMLElement;
+
+    expect(cards.indexOf(resolved)).toBe(before);
+    expect(resolved).not.toHaveClass("fresh");
   });
 
   it("adds nothing of its own when the page had no metadata", async () => {
@@ -449,7 +471,7 @@ describe("App", () => {
 
     pasteText("just a passing thought");
 
-    expect(screen.queryByText("Reading link…")).not.toBeInTheDocument();
+    expect(document.querySelector(".card.pending")).not.toBeInTheDocument();
   });
 
   it("does not persist a placeholder that never resolved", () => {
@@ -458,7 +480,7 @@ describe("App", () => {
 
     pasteText("https://example.com/in-flight");
 
-    expect(screen.getByText("Reading link…")).toBeInTheDocument();
+    expect(document.querySelector(".card.pending")).toBeInTheDocument();
     expect(localStorage.getItem(STORAGE_KEYS.cabinet)).not.toContain("in-flight");
   });
 

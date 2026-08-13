@@ -29,18 +29,16 @@ export function usePasteToSave({
     if (!url) return false;
 
     const id = createId("l");
+    const addedAt = Date.now();
     const destination = location;
     const folder = containerAt(library, destination).name;
 
-    dispatch({ type: "note/addPending", location: destination, id, url });
+    dispatch({ type: "note/addPending", location: destination, id, url, addedAt });
 
     void readLink(url)
       .catch(() => null)
       .then((preview) => {
-        const note = previewToNote(preview ?? previewFromUrl(new URL(url)), {
-          id,
-          addedAt: Date.now(),
-        });
+        const note = previewToNote(preview ?? previewFromUrl(new URL(url)), { id, addedAt });
         dispatch({ type: "note/resolvePending", note });
         onSaved(note, folder, destination);
       });
