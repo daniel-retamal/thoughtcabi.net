@@ -23,12 +23,17 @@
 }
 
 .body-inner {
-  --content-max: var(--grid-max);
-  width: min(calc(var(--content-max) + var(--page-pad) * 2), 100%);
+  --plate: min(
+    var(--plate-max),
+    max(
+      var(--tile-w),
+      calc(
+        round(down, 100% - var(--page-pad) * 2 + var(--tile-gap), var(--tile-step)) -
+          var(--tile-gap)
+      )
+    )
+  );
+  width: min(100%, calc(var(--plate) + var(--page-pad) * 2));
   margin: 0 auto;
   padding: 22px var(--page-pad) 90px;
-}
-
-.body-inner.reading {
-  --content-max: var(--list-max);
 }

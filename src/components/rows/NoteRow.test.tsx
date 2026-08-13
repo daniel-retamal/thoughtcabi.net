@@ -69,13 +69,19 @@ describe("NoteRow", () => {
     expect(slot.querySelector(".mark-letter")).toHaveTextContent("Q");
   });
 
-  it("gives the tag the column instead of the source chip", () => {
+  it("gives the kind and the tag a column each, because they are different facts", () => {
     const { container } = renderRow(makeNote({ catLabel: "Article", tag: "To read" }), [
       makeTag("To read", "#ffc93c"),
     ]);
 
-    expect(container.querySelector(".cat-chip")).toBeNull();
+    expect(container.querySelector(".row-kind")).toHaveTextContent("Article");
     expect(container.querySelector(".row-tag-slot")).toHaveTextContent("To read");
+  });
+
+  it("leaves the kind column empty for a note with no link to infer it from", () => {
+    const { container } = renderRow(makeNote({ url: "", domain: "", siteName: "" }));
+
+    expect(container.querySelector(".row-kind")).toBeEmptyDOMElement();
   });
 
   it("tints the tag chip with the tag's own color", () => {
