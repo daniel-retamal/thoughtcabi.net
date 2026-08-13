@@ -8,7 +8,7 @@ import {
 } from "@/domain/model";
 import { eachNode } from "./tree";
 
-export type Located<T> = T & { channelId: NodeId };
+export type Located<T> = T & { shelfId: NodeId };
 
 export interface SearchResults {
   notes: Located<Note>[];
@@ -31,13 +31,13 @@ export function searchLibrary(library: Library, rawQuery: string): SearchResults
   const results: SearchResults = { notes: [], folders: [] };
   if (!query) return results;
 
-  eachNode(library, (node, channel) => {
+  eachNode(library, (node, shelf) => {
     if (isFolder(node)) {
       if (node.name.toLowerCase().includes(query)) {
-        results.folders.push({ ...node, channelId: channel.id });
+        results.folders.push({ ...node, shelfId: shelf.id });
       }
     } else if (isNote(node) && noteMatches(node, query)) {
-      results.notes.push({ ...node, channelId: channel.id });
+      results.notes.push({ ...node, shelfId: shelf.id });
     }
   });
 
@@ -46,9 +46,9 @@ export function searchLibrary(library: Library, rawQuery: string): SearchResults
 
 export function notesWithTag(library: Library, tagName: string): Located<Note>[] {
   const notes: Located<Note>[] = [];
-  eachNode(library, (node, channel) => {
+  eachNode(library, (node, shelf) => {
     if (isNote(node) && node.tag === tagName) {
-      notes.push({ ...node, channelId: channel.id });
+      notes.push({ ...node, shelfId: shelf.id });
     }
   });
   return notes;

@@ -2,15 +2,15 @@ import {
   isFolder,
   isNote,
   isPendingNote,
-  type Channel,
   type Folder,
   type Library,
   type LibraryLocation,
   type LibraryNode,
   type NodeId,
   type Note,
+  type Shelf,
 } from "@/domain/model";
-import { containerAtPath, findChannel, findNode, pathToFolder } from "./tree";
+import { containerAtPath, findNode, findShelf, pathToFolder } from "./tree";
 
 type NotePatch = Partial<Note> | null;
 
@@ -23,11 +23,11 @@ function mapChildren(
   );
 }
 
-function withChannelChildren(
+function withShelfChildren(
   library: Library,
   transform: (nodes: readonly LibraryNode[]) => LibraryNode[],
 ): Library {
-  return library.map((channel) => ({ ...channel, children: transform(channel.children) }));
+  return library.map((shelf) => ({ ...shelf, children: transform(shelf.children) }));
 }
 
 function clampIndex(index: number, length: number): number {
@@ -46,14 +46,14 @@ export function insertAt(
     return next;
   };
 
-  const channel = findChannel(library, location.channelId);
-  if (!channel) return library;
+  const shelf = findShelf(library, location.shelfId);
+  if (!shelf) return library;
 
-  const targetId = containerAtPath(channel, location.path).id;
+  const targetId = containerAtPath(shelf, location.path).id;
 
-  if (targetId === channel.id) {
+  if (targetId === shelf.id) {
     return library.map((entry) =>
-      entry.id === channel.id ? { ...entry, children: insertInto(entry.children) } : entry,
+      entry.id === shelf.id ? { ...entry, children: insertInto(entry.children) } : entry,
     );
   }
 
@@ -65,7 +65,7 @@ export function insertAt(
     });
 
   return library.map((entry) =>
-    entry.id === channel.id ? { ...entry, children: descend(entry.children) } : entry,
+    entry.id === shelf.id ? { ...entry, children: descend(entry.children) } : entry,
   );
 }
 
@@ -79,7 +79,7 @@ export function removeNode(library: Library, nodeId: NodeId): Library {
       nodes.filter((node) => node.id !== nodeId),
       prune,
     );
-  return withChannelChildren(library, prune);
+  return withShelfChildren(library, prune);
 }
 
 export function withoutPendingNotes(library: Library): Library {
@@ -88,7 +88,7 @@ export function withoutPendingNotes(library: Library): Library {
       nodes.filter((node) => !isPendingNote(node)),
       prune,
     );
-  return withChannelChildren(library, prune);
+  return withShelfChildren(library, prune);
 }
 
 export function replaceNode(
@@ -101,7 +101,7 @@ export function replaceNode(
       if (node.id === nodeId) return update(node);
       return isFolder(node) ? { ...node, children: replace(node.children) } : node;
     });
-  return withChannelChildren(library, replace);
+  return withShelfChildren(library, replace);
 }
 
 export function renameFolder(library: Library, folderId: NodeId, name: string): Library {
@@ -116,7 +116,7 @@ export function patchNotes(library: Library, patch: (note: Note) => NotePatch): 
       const changes = patch(node);
       return changes ? { ...node, ...changes } : node;
     });
-  return withChannelChildren(library, apply);
+  return withShelfChildren(library, apply);
 }
 
 export function moveIntoFolder(library: Library, nodeId: NodeId, folderId: NodeId): Library {
@@ -127,7 +127,7 @@ export function moveIntoFolder(library: Library, nodeId: NodeId, folderId: NodeI
 
   const detached = removeNode(library, nodeId);
   const stillExists = detached.some(
-    (channel) => pathToFolder(channel, folderId).at(-1) === folderId,
+    (shelf) => pathToFolder(shelf, folderId).at(-1) === folderId,
   );
   if (!stillExists) return library;
 
@@ -138,7 +138,7 @@ export function moveIntoFolder(library: Library, nodeId: NodeId, folderId: NodeI
       return { ...child, children: insertInto(child.children) };
     });
 
-  return withChannelChildren(detached, insertInto);
+  return withShelfChildren(detached, insertInto);
 }
 
 export function moveToLocation(
@@ -148,7 +148,7 @@ export function moveToLocation(
 ): Library {
   const node = findNode(library, nodeId);
   if (!node) return library;
-  if (!findChannel(library, location.channelId)) return library;
+  if (!findShelf(library, location.shelfId)) return library;
 
   return insertAt(removeNode(library, nodeId), location, node, 0);
 }
@@ -160,12 +160,12 @@ export function reorderWithinLocation(
   beforeId: NodeId | null,
 ): Library {
   const node = findNode(library, nodeId);
-  const channel = findChannel(library, location.channelId);
-  if (!node || !channel) return library;
+  const shelf = findShelf(library, location.shelfId);
+  if (!node || !shelf) return library;
 
   const detached = removeNode(library, nodeId);
   const target = containerAtPath(
-    findChannel(detached, location.channelId) ?? channel,
+    findShelf(detached, location.shelfId) ?? shelf,
     location.path,
   );
   const siblings = target.children;
@@ -175,12 +175,12 @@ export function reorderWithinLocation(
   return insertAt(detached, location, node, index);
 }
 
-export function reorderChannels(
+export function reorderShelves(
   library: Library,
-  channelId: NodeId,
+  shelfId: NodeId,
   beforeId: NodeId | null,
 ): Library {
-  const index = library.findIndex((channel) => channel.id === channelId);
+  const index = library.findIndex((shelf) => shelf.id === shelfId);
   if (index < 0) return library;
 
   const next = [...library];
@@ -192,28 +192,28 @@ export function reorderChannels(
   return next;
 }
 
-export function addChannel(library: Library, channel: Channel): Library {
-  return [...library, channel];
+export function addShelf(library: Library, shelf: Shelf): Library {
+  return [...library, shelf];
 }
 
-export function insertChannel(library: Library, index: number, channel: Channel): Library {
+export function insertShelf(library: Library, index: number, shelf: Shelf): Library {
   const next = [...library];
-  next.splice(clampIndex(index, next.length), 0, channel);
+  next.splice(clampIndex(index, next.length), 0, shelf);
   return next;
 }
 
-export function updateChannel(
+export function updateShelf(
   library: Library,
-  channelId: NodeId,
-  changes: Partial<Pick<Channel, "name" | "icon">>,
+  shelfId: NodeId,
+  changes: Partial<Pick<Shelf, "name" | "icon">>,
 ): Library {
-  return library.map((channel) =>
-    channel.id === channelId ? { ...channel, ...changes } : channel,
+  return library.map((shelf) =>
+    shelf.id === shelfId ? { ...shelf, ...changes } : shelf,
   );
 }
 
-export function removeChannel(library: Library, channelId: NodeId): Library {
-  const remaining = library.filter((channel) => channel.id !== channelId);
+export function removeShelf(library: Library, shelfId: NodeId): Library {
+  const remaining = library.filter((shelf) => shelf.id !== shelfId);
   return remaining.length > 0 ? remaining : library;
 }
 

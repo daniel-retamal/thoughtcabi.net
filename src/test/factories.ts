@@ -1,4 +1,4 @@
-import type { Channel, Folder, Library, LibraryNode, Note, Tag } from "@/domain/model";
+import type { Folder, Library, LibraryNode, Note, Shelf, Tag } from "@/domain/model";
 import type { IconName } from "@/icons/names";
 
 let counter = 0;
@@ -33,12 +33,12 @@ export function makeFolder(name: string, children: LibraryNode[] = [], id?: stri
   return { id: id ?? nextId("f"), type: "folder", name, children };
 }
 
-export function makeChannel(
+export function makeShelf(
   name: string,
   children: LibraryNode[] = [],
   id?: string,
   icon: IconName = "hash",
-): Channel {
+): Shelf {
   return { id: id ?? nextId("ch"), name, icon, children };
 }
 
@@ -48,7 +48,7 @@ export function makeTag(name: string, color: string): Tag {
 
 export function makeLibrary(): Library {
   return [
-    makeChannel(
+    makeShelf(
       "Reading",
       [
         makeFolder(
@@ -62,12 +62,12 @@ export function makeLibrary(): Library {
         makeFolder("Empty", [], "folder-empty"),
         makeNote({ id: "note-loose", title: "Loose note" }),
       ],
-      "channel-reading",
+      "shelf-reading",
     ),
-    makeChannel(
+    makeShelf(
       "Research",
       [makeNote({ id: "note-c", title: "Zettelkasten", tag: "Reference" })],
-      "channel-research",
+      "shelf-research",
     ),
   ];
 }

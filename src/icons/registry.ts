@@ -116,7 +116,7 @@ export const ICON_COMPONENTS: Readonly<Record<IconName, LucideIcon>> = {
   x: X,
 };
 
-export const CHANNEL_ICON_CHOICES: readonly IconName[] = [
+export const SHELF_ICON_CHOICES: readonly IconName[] = [
   "book-open",
   "play",
   "flask-conical",

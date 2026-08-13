@@ -67,12 +67,12 @@ describe("App", () => {
     vi.restoreAllMocks();
   });
 
-  it("opens a brand-new cabinet on one empty channel and teaches the gesture", () => {
+  it("opens a brand-new cabinet on one empty shelf and teaches the gesture", () => {
     render(<App />);
 
     expect(within(sidebar()).getByText("Saved")).toBeInTheDocument();
     expect(screen.getByText("Your cabinet is empty.")).toBeInTheDocument();
-    expect(screen.getByText("Channels")).toBeInTheDocument();
+    expect(screen.getByText("Shelves")).toBeInTheDocument();
   });
 
   it("acts on nothing with nothing: no count, no view switch, no new folder", () => {
@@ -83,7 +83,7 @@ describe("App", () => {
     expect(document.querySelector(".count-pill")).toBeNull();
   });
 
-  it("keeps the tools but drops the count in a channel that is merely empty", async () => {
+  it("keeps the tools but drops the count in a shelf that is merely empty", async () => {
     withSaves();
     render(<App />);
 
@@ -105,7 +105,7 @@ describe("App", () => {
 
     expect(screen.getByText("Nothing saved.")).toBeInTheDocument();
     expect(screen.queryByText("Your cabinet is empty.")).not.toBeInTheDocument();
-    expect(screen.queryByText("Channels")).not.toBeInTheDocument();
+    expect(screen.queryByText("Shelves")).not.toBeInTheDocument();
   });
 
   it("opens on what was saved last time", () => {
@@ -131,7 +131,7 @@ describe("App", () => {
     expect(screen.getByText("Essays")).toBeInTheDocument();
   });
 
-  it("switches channels from the sidebar", async () => {
+  it("switches shelves from the sidebar", async () => {
     withSaves();
     render(<App />);
     await userEvent.click(within(sidebar()).getByText("Research"));
@@ -139,11 +139,11 @@ describe("App", () => {
     expect(screen.queryByText("Essays")).not.toBeInTheDocument();
   });
 
-  it("names the empty channel it is standing in", async () => {
+  it("names the empty shelf it is standing in", async () => {
     withSaves();
     render(<App />);
 
-    await userEvent.click(screen.getByLabelText("New channel"));
+    await userEvent.click(screen.getByLabelText("New shelf"));
     await userEvent.type(screen.getByPlaceholderText("e.g. Inspiration"), "Recipes");
     await userEvent.click(screen.getByRole("button", { name: /create/i }));
 
@@ -159,12 +159,12 @@ describe("App", () => {
     expect(screen.getByText("This folder is empty.")).toBeInTheDocument();
   });
 
-  it("searches across every channel", async () => {
+  it("searches across every shelf", async () => {
     withSaves();
     render(<App />);
     await userEvent.type(screen.getByLabelText("Search your cabinet"), "zettelkasten");
 
-    expect(screen.getByText("Results across all channels")).toBeInTheDocument();
+    expect(screen.getByText("Results across all shelves")).toBeInTheDocument();
     expect(screen.getByText("Zettelkasten")).toBeInTheDocument();
   });
 
@@ -210,10 +210,10 @@ describe("App", () => {
     expect(localStorage.getItem(STORAGE_KEYS.cabinet)).toContain("Inbox");
   });
 
-  it("creates a channel and opens it", async () => {
+  it("creates a shelf and opens it", async () => {
     withSaves();
     render(<App />);
-    await userEvent.click(screen.getByLabelText("New channel"));
+    await userEvent.click(screen.getByLabelText("New shelf"));
     await userEvent.type(screen.getByPlaceholderText("e.g. Inspiration"), "Recipes");
     await userEvent.click(screen.getByRole("button", { name: /create/i }));
 
@@ -291,7 +291,7 @@ describe("App", () => {
       withSaves();
       render(<App />);
 
-      await userEvent.click(within(sidebarRow("Research")).getByLabelText("Edit channel"));
+      await userEvent.click(within(sidebarRow("Research")).getByLabelText("Edit shelf"));
       await userEvent.click(screen.getByRole("button", { name: /^delete$/i }));
       await userEvent.click(screen.getByRole("button", { name: /delete 1 save\?/i }));
 
@@ -338,11 +338,11 @@ describe("App", () => {
       vi.useRealTimers();
     });
 
-    it("brings a whole channel back, contents and all", async () => {
+    it("brings a whole shelf back, contents and all", async () => {
       withSaves();
       render(<App />);
 
-      await userEvent.click(within(sidebarRow("Research")).getByLabelText("Edit channel"));
+      await userEvent.click(within(sidebarRow("Research")).getByLabelText("Edit shelf"));
       await userEvent.click(screen.getByRole("button", { name: /^delete$/i }));
       await userEvent.click(screen.getByRole("button", { name: /delete 1 save\?/i }));
 
@@ -353,13 +353,13 @@ describe("App", () => {
       expect(screen.getByText("Zettelkasten")).toBeInTheDocument();
     });
 
-    it("will not let the last channel go", async () => {
+    it("will not let the last shelf go", async () => {
       render(<App />);
 
-      await userEvent.click(within(sidebarRow("Saved")).getByLabelText("Edit channel"));
+      await userEvent.click(within(sidebarRow("Saved")).getByLabelText("Edit shelf"));
 
       expect(screen.getByRole("button", { name: /delete/i })).toBeDisabled();
-      expect(screen.getByText(/keeps at least one channel/)).toBeInTheDocument();
+      expect(screen.getByText(/keeps at least one shelf/)).toBeInTheDocument();
     });
 
     it("gives a tag back to the cards that wore it", async () => {

@@ -11,7 +11,7 @@ import {
   type NoteDraft,
 } from "./buildNote";
 
-const destination = { channelId: "c", path: [] };
+const destination = { shelfId: "c", path: [] };
 
 function draft(overrides: Partial<NoteDraft> = {}): NoteDraft {
   return { url: "", title: "", description: "", tag: "", image: "", destination, ...overrides };

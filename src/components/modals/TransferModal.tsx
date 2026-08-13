@@ -19,7 +19,7 @@ export type ImportMode = "merge" | "replace";
 const PROBLEMS: Readonly<Record<CabinetFileProblem, string>> = {
   unreadable: "This file is not JSON, so there is nothing to read.",
   newer: "This file comes from a newer version of thoughtcabinet.",
-  empty: "This file has no channels in it.",
+  empty: "This file has no shelves in it.",
 };
 
 interface StagedFile {
@@ -88,7 +88,7 @@ export function TransferModal({ library, tags, onExport, onImport, onCancel }: T
               <>
                 <CabinetCounts summary={summarizeCabinet(incoming.library, incoming.tags)} />
                 <p className="cab-hint">
-                  Merging keeps what you have, a channel whose name you already use pours its cards
+                  Merging keeps what you have, a shelf whose name you already use pours its cards
                   into yours. Replacing discards this cabinet for that one.
                 </p>
                 <div className="modal-actions cab-actions">

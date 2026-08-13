@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { makeChannel, makeFolder, makeNote, makeTag } from "@/test/factories";
+import { makeFolder, makeNote, makeShelf, makeTag } from "@/test/factories";
 import { collectNotes } from "@/domain/library/tree";
 import type { Cabinet } from "@/domain/model";
 import { TAG_PALETTE } from "@/domain/tags/palette";
@@ -10,8 +10,8 @@ const [RED, AMBER, YELLOW] = TAG_PALETTE;
 function base(): Cabinet {
   return {
     library: [
-      makeChannel("Reading", [makeNote({ id: "mine", title: "Mine" })], "ch-reading"),
-      makeChannel("Research", [], "ch-research"),
+      makeShelf("Reading", [makeNote({ id: "mine", title: "Mine" })], "ch-reading"),
+      makeShelf("Research", [], "ch-research"),
     ],
     tags: [makeTag("To read", RED)],
   };
@@ -22,9 +22,9 @@ function taggedNote(tag: string) {
 }
 
 describe("mergeCabinets", () => {
-  it("pours a channel whose name is already taken into the one that has it", () => {
+  it("pours a shelf whose name is already taken into the one that has it", () => {
     const merged = mergeCabinets(base(), {
-      library: [makeChannel("Reading", [makeNote({ id: "theirs", title: "Theirs" })], "ch-x")],
+      library: [makeShelf("Reading", [makeNote({ id: "theirs", title: "Theirs" })], "ch-x")],
       tags: [],
     });
 
@@ -32,9 +32,9 @@ describe("mergeCabinets", () => {
     expect(merged.library[0]?.children.map((node) => node.id)).toEqual(["mine", "theirs"]);
   });
 
-  it("matches a channel name whatever its case or padding", () => {
+  it("matches a shelf name whatever its case or padding", () => {
     const merged = mergeCabinets(base(), {
-      library: [makeChannel("  reading ", [makeNote({ id: "theirs" })], "ch-x")],
+      library: [makeShelf("  reading ", [makeNote({ id: "theirs" })], "ch-x")],
       tags: [],
     });
 
@@ -42,24 +42,24 @@ describe("mergeCabinets", () => {
     expect(merged.library[0]?.name).toBe("Reading");
   });
 
-  it("adds a channel whose name is new", () => {
+  it("adds a shelf whose name is new", () => {
     const merged = mergeCabinets(base(), {
-      library: [makeChannel("Recipes", [makeNote({ id: "theirs" })], "ch-x")],
+      library: [makeShelf("Recipes", [makeNote({ id: "theirs" })], "ch-x")],
       tags: [],
     });
 
-    expect(merged.library.map((channel) => channel.name)).toEqual([
+    expect(merged.library.map((shelf) => shelf.name)).toEqual([
       "Reading",
       "Research",
       "Recipes",
     ]);
   });
 
-  it("folds two arriving channels that share a name into one", () => {
+  it("folds two arriving shelves that share a name into one", () => {
     const merged = mergeCabinets(base(), {
       library: [
-        makeChannel("Recipes", [makeNote({ id: "one" })], "ch-x"),
-        makeChannel("Recipes", [makeNote({ id: "two" })], "ch-y"),
+        makeShelf("Recipes", [makeNote({ id: "one" })], "ch-x"),
+        makeShelf("Recipes", [makeNote({ id: "two" })], "ch-y"),
       ],
       tags: [],
     });
@@ -71,7 +71,7 @@ describe("mergeCabinets", () => {
   it("keeps folders and everything under them intact", () => {
     const merged = mergeCabinets(base(), {
       library: [
-        makeChannel("Recipes", [makeFolder("Bread", [makeNote({ id: "deep" })], "f-x")], "ch-x"),
+        makeShelf("Recipes", [makeFolder("Bread", [makeNote({ id: "deep" })], "f-x")], "ch-x"),
       ],
       tags: [],
     });
@@ -82,7 +82,7 @@ describe("mergeCabinets", () => {
 
   it("keeps the tag it already has when an arriving one shares its name", () => {
     const merged = mergeCabinets(base(), {
-      library: [makeChannel("Recipes", [taggedNote("To read")], "ch-x")],
+      library: [makeShelf("Recipes", [taggedNote("To read")], "ch-x")],
       tags: [makeTag("To read", AMBER)],
     });
 
@@ -92,7 +92,7 @@ describe("mergeCabinets", () => {
 
   it("gives an arriving tag a free color when its own is spoken for", () => {
     const merged = mergeCabinets(base(), {
-      library: [makeChannel("Recipes", [taggedNote("Later")], "ch-x")],
+      library: [makeShelf("Recipes", [taggedNote("Later")], "ch-x")],
       tags: [makeTag("Later", RED)],
     });
 
@@ -105,7 +105,7 @@ describe("mergeCabinets", () => {
 
   it("keeps an arriving tag's own color when nothing else claims it", () => {
     const merged = mergeCabinets(base(), {
-      library: [makeChannel("Recipes", [taggedNote("Later")], "ch-x")],
+      library: [makeShelf("Recipes", [taggedNote("Later")], "ch-x")],
       tags: [makeTag("Later", YELLOW)],
     });
 
@@ -114,12 +114,12 @@ describe("mergeCabinets", () => {
 
   it("drops a tag the palette has no room for, and clears it from its cards", () => {
     const full: Cabinet = {
-      library: [makeChannel("Reading", [], "ch-reading")],
+      library: [makeShelf("Reading", [], "ch-reading")],
       tags: TAG_PALETTE.map((color, index) => makeTag(`Tag ${index}`, color)),
     };
 
     const merged = mergeCabinets(full, {
-      library: [makeChannel("Recipes", [taggedNote("Ninth")], "ch-x")],
+      library: [makeShelf("Recipes", [taggedNote("Ninth")], "ch-x")],
       tags: [makeTag("Ninth", RED)],
     });
 
@@ -129,7 +129,7 @@ describe("mergeCabinets", () => {
 
   it("clears a tag an arriving card carries without its cabinet listing it", () => {
     const merged = mergeCabinets(base(), {
-      library: [makeChannel("Recipes", [taggedNote("Ghost")], "ch-x")],
+      library: [makeShelf("Recipes", [taggedNote("Ghost")], "ch-x")],
       tags: [],
     });
 
@@ -142,7 +142,7 @@ describe("mergeCabinets", () => {
     const snapshot = JSON.stringify(original);
 
     mergeCabinets(original, {
-      library: [makeChannel("Reading", [makeNote({ id: "theirs" })], "ch-x")],
+      library: [makeShelf("Reading", [makeNote({ id: "theirs" })], "ch-x")],
       tags: [makeTag("Later", AMBER)],
     });
 

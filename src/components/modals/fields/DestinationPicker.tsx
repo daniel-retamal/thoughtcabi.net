@@ -52,13 +52,13 @@ export function DestinationPicker({ library, value, onChange }: DestinationPicke
                 className={isSelected ? "dest-opt on" : "dest-opt"}
                 style={{ paddingLeft: INDENT_BASE_PX + option.depth * INDENT_STEP_PX }}
                 onClick={() => {
-                  onChange({ channelId: option.channelId, path: option.path });
+                  onChange({ shelfId: option.shelfId, path: option.path });
                   setOpen(false);
                 }}
               >
                 <Icon
                   name={option.depth === 0 ? option.icon : "folder"}
-                  className={option.depth === 0 ? "dp-chan" : "dp-fold"}
+                  className={option.depth === 0 ? "dp-shelf" : "dp-fold"}
                 />
                 <span className="dest-opt-label">{option.label}</span>
                 {isSelected ? <Icon name="check" className="dp-check" /> : null}

@@ -5,15 +5,15 @@ import { availableColors } from "@/domain/tags/tagLibrary";
 import { notesWithTag } from "@/domain/library/search";
 import {
   containerAt,
-  firstChannel,
+  firstShelf,
   isCabinetEmpty,
   parentContainerName,
   pathToFolder,
   placementOf,
-  requireChannel,
+  requireShelf,
 } from "@/domain/library/tree";
 import { buildNote, type NoteDraft } from "@/domain/notes/buildNote";
-import type { Cabinet, Channel, Folder, LibraryLocation, Note, Tag } from "@/domain/model";
+import type { Cabinet, Folder, LibraryLocation, Note, Shelf, Tag } from "@/domain/model";
 import { sameName } from "@/domain/transfer/mergeCabinets";
 import { withFreshIds } from "@/domain/transfer/reidentify";
 import { locationDropProps } from "@/dnd/dragProps";
@@ -59,7 +59,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [noticeDismissed, setNoticeDismissed] = useState(false);
 
-  const navigation = useNavigation(requireChannel(library, "").id);
+  const navigation = useNavigation(requireShelf(library, "").id);
   const { toasts, push: pushToast, undoable } = useToasts();
   const fresh = useTransientIds(FRESH_HIGHLIGHT_MS);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -112,12 +112,12 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
   });
 
   const openFolder = (folder: FolderEntry): void => {
-    if (viewState.mode !== "searching" || !folder.channelId) {
+    if (viewState.mode !== "searching" || !folder.shelfId) {
       navigation.openFolder(folder.id);
       return;
     }
-    const channel = requireChannel(library, folder.channelId);
-    navigation.goTo({ channelId: folder.channelId, path: pathToFolder(channel, folder.id) });
+    const shelf = requireShelf(library, folder.shelfId);
+    navigation.goTo({ shelfId: folder.shelfId, path: pathToFolder(shelf, folder.id) });
   };
 
   const saveNote = (draft: NoteDraft, preview: LinkPreview | null, editing: Note | null): void => {
@@ -144,27 +144,27 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     if (dialog?.kind === "detail" && dialog.note.id === note.id) closeDialog();
   };
 
-  const saveChannel = (channel: Channel | null, name: string, icon: IconName): void => {
-    if (channel) {
-      dispatch({ type: "channel/update", id: channel.id, name, icon });
+  const saveShelf = (shelf: Shelf | null, name: string, icon: IconName): void => {
+    if (shelf) {
+      dispatch({ type: "shelf/update", id: shelf.id, name, icon });
     } else {
       const id = createId("ch");
-      dispatch({ type: "channel/add", channel: { id, name, icon, children: [] } });
-      navigation.enterChannel(id);
+      dispatch({ type: "shelf/add", shelf: { id, name, icon, children: [] } });
+      navigation.enterShelf(id);
       navigation.clearTag();
     }
     closeDialog();
   };
 
-  const deleteChannel = (channel: Channel): void => {
-    const index = library.findIndex((entry) => entry.id === channel.id);
-    const fallback = library.find((entry) => entry.id !== channel.id);
+  const deleteShelf = (shelf: Shelf): void => {
+    const index = library.findIndex((entry) => entry.id === shelf.id);
+    const fallback = library.find((entry) => entry.id !== shelf.id);
     closeDialog();
     if (!fallback) return;
 
-    dispatch({ type: "channel/remove", id: channel.id });
-    if (navigation.state.channelId === channel.id) navigation.enterChannel(fallback.id);
-    announceDeletion(channel.name, () => dispatch({ type: "channel/restore", index, channel }));
+    dispatch({ type: "shelf/remove", id: shelf.id });
+    if (navigation.state.shelfId === shelf.id) navigation.enterShelf(fallback.id);
+    announceDeletion(shelf.name, () => dispatch({ type: "shelf/restore", index, shelf }));
   };
 
   const saveTag = (original: Tag | null, name: string, color: string): void => {
@@ -196,26 +196,26 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     downloadTextFile(cabinetFileName(exportedAt), serializeCabinet(cabinet, exportedAt));
   };
 
-  const replaceWith = (incoming: Cabinet): Channel => {
+  const replaceWith = (incoming: Cabinet): Shelf => {
     dispatch({ type: "cabinet/replace", cabinet: incoming });
-    return firstChannel(incoming.library);
+    return firstShelf(incoming.library);
   };
 
-  const mergeIn = (incoming: Cabinet): Channel => {
+  const mergeIn = (incoming: Cabinet): Shelf => {
     const freshened = withFreshIds(incoming, createId);
     dispatch({ type: "cabinet/merge", cabinet: freshened });
-    const arriving = firstChannel(freshened.library);
-    return library.find((channel) => sameName(channel.name, arriving.name)) ?? arriving;
+    const arriving = firstShelf(freshened.library);
+    return library.find((shelf) => sameName(shelf.name, arriving.name)) ?? arriving;
   };
 
   const importCabinet = (incoming: Cabinet, mode: ImportMode): void => {
     const landing = mode === "replace" ? replaceWith(incoming) : mergeIn(incoming);
     closeDialog();
-    navigation.openChannel(landing.id);
+    navigation.openShelf(landing.id);
     pushToast({
       verb: "Imported into",
       subject: landing.name,
-      action: viewAction({ channelId: landing.id, path: [] }),
+      action: viewAction({ shelfId: landing.id, path: [] }),
     });
   };
 
@@ -239,7 +239,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
         mode: viewState.mode,
         query: navigation.state.query,
         activeTag: navigation.state.activeTag,
-        channelName: viewState.channel.name,
+        shelfName: viewState.shelf.name,
         inFolder: navigation.state.path.length > 0,
         cabinetEmpty,
         onboarded: preferences.onboarded,
@@ -260,14 +260,14 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
 
       <div className="main">
         <Sidebar
-          channels={library}
+          shelves={library}
           tags={tags}
-          activeChannelId={navigation.state.channelId}
-          atChannelRoot={navigation.state.path.length === 0}
+          activeShelfId={navigation.state.shelfId}
+          atShelfRoot={navigation.state.path.length === 0}
           activeTag={navigation.state.activeTag}
-          onOpenChannel={(channel) => navigation.openChannel(channel.id)}
-          onNewChannel={() => setDialog({ kind: "channel", mode: "new" })}
-          onEditChannel={(channel) => setDialog({ kind: "channel", mode: "edit", channel })}
+          onOpenShelf={(shelf) => navigation.openShelf(shelf.id)}
+          onNewShelf={() => setDialog({ kind: "shelf", mode: "new" })}
+          onEditShelf={(shelf) => setDialog({ kind: "shelf", mode: "edit", shelf })}
           onSelectTag={navigation.selectTag}
           onNewTag={() =>
             setDialog({ kind: "tag", mode: "new", color: availableColors(tags)[0] ?? "" })
@@ -297,7 +297,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
                 <div className="crumbs">
                   <span className="crumb current">
                     <Icon name="search" />
-                    <span className="ctxt">Results across all channels</span>
+                    <span className="ctxt">Results across all shelves</span>
                   </span>
                 </div>
               ) : viewState.mode === "tagged" ? (
@@ -352,14 +352,14 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
         currentLocation={navigation.location}
         readLink={readLink}
         detailLocationLabel={(note) =>
-          parentContainerName(library, note.id) ?? viewState.channel.name
+          parentContainerName(library, note.id) ?? viewState.shelf.name
         }
         onClose={closeDialog}
         onEditNote={(note) => setDialog({ kind: "compose", mode: "edit", note })}
         onSaveNote={saveNote}
         onCreateTag={(name, color) => dispatch({ type: "tag/add", name, color })}
-        onSaveChannel={saveChannel}
-        onDeleteChannel={deleteChannel}
+        onSaveShelf={saveShelf}
+        onDeleteShelf={deleteShelf}
         onSaveTag={saveTag}
         onDeleteTag={deleteTag}
         onCreateFolder={(name) => {

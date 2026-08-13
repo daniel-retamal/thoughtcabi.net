@@ -31,9 +31,9 @@ export function resolveDrop(context: HitTestContext): HitTestResult {
     return { target: resolveTagDrop(element, drag.tag), springElement: null };
   }
 
-  if (drag.kind === "channel") {
-    const row = element?.closest(`[${DND_ATTR.channelRow}]`);
-    return { target: row ? resolveChannelInsertion(point, drag.id) : null, springElement: null };
+  if (drag.kind === "shelf") {
+    const row = element?.closest(`[${DND_ATTR.shelfRow}]`);
+    return { target: row ? resolveShelfInsertion(point, drag.id) : null, springElement: null };
   }
 
   return {
@@ -63,7 +63,7 @@ function resolveNodeDrop(context: NodeHitContext, element: Element | null): Drop
 
   return (
     resolveFolderDrop(context, element) ??
-    resolveNavDrop(element, `[${DND_ATTR.channelTarget}]`, drag, validate) ??
+    resolveNavDrop(element, `[${DND_ATTR.shelfTarget}]`, drag, validate) ??
     resolveNavDrop(element, `[${DND_ATTR.crumb}]`, drag, validate) ??
     resolvePlacement(context, element)
   );
@@ -145,8 +145,8 @@ function resolvePlacement(context: NodeHitContext, element: Element | null): Dro
   return validate(drag, target) ? target : null;
 }
 
-function resolveChannelInsertion(point: Point, dragId: NodeId): DropTarget | null {
-  const rows = Array.from(document.querySelectorAll<HTMLElement>(`[${DND_ATTR.channelRow}]`)).filter(
+function resolveShelfInsertion(point: Point, dragId: NodeId): DropTarget | null {
+  const rows = Array.from(document.querySelectorAll<HTMLElement>(`[${DND_ATTR.shelfRow}]`)).filter(
     (row) => readAttr(row, DND_ATTR.dragId) !== dragId,
   );
   if (rows.length === 0) return null;
@@ -176,7 +176,7 @@ function resolveChannelInsertion(point: Point, dragId: NodeId): DropTarget | nul
   const beforeId = ids[insertIndex] ?? null;
   const line = reorderLine("y", rows[insertIndex - 1], rows[insertIndex], best, bestRect);
 
-  return { type: "reorder-channel", beforeId, line };
+  return { type: "reorder-shelf", beforeId, line };
 }
 
 function reorderLine(

@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { ChannelEditorModal, type ChannelEditorModalProps } from "./ChannelEditorModal";
+import { ShelfEditorModal, type ShelfEditorModalProps } from "./ShelfEditorModal";
 
-function renderEditor(overrides: Partial<ChannelEditorModalProps> = {}) {
+function renderEditor(overrides: Partial<ShelfEditorModalProps> = {}) {
   const handlers = { onConfirm: vi.fn(), onDelete: vi.fn(), onCancel: vi.fn() };
 
   render(
-    <ChannelEditorModal
+    <ShelfEditorModal
       mode="edit"
       initialName="Design"
       initialIcon="palette"
@@ -25,7 +25,7 @@ function deleteButton(): HTMLElement {
   return screen.getByRole("button", { name: /delete/i });
 }
 
-describe("ChannelEditorModal", () => {
+describe("ShelfEditorModal", () => {
   it("states the cost on the button rather than destroying on the first click", async () => {
     const handlers = renderEditor();
 
@@ -37,11 +37,11 @@ describe("ChannelEditorModal", () => {
     expect(handlers.onDelete).toHaveBeenCalledTimes(1);
   });
 
-  it("still asks twice for a channel that holds nothing", async () => {
+  it("still asks twice for a shelf that holds nothing", async () => {
     renderEditor({ saveCount: 0 });
 
     await userEvent.click(deleteButton());
-    expect(screen.getByRole("button", { name: /delete channel\?/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /delete shelf\?/i })).toBeInTheDocument();
   });
 
   it("lets the first escape cancel the arming and the second close the editor", async () => {
@@ -65,16 +65,16 @@ describe("ChannelEditorModal", () => {
     expect(deleteButton()).not.toHaveClass("armed");
   });
 
-  it("refuses to delete the last channel, and says why", () => {
+  it("refuses to delete the last shelf, and says why", () => {
     renderEditor({ canDelete: false });
 
     expect(deleteButton()).toBeDisabled();
     expect(
-      screen.getByText("Your cabinet keeps at least one channel. Rename this one instead."),
+      screen.getByText("Your cabinet keeps at least one shelf. Rename this one instead."),
     ).toBeInTheDocument();
   });
 
-  it("offers no delete at all while the channel is being made", () => {
+  it("offers no delete at all while the shelf is being made", () => {
     renderEditor({ mode: "new", initialName: "", saveCount: 0 });
     expect(screen.queryByRole("button", { name: /delete/i })).not.toBeInTheDocument();
   });

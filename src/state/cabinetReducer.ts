@@ -1,22 +1,22 @@
 import {
-  addChannel,
+  addShelf,
   addChild,
   createFolder,
   insertAt,
-  insertChannel,
+  insertShelf,
   moveIntoFolder,
   moveToLocation,
   patchNotes,
-  removeChannel,
+  removeShelf,
   removeNode,
   renameFolder,
-  reorderChannels,
+  reorderShelves,
   reorderWithinLocation,
   replaceNode,
-  updateChannel,
+  updateShelf,
 } from "@/domain/library/mutations";
 import { pendingPlacements, type NodePlacement } from "@/domain/library/tree";
-import type { Cabinet, Channel, Library, LibraryLocation, NodeId, Note, Tag } from "@/domain/model";
+import type { Cabinet, Library, LibraryLocation, NodeId, Note, Shelf, Tag } from "@/domain/model";
 import { addTag, insertTag, recolorTag, removeTag, renameTag } from "@/domain/tags/tagLibrary";
 import { mergeCabinets } from "@/domain/transfer/mergeCabinets";
 import type { IconName } from "@/icons/names";
@@ -40,11 +40,11 @@ export type CabinetAction =
   | { type: "node/moveIntoFolder"; id: NodeId; folderId: NodeId }
   | { type: "node/moveToLocation"; id: NodeId; location: LibraryLocation }
   | { type: "node/reorder"; id: NodeId; location: LibraryLocation; beforeId: NodeId | null }
-  | { type: "channel/add"; channel: Channel }
-  | { type: "channel/update"; id: NodeId; name: string; icon: IconName }
-  | { type: "channel/remove"; id: NodeId }
-  | { type: "channel/restore"; index: number; channel: Channel }
-  | { type: "channel/reorder"; id: NodeId; beforeId: NodeId | null }
+  | { type: "shelf/add"; shelf: Shelf }
+  | { type: "shelf/update"; id: NodeId; name: string; icon: IconName }
+  | { type: "shelf/remove"; id: NodeId }
+  | { type: "shelf/restore"; index: number; shelf: Shelf }
+  | { type: "shelf/reorder"; id: NodeId; beforeId: NodeId | null }
   | { type: "folder/add"; location: LibraryLocation; id: NodeId; name: string }
   | { type: "folder/rename"; id: NodeId; name: string }
   | { type: "tag/assign"; noteId: NodeId; tag: string }
@@ -128,23 +128,23 @@ export function cabinetReducer(state: Cabinet, action: CabinetAction): Cabinet {
         reorderWithinLocation(library, action.location, action.id, action.beforeId),
       );
 
-    case "channel/add":
-      return withLibrary(state, addChannel(library, action.channel));
+    case "shelf/add":
+      return withLibrary(state, addShelf(library, action.shelf));
 
-    case "channel/update":
+    case "shelf/update":
       return withLibrary(
         state,
-        updateChannel(library, action.id, { name: action.name, icon: action.icon }),
+        updateShelf(library, action.id, { name: action.name, icon: action.icon }),
       );
 
-    case "channel/remove":
-      return withLibrary(state, removeChannel(library, action.id));
+    case "shelf/remove":
+      return withLibrary(state, removeShelf(library, action.id));
 
-    case "channel/restore":
-      return withLibrary(state, insertChannel(library, action.index, action.channel));
+    case "shelf/restore":
+      return withLibrary(state, insertShelf(library, action.index, action.shelf));
 
-    case "channel/reorder":
-      return withLibrary(state, reorderChannels(library, action.id, action.beforeId));
+    case "shelf/reorder":
+      return withLibrary(state, reorderShelves(library, action.id, action.beforeId));
 
     case "folder/add":
       return withLibrary(

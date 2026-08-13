@@ -1,5 +1,5 @@
 import type { IconName } from "@/icons/names";
-import { CHANNEL_ICON_CHOICES } from "@/icons/registry";
+import { SHELF_ICON_CHOICES } from "@/icons/registry";
 import { Icon } from "@/components/primitives/Icon";
 
 export interface IconPickerProps {
@@ -10,7 +10,7 @@ export interface IconPickerProps {
 export function IconPicker({ value, onChange }: IconPickerProps) {
   return (
     <div className="icon-grid">
-      {CHANNEL_ICON_CHOICES.map((icon) => (
+      {SHELF_ICON_CHOICES.map((icon) => (
         <button
           type="button"
           key={icon}

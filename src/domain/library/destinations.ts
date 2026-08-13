@@ -9,7 +9,7 @@ export interface Destination extends LibraryLocation {
 }
 
 export function destinationKey(destination: LibraryLocation): string {
-  return `${destination.channelId}/${destination.path.join("/")}`;
+  return `${destination.shelfId}/${destination.path.join("/")}`;
 }
 
 export function sameDestination(a: LibraryLocation | null, b: LibraryLocation | null): boolean {
@@ -20,13 +20,13 @@ export function sameDestination(a: LibraryLocation | null, b: LibraryLocation | 
 export function flattenDestinations(library: Library): Destination[] {
   const destinations: Destination[] = [];
 
-  for (const channel of library) {
+  for (const shelf of library) {
     destinations.push({
-      channelId: channel.id,
+      shelfId: shelf.id,
       path: [],
-      label: channel.name,
+      label: shelf.name,
       depth: 0,
-      icon: channel.icon,
+      icon: shelf.icon,
     });
 
     const walk = (container: Container, path: string[]): void => {
@@ -34,7 +34,7 @@ export function flattenDestinations(library: Library): Destination[] {
         if (!isFolder(child)) continue;
         const nextPath = [...path, child.id];
         destinations.push({
-          channelId: channel.id,
+          shelfId: shelf.id,
           path: nextPath,
           label: child.name,
           depth: nextPath.length,
@@ -44,7 +44,7 @@ export function flattenDestinations(library: Library): Destination[] {
       }
     };
 
-    walk(channel, []);
+    walk(shelf, []);
   }
 
   return destinations;

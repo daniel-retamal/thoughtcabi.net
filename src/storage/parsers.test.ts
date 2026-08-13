@@ -17,7 +17,7 @@ describe("parseLibrary", () => {
     expect(library?.[0]?.icon).toBe("book-open");
   });
 
-  it("rejects anything that is not a non-empty array of channels", () => {
+  it("rejects anything that is not a non-empty array of shelves", () => {
     expect(parseLibrary(null)).toBeNull();
     expect(parseLibrary("nope")).toBeNull();
     expect(parseLibrary([])).toBeNull();
@@ -69,8 +69,8 @@ describe("parseLibrary", () => {
   });
 
   it("drops children that carry no id", () => {
-    const channel = parseLibrary([{ id: "c", name: "C", children: [{ type: "note" }, 7, null] }]);
-    expect(channel?.[0]?.children).toEqual([]);
+    const shelf = parseLibrary([{ id: "c", name: "C", children: [{ type: "note" }, 7, null] }]);
+    expect(shelf?.[0]?.children).toEqual([]);
   });
 
   it("preserves a hand-added image but not an empty one", () => {

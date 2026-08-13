@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { makeChannel, makeLibrary, makeNote, makeTag } from "@/test/factories";
+import { makeLibrary, makeNote, makeShelf, makeTag } from "@/test/factories";
 import { TAG_PALETTE } from "@/domain/tags/palette";
 import { serializeCabinet } from "@/storage/cabinetFile";
 import { TransferModal } from "./TransferModal";
@@ -10,7 +10,7 @@ const DROP_LABEL = "Drop a cabinet file, or click to choose";
 
 function cabinetFile(name = "cabinet.json"): File {
   const text = serializeCabinet(
-    { library: [makeChannel("Recipes", [makeNote({ id: "arrived" })], "ch-file")], tags: [] },
+    { library: [makeShelf("Recipes", [makeNote({ id: "arrived" })], "ch-file")], tags: [] },
     Date.UTC(2026, 7, 8),
   );
   return new File([text], name, { type: "application/json" });
@@ -43,7 +43,7 @@ describe("TransferModal", () => {
   it("says what is in the cabinet before it is downloaded", () => {
     setup();
 
-    expect(screen.getByLabelText("2 channels")).toBeInTheDocument();
+    expect(screen.getByLabelText("2 shelves")).toBeInTheDocument();
     expect(screen.getByLabelText("2 folders")).toBeInTheDocument();
     expect(screen.getByLabelText("4 cards")).toBeInTheDocument();
     expect(screen.getByLabelText("2 tags")).toBeInTheDocument();
@@ -63,7 +63,7 @@ describe("TransferModal", () => {
     await choose(cabinetFile("backup.json"));
 
     expect(await screen.findByText("backup.json")).toBeInTheDocument();
-    expect(screen.getByLabelText("1 channel")).toBeInTheDocument();
+    expect(screen.getByLabelText("1 shelf")).toBeInTheDocument();
     expect(screen.getByLabelText("1 card")).toBeInTheDocument();
     expect(onImport).not.toHaveBeenCalled();
   });
@@ -83,7 +83,7 @@ describe("TransferModal", () => {
     await userEvent.click(await screen.findByRole("button", { name: "Merge" }));
 
     const [cabinet, mode] = onImport.mock.calls[0] as [{ library: { name: string }[] }, string];
-    expect(cabinet.library.map((channel) => channel.name)).toEqual(["Recipes"]);
+    expect(cabinet.library.map((shelf) => shelf.name)).toEqual(["Recipes"]);
     expect(mode).toBe("merge");
   });
 
@@ -109,7 +109,7 @@ describe("TransferModal", () => {
 
     drop(new File(['{"type":"excalidraw","elements":[]}'], "drawing.excalidraw"));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("no channels in it");
+    expect(await screen.findByRole("alert")).toHaveTextContent("no shelves in it");
     expect(screen.queryByRole("button", { name: "Merge" })).not.toBeInTheDocument();
   });
 

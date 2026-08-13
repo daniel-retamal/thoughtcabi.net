@@ -31,11 +31,11 @@ thoughtcabi.net is an open source place to put the websites you want to keep. Bo
 
 **Paste a link, anywhere.** `Ctrl`+`V` on the page and a card lands immediately, then fills itself in with the page's real title, description, thumbnail and favicon.
 
-**Channels, folders and tags.** A channel is a shelf, and the sidebar lists them all. Folders go inside a channel, and eight colour-anchored tags cut across everything, one name per colour. Drag anything anywhere, and drag a tag from the sidebar onto a card to apply it.
+**Shelves, folders and tags.** The sidebar lists every shelf you have. Folders go inside a shelf, and eight colour-anchored tags cut across everything, one name per colour. Drag anything anywhere, and drag a tag from the sidebar onto a card to apply it.
 
 **Two views.** Grid for calm, rows for density. The card has one fixed shape, and everything on it except the title is optional.
 
-**Export and import.** Export writes a single JSON file holding every channel, folder, card and tag. Import takes it back and shows you what is inside before it touches anything: merge pours it into what you have, replace swaps the lot.
+**Export and import.** Export writes a single JSON file holding every shelf, folder, card and tag. Import takes it back and shows you what is inside before it touches anything: merge pours it into what you have, replace swaps the lot.
 
 ## Keyboard and gestures
 
@@ -47,7 +47,7 @@ thoughtcabi.net is an open source place to put the websites you want to keep. Bo
 | Close any dialog      | `Esc`, or click the backdrop                       |
 | Move a card or folder | Drag it, and the nearest gap between siblings wins |
 | Move into a folder    | Drop onto the folder tile                          |
-| Open while dragging   | Hover a breadcrumb or channel for a moment         |
+| Open while dragging   | Hover a breadcrumb or shelf for a moment         |
 | Assign a tag          | Drag the tag from the sidebar onto a card          |
 | Cancel a drag         | `Esc`, right-click, or drop on nothing             |
 

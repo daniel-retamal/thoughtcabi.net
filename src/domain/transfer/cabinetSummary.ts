@@ -2,7 +2,7 @@ import { eachNode } from "@/domain/library/tree";
 import { isFolder, isNote, type Library, type Tag } from "@/domain/model";
 
 export interface CabinetSummary {
-  channels: number;
+  shelves: number;
   folders: number;
   notes: number;
   tags: number;
@@ -17,5 +17,5 @@ export function summarizeCabinet(library: Library, tags: readonly Tag[]): Cabine
     else if (isNote(node)) notes += 1;
   });
 
-  return { channels: library.length, folders, notes, tags: tags.length };
+  return { shelves: library.length, folders, notes, tags: tags.length };
 }

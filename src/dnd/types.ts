@@ -1,9 +1,9 @@
 import type { LibraryLocation, NodeId } from "@/domain/model";
 
-export type DragKind = "item" | "folder" | "channel" | "tag";
+export type DragKind = "item" | "folder" | "shelf" | "tag";
 
 export interface NodeDrag {
-  kind: "item" | "folder" | "channel";
+  kind: "item" | "folder" | "shelf";
   id: NodeId;
 }
 
@@ -52,14 +52,14 @@ export interface ReorderTarget {
   element: HTMLElement;
 }
 
-export interface ReorderChannelTarget {
-  type: "reorder-channel";
+export interface ReorderShelfTarget {
+  type: "reorder-shelf";
   beforeId: NodeId | null;
   line: InsertionLine;
 }
 
 export type DropTarget =
-  AssignTagTarget | IntoFolderTarget | IntoLocationTarget | ReorderTarget | ReorderChannelTarget;
+  AssignTagTarget | IntoFolderTarget | IntoLocationTarget | ReorderTarget | ReorderShelfTarget;
 
 export interface DragCallbacks {
   onDrop(drag: DragPayload, target: DropTarget): void;

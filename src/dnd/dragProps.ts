@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent } from "react";
-import type { Channel, Folder, LibraryLocation, NodeId, Tag } from "@/domain/model";
+import type { Folder, LibraryLocation, NodeId, Shelf, Tag } from "@/domain/model";
 import { serializeLocation } from "./attributes";
 import { dragController } from "./controller";
 import type { DragPayload } from "./types";
@@ -44,25 +44,25 @@ export function folderDragProps(folder: Folder): FolderDragProps {
   };
 }
 
-export interface ChannelDragProps {
-  "data-channel-row": "";
-  "data-channel-target": "";
-  "data-drag-kind": "channel";
+export interface ShelfDragProps {
+  "data-shelf-row": "";
+  "data-shelf-target": "";
+  "data-drag-kind": "shelf";
   "data-drag-id": NodeId;
   "data-nav": string;
   "data-spring": "";
   onPointerDown: PointerHandler;
 }
 
-export function channelDragProps(channel: Channel): ChannelDragProps {
+export function shelfDragProps(shelf: Shelf): ShelfDragProps {
   return {
-    "data-channel-row": "",
-    "data-channel-target": "",
-    "data-drag-kind": "channel",
-    "data-drag-id": channel.id,
-    "data-nav": serializeLocation({ channelId: channel.id, path: [] }),
+    "data-shelf-row": "",
+    "data-shelf-target": "",
+    "data-drag-kind": "shelf",
+    "data-drag-id": shelf.id,
+    "data-nav": serializeLocation({ shelfId: shelf.id, path: [] }),
     "data-spring": "",
-    onPointerDown: beginDrag({ kind: "channel", id: channel.id }),
+    onPointerDown: beginDrag({ kind: "shelf", id: shelf.id }),
   };
 }
 

@@ -1,13 +1,13 @@
 import {
   DEFAULT_VIEW_MODE,
   type Cabinet,
-  type Channel,
   type Folder,
   type Library,
   type LibraryNode,
   type Note,
   type NoteEntry,
   type Preferences,
+  type Shelf,
   type SiteCategory,
   type Tag,
   type ViewMode,
@@ -87,13 +87,13 @@ function parseNodes(value: unknown): LibraryNode[] {
   return nodes;
 }
 
-function parseChannel(value: unknown): Channel | null {
+function parseShelf(value: unknown): Shelf | null {
   if (!isDict(value)) return null;
   const id = str(value.id);
   if (!id) return null;
   return {
     id,
-    name: str(value.name, "Untitled channel"),
+    name: str(value.name, "Untitled shelf"),
     icon: toIconName(value.icon),
     children: parseNodes(value.children),
   };
@@ -101,10 +101,10 @@ function parseChannel(value: unknown): Channel | null {
 
 export function parseLibrary(value: unknown): Library | null {
   if (!Array.isArray(value)) return null;
-  const channels = value
-    .map(parseChannel)
-    .filter((channel): channel is Channel => channel !== null);
-  return channels.length > 0 ? channels : null;
+  const shelves = value
+    .map(parseShelf)
+    .filter((shelf): shelf is Shelf => shelf !== null);
+  return shelves.length > 0 ? shelves : null;
 }
 
 export function parseTags(value: unknown): Tag[] | null {

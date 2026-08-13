@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { makeChannel, makeFolder, makeLibrary, makeNote } from "@/test/factories";
+import { makeFolder, makeLibrary, makeNote, makeShelf } from "@/test/factories";
 import { isFolder } from "@/domain/model";
 import {
   EmptyLibraryError,
@@ -7,9 +7,9 @@ import {
   containerAt,
   containerAtPath,
   directCounts,
-  findChannel,
+  findShelf,
   findFolder,
-  firstChannel,
+  firstShelf,
   folderContains,
   isCabinetEmpty,
   locateFolder,
@@ -18,71 +18,71 @@ import {
   pathToFolder,
   placementOf,
   pendingPlacements,
-  requireChannel,
+  requireShelf,
   splitChildren,
 } from "./tree";
 
-describe("channel lookup", () => {
-  it("finds a channel by id and falls back to the first one", () => {
+describe("shelf lookup", () => {
+  it("finds a shelf by id and falls back to the first one", () => {
     const library = makeLibrary();
-    expect(findChannel(library, "channel-research")?.name).toBe("Research");
-    expect(findChannel(library, "nope")).toBeUndefined();
-    expect(requireChannel(library, "nope").name).toBe("Reading");
+    expect(findShelf(library, "shelf-research")?.name).toBe("Research");
+    expect(findShelf(library, "nope")).toBeUndefined();
+    expect(requireShelf(library, "nope").name).toBe("Reading");
   });
 
-  it("refuses to pretend an empty library has a channel", () => {
-    expect(() => firstChannel([])).toThrow(EmptyLibraryError);
+  it("refuses to pretend an empty library has a shelf", () => {
+    expect(() => firstShelf([])).toThrow(EmptyLibraryError);
   });
 });
 
 describe("containerAtPath", () => {
   it("walks down a folder path", () => {
     const library = makeLibrary();
-    const channel = requireChannel(library, "channel-reading");
-    expect(containerAtPath(channel, ["folder-essays"]).name).toBe("Essays");
+    const shelf = requireShelf(library, "shelf-reading");
+    expect(containerAtPath(shelf, ["folder-essays"]).name).toBe("Essays");
   });
 
   it("stops at the deepest segment it can resolve", () => {
     const library = makeLibrary();
-    const channel = requireChannel(library, "channel-reading");
-    expect(containerAtPath(channel, ["folder-essays", "missing"]).name).toBe("Essays");
-    expect(containerAtPath(channel, []).name).toBe("Reading");
+    const shelf = requireShelf(library, "shelf-reading");
+    expect(containerAtPath(shelf, ["folder-essays", "missing"]).name).toBe("Essays");
+    expect(containerAtPath(shelf, []).name).toBe("Reading");
   });
 
   it("never treats a note id as a folder segment", () => {
     const library = makeLibrary();
-    const channel = requireChannel(library, "channel-reading");
-    expect(containerAtPath(channel, ["note-loose"]).name).toBe("Reading");
+    const shelf = requireShelf(library, "shelf-reading");
+    expect(containerAtPath(shelf, ["note-loose"]).name).toBe("Reading");
   });
 
   it("resolves a location against the whole library", () => {
     const library = makeLibrary();
-    expect(containerAt(library, { channelId: "channel-research", path: [] }).name).toBe("Research");
+    expect(containerAt(library, { shelfId: "shelf-research", path: [] }).name).toBe("Research");
   });
 });
 
 describe("locating nodes", () => {
   it("reports the path to a folder", () => {
     const library = makeLibrary();
-    const channel = requireChannel(library, "channel-reading");
-    expect(pathToFolder(channel, "folder-essays")).toEqual(["folder-essays"]);
-    expect(pathToFolder(channel, "missing")).toEqual([]);
+    const shelf = requireShelf(library, "shelf-reading");
+    expect(pathToFolder(shelf, "folder-essays")).toEqual(["folder-essays"]);
+    expect(pathToFolder(shelf, "missing")).toEqual([]);
   });
 
   it("finds nested folders", () => {
     const inner = makeFolder("Inner", [], "inner");
-    const library = [makeChannel("C", [makeFolder("Outer", [inner], "outer")], "c")];
+    const library = [makeShelf("C", [makeFolder("Outer", [inner], "outer")], "c")];
     expect(pathToFolder(library[0]!, "inner")).toEqual(["outer", "inner"]);
   });
 
   it("locates a node's containing location", () => {
     const library = makeLibrary();
     expect(locateNode(library, "note-a")).toEqual({
-      channelId: "channel-reading",
+      shelfId: "shelf-reading",
       path: ["folder-essays"],
     });
     expect(locateNode(library, "note-loose")).toEqual({
-      channelId: "channel-reading",
+      shelfId: "shelf-reading",
       path: [],
     });
     expect(locateNode(library, "ghost")).toBeUndefined();
@@ -91,7 +91,7 @@ describe("locating nodes", () => {
   it("locates a folder with its display name", () => {
     const library = makeLibrary();
     expect(locateFolder(library, "folder-essays")).toEqual({
-      location: { channelId: "channel-reading", path: ["folder-essays"] },
+      location: { shelfId: "shelf-reading", path: ["folder-essays"] },
       name: "Essays",
     });
     expect(locateFolder(library, "ghost")).toBeNull();
@@ -108,12 +108,12 @@ describe("locating nodes", () => {
     const library = makeLibrary();
 
     const nested = placementOf(library, "note-b");
-    expect(nested?.location).toEqual({ channelId: "channel-reading", path: ["folder-essays"] });
+    expect(nested?.location).toEqual({ shelfId: "shelf-reading", path: ["folder-essays"] });
     expect(nested?.index).toBe(1);
     expect(nested?.node.id).toBe("note-b");
 
     const folder = placementOf(library, "folder-empty");
-    expect(folder?.location).toEqual({ channelId: "channel-reading", path: [] });
+    expect(folder?.location).toEqual({ shelfId: "shelf-reading", path: [] });
     expect(folder?.index).toBe(1);
     expect(folder?.node.id).toBe("folder-empty");
 
@@ -145,9 +145,9 @@ describe("counting and collecting", () => {
 
   it("counts direct children only", () => {
     const library = makeLibrary();
-    const channel = requireChannel(library, "channel-reading");
-    expect(directCounts(channel)).toEqual({ folders: 2, notes: 1 });
-    expect(directCounts(containerAtPath(channel, ["folder-essays"]))).toEqual({
+    const shelf = requireShelf(library, "shelf-reading");
+    expect(directCounts(shelf)).toEqual({ folders: 2, notes: 1 });
+    expect(directCounts(containerAtPath(shelf, ["folder-essays"]))).toEqual({
       folders: 0,
       notes: 2,
     });
@@ -155,7 +155,7 @@ describe("counting and collecting", () => {
 
   it("splits children into folders and notes in order", () => {
     const library = makeLibrary();
-    const { folders, notes } = splitChildren(requireChannel(library, "channel-reading"));
+    const { folders, notes } = splitChildren(requireShelf(library, "shelf-reading"));
     expect(folders.map((f) => f.name)).toEqual(["Essays", "Empty"]);
     expect(notes.map((n) => n.id)).toEqual(["note-loose"]);
   });
@@ -182,8 +182,8 @@ describe("counting and collecting", () => {
     essays?.children.push(nested as never);
 
     expect(pendingPlacements(library)).toEqual([
-      { node: nested, location: { channelId: "channel-reading", path: ["folder-essays"] } },
-      { node: pending, location: { channelId: "channel-reading", path: [] } },
+      { node: nested, location: { shelfId: "shelf-reading", path: ["folder-essays"] } },
+      { node: pending, location: { shelfId: "shelf-reading", path: [] } },
     ]);
   });
 
@@ -191,18 +191,18 @@ describe("counting and collecting", () => {
     expect(pendingPlacements(makeLibrary())).toEqual([]);
   });
 
-  it("calls a cabinet empty only when no channel holds anything", () => {
-    expect(isCabinetEmpty([makeChannel("Saved")])).toBe(true);
-    expect(isCabinetEmpty([makeChannel("Saved"), makeChannel("Later")])).toBe(true);
+  it("calls a cabinet empty only when no shelf holds anything", () => {
+    expect(isCabinetEmpty([makeShelf("Saved")])).toBe(true);
+    expect(isCabinetEmpty([makeShelf("Saved"), makeShelf("Later")])).toBe(true);
     expect(
-      isCabinetEmpty([makeChannel("Saved"), makeChannel("Later", [makeFolder("Empty")])]),
+      isCabinetEmpty([makeShelf("Saved"), makeShelf("Later", [makeFolder("Empty")])]),
     ).toBe(false);
     expect(isCabinetEmpty(makeLibrary())).toBe(false);
   });
 
   it("detects containment at any depth", () => {
     const library = makeLibrary();
-    const essays = requireChannel(library, "channel-reading").children.find(isFolder);
+    const essays = requireShelf(library, "shelf-reading").children.find(isFolder);
     expect(essays && folderContains(essays, "note-a")).toBe(true);
     expect(essays && folderContains(essays, "note-c")).toBe(false);
   });
