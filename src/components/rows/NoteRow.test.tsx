@@ -78,6 +78,23 @@ describe("NoteRow", () => {
     expect(container.querySelector(".row-tag-slot")).toHaveTextContent("To read");
   });
 
+  it("puts the tag ahead of the kind, since the tag is the one the reader chose", () => {
+    const { container } = renderRow(makeNote({ catLabel: "Article", tag: "To read" }), [
+      makeTag("To read", "#ffc93c"),
+    ]);
+    const tagSlot = container.querySelector(".row-tag-slot") as HTMLElement;
+    const kind = container.querySelector(".row-kind") as HTMLElement;
+
+    expect(tagSlot.compareDocumentPosition(kind)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+
+  it("gives the untagged note's column back to its title instead of reserving it", () => {
+    const { container } = renderRow(makeNote({ catLabel: "Article", tag: "" }));
+
+    expect(container.querySelector(".row-tag-slot")).toBeNull();
+    expect(container.querySelector(".row-kind")).toHaveTextContent("Article");
+  });
+
   it("leaves the kind column empty for a note with no link to infer it from", () => {
     const { container } = renderRow(makeNote({ url: "", domain: "", siteName: "" }));
 

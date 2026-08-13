@@ -238,6 +238,84 @@ describe("readLink", () => {
     expect(measureImage).not.toHaveBeenCalled();
   });
 
+  it("puts a repository's social card on a github link, with no relay involved", async () => {
+    const url = "https://github.com/facebook/react";
+    const fetcher = vi.fn(
+      fetcherFor({
+        "https://api.github.com/repos/facebook/react": {
+          body: JSON.stringify({
+            full_name: "react/react",
+            description: "The library for web and native user interfaces.",
+            pushed_at: "2026-08-13T03:24:44Z",
+            owner: { avatar_url: "https://avatars.githubusercontent.com/u/1024025?v=4" },
+          }),
+        },
+      }),
+    );
+
+    const preview = await readLink(url, deps({ fetcher }));
+
+    expect(preview).toMatchObject({
+      title: "react/react",
+      description: "The library for web and native user interfaces.",
+      siteName: "GitHub",
+      image: "https://opengraph.githubassets.com/2026-08-13T03%3A24%3A44Z/react/react",
+      cat: "dev",
+    });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
+  it("reads a pull request as itself rather than as its repository", async () => {
+    const url = "https://github.com/facebook/react/pull/34000";
+    const html = `
+      <meta property="og:title" content="[compiler] Fixes by josephsavona · Pull Request #34000" />
+      <meta property="og:image" content="https://opengraph.githubassets.com/abc/react/react/pull/34000" />
+      <meta property="og:site_name" content="GitHub" />
+    `;
+
+    const preview = await readLink(url, deps({ fetcher: fetcherFor(relayRoute(url, html)) }));
+
+    expect(preview).toMatchObject({
+      title: "[compiler] Fixes by josephsavona · Pull Request #34000",
+      image: "https://opengraph.githubassets.com/abc/react/react/pull/34000",
+      cat: "dev",
+    });
+  });
+
+  it("reads a subreddit through the old site, which is the one that answers", async () => {
+    const url = "https://www.reddit.com/r/spiderman/";
+    const html = `
+      <meta property="og:title" content="Spider-Man &bull; r/Spiderman" />
+      <meta property="og:description" content="The friendly neighborhood wall crawler." />
+      <meta property="og:image" content="https://styles.redditmedia.com/t5_2rw42/banner.png" />
+      <meta property="og:site_name" content="reddit" />
+    `;
+    const fetcher = vi.fn(fetcherFor(relayRoute("https://old.reddit.com/r/spiderman/", html)));
+
+    const preview = await readLink(url, deps({ fetcher }));
+
+    expect(preview).toMatchObject({
+      url,
+      domain: "reddit.com",
+      title: "Spider-Man • r/Spiderman",
+      description: "The friendly neighborhood wall crawler.",
+      image: "https://styles.redditmedia.com/t5_2rw42/banner.png",
+      siteName: "Reddit",
+      cat: "forum",
+    });
+    expect(fetcher.mock.calls.map((call) => call[0])).not.toContain(relayedUrl(OWN_RELAY, url));
+  });
+
+  it("never asks www.reddit.com, whose answer to a robot is a holding page", async () => {
+    const url = "https://www.reddit.com/r/spiderman/";
+    const holdingPage = "<html><head><title>Reddit</title></head><body></body></html>";
+    const fetcher = vi.fn(fetcherFor(relayRoute(url, holdingPage)));
+
+    const preview = await readLink(url, deps({ fetcher }));
+
+    expect(preview).toMatchObject({ title: "r/spiderman", siteName: "Reddit", cat: "forum" });
+  });
+
   it("steps down to the smaller youtube thumbnail when the large one is missing", async () => {
     const url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
     const oembed =

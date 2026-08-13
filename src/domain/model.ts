@@ -3,7 +3,7 @@ import type { IconName } from "@/icons/names";
 export type NodeId = string;
 
 export type SiteCategory =
-  "video" | "music" | "article" | "hn" | "dev" | "research" | "design" | "link" | "note";
+  "video" | "music" | "article" | "forum" | "dev" | "research" | "design" | "link" | "note";
 
 export interface LinkMetadata {
   url: string;

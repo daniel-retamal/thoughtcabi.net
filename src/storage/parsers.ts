@@ -12,28 +12,17 @@ import {
   type Tag,
   type ViewMode,
 } from "@/domain/model";
+import { toSiteCategory } from "@/domain/links/category";
 import { asNumber, asRecord, asText, type JsonRecord } from "@/lib/json";
 import { toIconName } from "@/icons/names";
 import { DEFAULT_APPEARANCE, toCardSurface, toColorId } from "@/theme/colors";
-
-const SITE_CATEGORIES = new Set<string>([
-  "video",
-  "music",
-  "article",
-  "hn",
-  "dev",
-  "research",
-  "design",
-  "link",
-  "note",
-]);
 
 const str = asText;
 const num = asNumber;
 const isDict = (value: unknown): value is JsonRecord => asRecord(value) !== null;
 
 function category(value: unknown): SiteCategory {
-  return SITE_CATEGORIES.has(str(value)) ? (value as SiteCategory) : "link";
+  return toSiteCategory(value) ?? "link";
 }
 
 function withOptional(note: Note, value: JsonRecord): Note {
