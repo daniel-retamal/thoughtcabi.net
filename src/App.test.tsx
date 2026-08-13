@@ -188,6 +188,18 @@ describe("App", () => {
     expect(localStorage.getItem(STORAGE_KEYS.preferences)).toContain('"view":"list"');
   });
 
+  it("narrows the page to a reading measure in rows, and widens it again in grid", async () => {
+    withSaves();
+    render(<App />);
+    expect(content()).not.toHaveClass("reading");
+
+    await userEvent.click(screen.getByLabelText("Row view"));
+    expect(content()).toHaveClass("reading");
+
+    await userEvent.click(screen.getByLabelText("Grid view"));
+    expect(content()).not.toHaveClass("reading");
+  });
+
   it("creates a folder and persists it", async () => {
     withSaves();
     render(<App />);
