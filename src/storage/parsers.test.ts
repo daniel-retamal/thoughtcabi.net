@@ -117,6 +117,12 @@ describe("parseLibrary", () => {
       ?.children[0];
     expect(note).toMatchObject({ cat: "link" });
   });
+
+  it("keeps the category of a note saved under the old discussion name", () => {
+    const note = parseLibrary([{ id: "c", name: "C", children: [{ id: "n", cat: "hn" }] }])?.[0]
+      ?.children[0];
+    expect(note).toMatchObject({ cat: "forum" });
+  });
 });
 
 describe("parseTags", () => {

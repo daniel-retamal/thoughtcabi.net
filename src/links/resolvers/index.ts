@@ -1,6 +1,7 @@
 import { blueskyResolver, githubResolver, wikipediaResolver } from "./apiSites";
 import { genericResolver } from "./generic";
 import { soundcloudResolver, spotifyResolver, vimeoResolver } from "./oembedSites";
+import { redditResolver } from "./reddit";
 import { twitterResolver } from "./twitter";
 import type { LinkResolver } from "./types";
 import { youtubeResolver } from "./youtube";
@@ -14,6 +15,7 @@ export const RESOLVERS: readonly LinkResolver[] = [
   githubResolver,
   blueskyResolver,
   twitterResolver,
+  redditResolver,
   genericResolver,
 ];
 
