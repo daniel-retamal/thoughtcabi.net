@@ -1,4 +1,5 @@
 import type { ImageMeasurement } from "@/domain/links/imageCandidate";
+import { rememberLoadedImage } from "@/lib/imageOutcomes";
 
 export type ImageMeasurer = (url: string) => Promise<ImageMeasurement>;
 
@@ -23,11 +24,13 @@ export function measureImage(
 
     timer = window.setTimeout(() => finish({ status: "unknown" }), timeoutMs);
 
-    image.onload = () =>
+    image.onload = () => {
+      rememberLoadedImage(url, image.naturalWidth, image.naturalHeight);
       finish({
         status: "measured",
         size: { width: image.naturalWidth, height: image.naturalHeight },
       });
+    };
     image.onerror = () => finish({ status: "unreachable" });
 
     image.decoding = "async";

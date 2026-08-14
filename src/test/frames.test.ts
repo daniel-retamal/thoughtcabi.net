@@ -14,7 +14,8 @@ function stylesheets(directory: string): string[] {
 
 function ruleFor(file: string, selector: string): string {
   const source = readFileSync(join(STYLES, file), "utf8");
-  const pattern = new RegExp(`(^|\\})\\s*\\${selector}\\s*\\{([^}]*)\\}`, "m");
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(`(^|\\})\\s*${escaped}\\s*\\{([^}]*)\\}`, "m");
   return pattern.exec(source)?.[2] ?? "";
 }
 
@@ -26,20 +27,65 @@ describe("the picture frame", () => {
     expect(frame).not.toMatch(/\bheight:/);
   });
 
-  it("fills every frame the same way, biased slightly high", () => {
+  it("fills a mark the same way on every surface, biased slightly high", () => {
     const fill = ruleFor("components/thumbnails.css", ".cover.img-cover .img-fill");
 
     expect(fill).toContain("object-fit: cover;");
     expect(fill).toContain("object-position: 50% 40%;");
   });
 
-  it("gives no rule anywhere a second focal point", () => {
+  it("shows a wide picture whole on the card, and cuts nothing off its sides", () => {
+    const fitted = ruleFor(
+      "components/thumbnails.css",
+      ".cover.img-cover.preview.fitted .img-fill",
+    );
+
+    expect(fitted).toContain("object-fit: contain;");
+    expect(fitted).not.toMatch(/object-position/);
+  });
+
+  it("gives a fitted frame the picture's own shape instead of a mat", () => {
+    const fitted = ruleFor("components/thumbnails.css", ".cover.img-cover.preview.fitted");
+
+    expect(fitted).toContain("aspect-ratio: var(--frame-ratio);");
+    expect(fitted).toContain("background: none;");
+    expect(fitted).not.toMatch(/\bheight:/);
+  });
+
+  it("hangs a fitted frame from the same top edge as every other one", () => {
+    const frame = ruleFor("components/cards.css", ".card > .cover");
+    const fitted = ruleFor("components/thumbnails.css", ".cover.img-cover.preview.fitted");
+
+    expect(frame).toContain("margin: 9px 9px 0;");
+    expect(fitted).not.toMatch(/margin/);
+  });
+
+  it("leaves the same gap under every picture, whatever shape it took", () => {
+    const body = ruleFor("components/cards.css", ".card-body");
+    expect(body).toContain("padding: 13px 14px;");
+
+    const keyedOffFitting = stylesheets(STYLES).some((file) =>
+      /\.fitted[^{]*\.card-body/.test(readFileSync(file, "utf8")),
+    );
+    expect(keyedOffFitting).toBe(false);
+  });
+
+  it("takes what a card still has to crop from the top", () => {
+    const cropped = ruleFor(
+      "components/thumbnails.css",
+      ".cover.img-cover.preview:not(.fitted) .img-fill",
+    );
+
+    expect(cropped).toContain("object-position: 50% 0;");
+  });
+
+  it("gives no rule anywhere a focal point of its own", () => {
     const positions = stylesheets(STYLES).flatMap((file) => [
       ...readFileSync(file, "utf8").matchAll(/object-position:\s*([^;]+);/g),
     ]);
 
     expect(positions.length).toBeGreaterThan(0);
-    for (const match of positions) expect(match[1]).toBe("50% 40%");
+    for (const match of positions) expect(["50% 40%", "50% 0"]).toContain(match[1]);
   });
 
   it("keeps the picture uncropped and unstretched when it is the content", () => {

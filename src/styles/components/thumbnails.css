@@ -29,6 +29,19 @@
   transition: opacity 0.2s ease-out;
 }
 
+.cover.img-cover.preview:not(.fitted) .img-fill {
+  object-position: 50% 0;
+}
+
+.cover.img-cover.preview.fitted {
+  aspect-ratio: var(--frame-ratio);
+  background: none;
+}
+
+.cover.img-cover.preview.fitted .img-fill {
+  object-fit: contain;
+}
+
 .shot {
   flex: none;
   padding: 14px 14px 0;

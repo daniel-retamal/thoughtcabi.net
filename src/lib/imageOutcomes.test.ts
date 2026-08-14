@@ -3,6 +3,7 @@ import {
   forgetImageOutcomes,
   imageOutcomeOf,
   naturalEdgeOf,
+  naturalRatioOf,
   rememberBrokenImage,
   rememberLoadedImage,
 } from "./imageOutcomes";
@@ -18,6 +19,19 @@ describe("imageOutcomes", () => {
 
     expect(imageOutcomeOf("https://example.com/wide.png")).toBe("ok");
     expect(naturalEdgeOf("https://example.com/wide.png")).toBe(64);
+  });
+
+  it("keeps the shape of a source that loaded, so the frame does not have to guess", () => {
+    rememberLoadedImage("https://example.com/repo-card.png", 1280, 640);
+
+    expect(naturalRatioOf("https://example.com/repo-card.png")).toBe(2);
+  });
+
+  it("has no shape for a source it never measured", () => {
+    rememberLoadedImage("https://example.com/unmeasured.png", 0, 0);
+
+    expect(naturalRatioOf("https://example.com/unmeasured.png")).toBe(0);
+    expect(naturalRatioOf("https://example.com/never-seen.png")).toBe(0);
   });
 
   it("remembers a source that failed", () => {

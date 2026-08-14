@@ -26,6 +26,7 @@ export function MosaicCell({ node, sizes, tall }: MosaicCellProps) {
       <Thumbnail
         note={node}
         sizes={sizes}
+        surface="mark"
         fallback={
           <SiteMark
             note={node}

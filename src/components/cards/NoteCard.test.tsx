@@ -79,6 +79,17 @@ describe("NoteCard", () => {
     expect(container.querySelector(".icon-cover")).toBeNull();
   });
 
+  it("shows a wide picture whole, because a repo card is words", () => {
+    const { container } = renderCard(makeNote({ siteImage: "https://example.com/repo.png" }));
+    const picture = container.querySelector(".img-cover img") as HTMLImageElement;
+
+    Object.defineProperty(picture, "naturalWidth", { value: 1280 });
+    Object.defineProperty(picture, "naturalHeight", { value: 640 });
+    fireEvent.load(picture);
+
+    expect(container.querySelector(".cover")).toHaveClass("fitted");
+  });
+
   it("declares the tile's width, which is what the frame really is", () => {
     const { container } = renderCard(
       makeNote({ siteImage: "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg" }),

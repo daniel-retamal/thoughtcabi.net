@@ -36,7 +36,7 @@ export function NoteDetailModal({ note, tags, location, onEdit, onClose }: NoteD
         <Icon name="x" />
       </button>
 
-      {hasThumbnail(note) ? <Thumbnail note={note} sizes={SHOT_WIDTH} natural /> : null}
+      {hasThumbnail(note) ? <Thumbnail note={note} sizes={SHOT_WIDTH} surface="natural" /> : null}
 
       <div className="modal-body">
         <div className="m-cat">
