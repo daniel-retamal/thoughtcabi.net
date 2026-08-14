@@ -52,6 +52,33 @@ describe("the picture frame", () => {
     expect(fitted).not.toMatch(/\bheight:/);
   });
 
+  it("treats a picture the same on every surface it appears on", () => {
+    const treatment = "filter: saturate(0.82) contrast(0.95);";
+
+    expect(ruleFor("components/thumbnails.css", ".cover.img-cover")).toContain(treatment);
+    expect(ruleFor("components/thumbnails.css", ".shot-img")).toContain(treatment);
+
+    const declarers = stylesheets(STYLES).flatMap((file) =>
+      [...readFileSync(file, "utf8").matchAll(/([^{}]*)\{([^}]*)\}/g)]
+        .filter((rule) => (rule[2] ?? "").includes("saturate(0.82)"))
+        .map((rule) => (rule[1] ?? "").trim()),
+    );
+
+    expect(declarers.sort()).toEqual([".cover.img-cover", ".shot-img"]);
+  });
+
+  it("lays nothing over a picture but the ring that seats it", () => {
+    const ring = ruleFor("components/thumbnails.css", ".cover.img-cover::after");
+
+    expect(ring).toContain("box-shadow: inset 0 0 0 1px var(--hairline);");
+    expect(ring).not.toMatch(/background/);
+
+    for (const file of stylesheets(STYLES)) {
+      const source = readFileSync(file, "utf8");
+      expect(source, file).not.toMatch(/\.cover[^{]*::after\s*\{[^}]*background:/);
+    }
+  });
+
   it("hangs a fitted frame from the same top edge as every other one", () => {
     const frame = ruleFor("components/cards.css", ".card > .cover");
     const fitted = ruleFor("components/thumbnails.css", ".cover.img-cover.preview.fitted");
@@ -70,22 +97,13 @@ describe("the picture frame", () => {
     expect(keyedOffFitting).toBe(false);
   });
 
-  it("takes what a card still has to crop from the top", () => {
-    const cropped = ruleFor(
-      "components/thumbnails.css",
-      ".cover.img-cover.preview:not(.fitted) .img-fill",
-    );
-
-    expect(cropped).toContain("object-position: 50% 0;");
-  });
-
-  it("gives no rule anywhere a focal point of its own", () => {
+  it("gives no rule anywhere a second focal point", () => {
     const positions = stylesheets(STYLES).flatMap((file) => [
       ...readFileSync(file, "utf8").matchAll(/object-position:\s*([^;]+);/g),
     ]);
 
     expect(positions.length).toBeGreaterThan(0);
-    for (const match of positions) expect(["50% 40%", "50% 0"]).toContain(match[1]);
+    for (const match of positions) expect(match[1]).toBe("50% 40%");
   });
 
   it("keeps the picture uncropped and unstretched when it is the content", () => {

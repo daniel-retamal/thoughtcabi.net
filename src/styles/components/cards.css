@@ -19,14 +19,6 @@
   overflow: hidden;
 }
 
-.card > .cover.img-cover {
-  filter: saturate(0.82) contrast(0.95);
-}
-
-.card > .cover::after {
-  background: rgba(8, 14, 50, 0.1);
-}
-
 .card-body {
   padding: 13px 14px;
   display: flex;
