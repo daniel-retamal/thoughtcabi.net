@@ -30,33 +30,8 @@
   --desc-lines: 2;
 }
 
-.card:not(:has(.card-desc)) .card-body {
-  --title-lines: 4;
-}
-
-.card:not(:has(.card-foot)) .card-body {
-  --title-lines: 3;
-}
-
-.card:not(:has(.card-desc)):not(:has(.card-foot)) .card-body {
-  --title-lines: 6;
-}
-
 .card:not(:has(> .cover)) .card-body {
   padding-top: 15px;
-  --title-lines: 8;
-}
-
-.card:not(:has(> .cover)):not(:has(.card-desc)) .card-body {
-  --title-lines: 11;
-}
-
-.card:not(:has(> .cover)):not(:has(.card-foot)) .card-body {
-  --title-lines: 10;
-}
-
-.card:not(:has(> .cover)):not(:has(.card-desc)):not(:has(.card-foot)) .card-body {
-  --title-lines: 12;
 }
 
 .card-cat {

@@ -13,8 +13,8 @@ import { PendingFrame } from "./PendingFrame";
 import { Thumbnail } from "./Thumbnail";
 
 const COVER_WIDTH = "264px";
-const DESC_LINE_HEIGHT = 23;
-const RESERVED_DESC_LINES = 2;
+
+export const CARD_LINE_HEIGHT = 23;
 
 export interface NoteCardProps extends NoteHandlers {
   note: Note;
@@ -34,7 +34,8 @@ export function NoteCard({
 }: NoteCardProps) {
   const tag = findTag(tags, note.tag);
   const hasLink = Boolean(note.domain);
-  const { containerRef, fillerRef, lines } = useFittedLines(DESC_LINE_HEIGHT, RESERVED_DESC_LINES);
+  const { containerRef, titleRef, descriptionRef, titleLines, descriptionLines } =
+    useFittedLines(CARD_LINE_HEIGHT);
 
   const className = [
     "card",
@@ -69,7 +70,10 @@ export function NoteCard({
       <div
         className="card-body"
         ref={containerRef}
-        style={cssVars({ "--desc-lines": String(lines) })}
+        style={cssVars({
+          "--title-lines": String(titleLines),
+          "--desc-lines": String(descriptionLines),
+        })}
       >
         <div className="card-cat">
           {hasLink ? <span className="cat-chip">{note.catLabel}</span> : null}
@@ -77,11 +81,11 @@ export function NoteCard({
           <span className="card-time">{relativeTime(note.addedAt)}</span>
         </div>
 
-        <div className={pending ? "card-title provisional" : "card-title"}>
+        <div className={pending ? "card-title provisional" : "card-title"} ref={titleRef}>
           {note.title || "Untitled"}
         </div>
         {note.description ? (
-          <div className="card-desc" ref={fillerRef}>
+          <div className="card-desc" ref={descriptionRef}>
             {note.description}
           </div>
         ) : null}

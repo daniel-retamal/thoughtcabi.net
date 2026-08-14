@@ -127,6 +127,14 @@ describe("NoteCard", () => {
     expect(container.querySelector(".mark-plate")).toBeNull();
   });
 
+  it("clamps the title and the description from the height it measured", () => {
+    const { container } = renderCard(makeNote({ description: "A short note" }));
+    const body = container.querySelector(".card-body") as HTMLElement;
+
+    expect(body.style.getPropertyValue("--title-lines")).not.toBe("");
+    expect(body.style.getPropertyValue("--desc-lines")).not.toBe("");
+  });
+
   it("keeps the dot on the card tag, which has no tint of its own", () => {
     const { container } = renderCard(makeNote({ tag: "To read" }));
     expect(container.querySelector(".card-tag .tdot")).not.toBeNull();

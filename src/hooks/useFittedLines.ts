@@ -1,25 +1,36 @@
 import { useCallback, useLayoutEffect, useRef, useState, type RefObject } from "react";
+import { budgetLines, DEFAULT_LINE_BUDGET } from "@/lib/lineBudget";
 
 export interface FittedLines {
   containerRef: RefObject<HTMLDivElement>;
-  fillerRef: RefObject<HTMLDivElement>;
-  lines: number;
+  titleRef: RefObject<HTMLDivElement>;
+  descriptionRef: RefObject<HTMLDivElement>;
+  titleLines: number;
+  descriptionLines: number;
 }
 
-export function useFittedLines(lineHeight: number, minimum: number): FittedLines {
+function linesNeededBy(element: HTMLElement | null, lineHeight: number): number {
+  if (!element) return 0;
+  return Math.max(1, Math.round(element.scrollHeight / lineHeight));
+}
+
+export function useFittedLines(lineHeight: number): FittedLines {
   const containerRef = useRef<HTMLDivElement>(null);
-  const fillerRef = useRef<HTMLDivElement>(null);
-  const [lines, setLines] = useState(minimum);
+  const titleRef = useRef<HTMLDivElement>(null);
+  const descriptionRef = useRef<HTMLDivElement>(null);
+  const [titleLines, setTitleLines] = useState(DEFAULT_LINE_BUDGET.title);
+  const [descriptionLines, setDescriptionLines] = useState(DEFAULT_LINE_BUDGET.description);
 
   const measure = useCallback((): void => {
     const container = containerRef.current;
-    if (!container) return;
+    const title = titleRef.current;
+    if (!container || !title) return;
 
     const style = getComputedStyle(container);
     const children = [...container.children];
     const gaps = (parseFloat(style.rowGap) || 0) * Math.max(children.length - 1, 0);
     const taken = children
-      .filter((child) => child !== fillerRef.current)
+      .filter((child) => child !== title && child !== descriptionRef.current)
       .reduce((total, child) => total + child.getBoundingClientRect().height, 0);
 
     const free =
@@ -29,8 +40,17 @@ export function useFittedLines(lineHeight: number, minimum: number): FittedLines
       gaps -
       taken;
 
-    setLines(Math.max(minimum, Math.floor(free / lineHeight)));
-  }, [lineHeight, minimum]);
+    if (!Number.isFinite(free)) return;
+
+    const budget = budgetLines({
+      available: Math.floor(free / lineHeight),
+      title: linesNeededBy(title, lineHeight),
+      description: linesNeededBy(descriptionRef.current, lineHeight),
+    });
+
+    setTitleLines(budget.title);
+    setDescriptionLines(budget.description);
+  }, [lineHeight]);
 
   useLayoutEffect(measure);
 
@@ -43,5 +63,5 @@ export function useFittedLines(lineHeight: number, minimum: number): FittedLines
     return () => observer.disconnect();
   }, [measure]);
 
-  return { containerRef, fillerRef, lines };
+  return { containerRef, titleRef, descriptionRef, titleLines, descriptionLines };
 }
