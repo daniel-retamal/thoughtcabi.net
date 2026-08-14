@@ -400,7 +400,7 @@ describe("App", () => {
     const card = document.querySelector(".card.pending") as HTMLElement;
     expect(card).toBeInTheDocument();
     expect(within(card).getByText("example.com")).toBeInTheDocument();
-    expect(within(card).getByText("The Quiet Revolution")).toHaveClass("provisional");
+    expect(within(card).getByText("the quiet revolution")).toHaveClass("provisional");
     expect(card.querySelector(".cover.holding")).toBeInTheDocument();
 
     await resolve({

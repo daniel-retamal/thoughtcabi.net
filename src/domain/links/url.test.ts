@@ -7,6 +7,7 @@ import {
   normalizeUrl,
   parseUrl,
   titleFromPath,
+  wordsFromPath,
 } from "./url";
 
 describe("normalizeUrl", () => {
@@ -57,6 +58,18 @@ describe("canonicalUrl", () => {
 
   it("leaves a clean url untouched", () => {
     expect(canonicalUrl("https://example.com/a?id=7")).toBe("https://example.com/a?id=7");
+  });
+});
+
+describe("wordsFromPath", () => {
+  it("hands back the segment's own words, capitalising nothing", () => {
+    expect(wordsFromPath("/books/on-rereading")).toBe("on rereading");
+    expect(wordsFromPath("/2026/the_quiet_revolution")).toBe("the quiet revolution");
+  });
+
+  it("gives nothing back when the path carries no meaning", () => {
+    expect(wordsFromPath("/")).toBe("");
+    expect(wordsFromPath("/watch")).toBe("");
   });
 });
 

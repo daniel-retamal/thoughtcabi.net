@@ -149,7 +149,7 @@ describe("readLink", () => {
   });
 
   it("falls back to the generic reader when a site resolver comes up empty", async () => {
-    const url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+    const url = "https://github.com/facebook/react";
     const preview = await readLink(
       url,
       deps({ fetcher: fetcherFor(relayRoute(url, ARTICLE_HTML)) }),
@@ -314,6 +314,28 @@ describe("readLink", () => {
     const preview = await readLink(url, deps({ fetcher }));
 
     expect(preview).toMatchObject({ title: "r/spiderman", siteName: "Reddit", cat: "forum" });
+  });
+
+  it("never asks youtube.com either, whose answer to a robot is the bare word YouTube", async () => {
+    const url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+    const shell = `
+      <html><head>
+        <title>YouTube</title>
+        <meta property="og:description" content="Enjoy the videos and music you love." />
+      </head></html>
+    `;
+    const fetcher = vi.fn(fetcherFor(relayRoute(url, shell)));
+
+    const preview = await readLink(url, deps({ fetcher }));
+
+    expect(preview).toMatchObject({
+      title: "",
+      description: "",
+      siteName: "YouTube",
+      image: "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+      cat: "video",
+    });
+    expect(fetcher.mock.calls.map((call) => call[0])).not.toContain(relayedUrl(OWN_RELAY, url));
   });
 
   it("steps down to the smaller youtube thumbnail when the large one is missing", async () => {

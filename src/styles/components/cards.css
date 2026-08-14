@@ -311,6 +311,11 @@
   font-style: italic;
 }
 
+.card.pending .cat-chip,
+.row-item.pending .cat-chip {
+  opacity: 0.45;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cover.holding,
   .cover.holding .late {

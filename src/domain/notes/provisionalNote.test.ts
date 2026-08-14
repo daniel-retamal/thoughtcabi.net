@@ -14,17 +14,22 @@ describe("provisionalNote", () => {
     expect(note.addedAt).toBe(1_700_000_000_000);
   });
 
-  it("knows the domain, the chip and the site's icon from the url alone", () => {
+  it("knows the domain and the site's icon from the url alone", () => {
     const note = provisionalNote(pending("https://www.youtube.com/watch?v=dQw4w9WgXcQ"));
 
     expect(note.domain).toBe("youtube.com");
-    expect(note.catLabel).toBe("Video");
     expect(note.favicon).toBeTruthy();
   });
 
-  it("borrows the url's own words for the title slot", () => {
+  it("holds the category open rather than claiming one before the page is read", () => {
+    expect(provisionalNote(pending("https://www.youtube.com/watch?v=dQw4w9WgXcQ")).catLabel).toBe(
+      "—",
+    );
+  });
+
+  it("borrows the url's own words for the title slot, uncapitalised", () => {
     expect(provisionalNote(pending("https://example.com/a-quiet-revolution")).title).toBe(
-      "A Quiet Revolution",
+      "a quiet revolution",
     );
   });
 
