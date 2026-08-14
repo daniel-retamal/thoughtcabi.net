@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { emptyPage, type PageContent } from "../metaTags";
-import { previewFromReddit, redditPage, redditReadableUrl, type RedditPage } from "./reddit";
+import {
+  previewFromReddit,
+  previewFromRedditOembed,
+  redditGated,
+  redditOembedUrl,
+  redditPage,
+  redditReadableUrl,
+  type RedditPage,
+} from "./reddit";
 
 function pageOf(raw: string): RedditPage | null {
   return redditPage(new URL(raw));
@@ -75,6 +83,78 @@ describe("redditReadableUrl", () => {
       "https://old.reddit.com/r/spiderman/top/?t=week",
     );
     expect(readableFor("https://redd.it/1vmsx27")).toBe("https://old.reddit.com/comments/1vmsx27");
+  });
+});
+
+describe("redditGated", () => {
+  it("knows the login wall the old site answers with when it will not read", () => {
+    expect(
+      redditGated(
+        content({
+          title: "Welcome to Reddit",
+          tags: {
+            description:
+              "Log in or sign up to personalize your feed, join conversations, vote, and explore communities.",
+          },
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it("leaves a profile alone, which has a description and no og:title of its own", () => {
+    expect(redditGated(content({ title: "overview for spez", tags: { description: "Reddit CEO." } })))
+      .toBe(false);
+  });
+
+  it("leaves any page that named itself alone", () => {
+    expect(redditGated(content({ tags: { "og:title": "Welcome to Reddit" } }))).toBe(false);
+    expect(redditGated(emptyPage())).toBe(false);
+  });
+});
+
+describe("redditOembedUrl", () => {
+  function embedFor(raw: string): string | null {
+    const target = pageOf(raw);
+    return target ? redditOembedUrl(target) : null;
+  }
+
+  it("asks about a post by its canonical permalink, without the host or the sort it was pasted with", () => {
+    expect(embedFor("https://sh.reddit.com/r/JRPG/comments/1pok2l5/art/?utm_source=share")).toBe(
+      "https://www.reddit.com/oembed?url=https%3A%2F%2Fwww.reddit.com%2Fr%2FJRPG%2Fcomments%2F1pok2l5%2Fart%2F",
+    );
+  });
+
+  it("declines everything oembed has no answer for", () => {
+    expect(embedFor("https://www.reddit.com/r/JRPG/")).toBeNull();
+    expect(embedFor("https://www.reddit.com/user/spez")).toBeNull();
+    expect(embedFor("https://www.reddit.com/comments/1pok2l5")).toBeNull();
+    expect(embedFor("https://redd.it/1pok2l5")).toBeNull();
+  });
+});
+
+describe("previewFromRedditOembed", () => {
+  const url = new URL("https://www.reddit.com/r/JRPG/comments/1pok2l5/art/");
+  const target: RedditPage = { kind: "post", name: "", path: "/r/JRPG/comments/1pok2l5/art/" };
+
+  it("takes the post's real title and credits the author", () => {
+    expect(
+      previewFromRedditOembed(
+        { title: "Jrpgs with experimental/unique art direction?", author_name: "WingNo4260" },
+        url,
+        target,
+      ),
+    ).toMatchObject({
+      title: "Jrpgs with experimental/unique art direction?",
+      description: "u/WingNo4260",
+      siteName: "Reddit",
+      cat: "forum",
+      image: "",
+    });
+  });
+
+  it("declines a payload that carries no title", () => {
+    expect(previewFromRedditOembed({ author_name: "WingNo4260" }, url, target)).toBeNull();
+    expect(previewFromRedditOembed(null, url, target)).toBeNull();
   });
 });
 
