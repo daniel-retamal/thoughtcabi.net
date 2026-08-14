@@ -75,10 +75,6 @@
   height: 100%;
 }
 
-.row-slot .cover.img-cover {
-  filter: saturate(0.82) contrast(0.95);
-}
-
 .row-main {
   flex: 1;
   min-width: 0;

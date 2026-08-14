@@ -64,7 +64,7 @@ function safeDecode(value: string): string {
   }
 }
 
-export function titleFromPath(pathname: string): string {
+export function wordsFromPath(pathname: string): string {
   if (!pathname) return "";
 
   const lastSegment = pathname.split("/").filter(Boolean).pop() ?? "";
@@ -76,7 +76,11 @@ export function titleFromPath(pathname: string): string {
   if (cleaned.length < 3 || /^\d+$/.test(cleaned)) return "";
   if (GENERIC_SEGMENT.test(cleaned)) return "";
 
-  return titleCaseWords(cleaned).slice(0, MAX_SLUG_TITLE_LENGTH);
+  return cleaned.slice(0, MAX_SLUG_TITLE_LENGTH);
+}
+
+export function titleFromPath(pathname: string): string {
+  return titleCaseWords(wordsFromPath(pathname));
 }
 
 export function faviconUrl(url: URL): string {

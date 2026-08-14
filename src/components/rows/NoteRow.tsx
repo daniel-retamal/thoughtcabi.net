@@ -43,6 +43,7 @@ export function NoteRow({
         <Thumbnail
           note={note}
           sizes={SLOT_WIDTH}
+          surface="mark"
           fallback={
             <SiteMark
               note={note}

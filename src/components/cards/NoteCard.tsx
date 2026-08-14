@@ -61,6 +61,7 @@ export function NoteCard({
         <Thumbnail
           note={note}
           sizes={COVER_WIDTH}
+          surface="preview"
           fallback={<SiteMark note={note} scale="cover" frame="cover icon-cover" />}
         />
       )}

@@ -1,12 +1,22 @@
-import { useState, type ReactNode, type SyntheticEvent } from "react";
+import { useState, type CSSProperties, type ReactNode, type SyntheticEvent } from "react";
+import { previewFramingFor } from "@/domain/links/imageFraming";
 import { thumbnailFallbackFor, thumbnailSrcSetFor } from "@/domain/links/sites/youtube";
 import type { Note } from "@/domain/model";
-import { imageOutcomeOf, rememberBrokenImage, rememberLoadedImage } from "@/lib/imageOutcomes";
+import { cssVars } from "@/lib/cssVars";
+import {
+  imageOutcomeOf,
+  naturalRatioOf,
+  rememberBrokenImage,
+  rememberLoadedImage,
+} from "@/lib/imageOutcomes";
+
+export type ThumbnailSurface = "preview" | "mark" | "natural";
 
 interface ThumbnailState {
   source: string;
   src: string;
   settled: boolean;
+  ratio: number;
 }
 
 function firstUnbroken(source: string): string {
@@ -19,17 +29,36 @@ function firstUnbroken(source: string): string {
 
 function recall(source: string): ThumbnailState {
   const src = firstUnbroken(source);
-  return { source, src, settled: imageOutcomeOf(src) === "ok" };
+  return {
+    source,
+    src,
+    settled: imageOutcomeOf(src) === "ok",
+    ratio: naturalRatioOf(src),
+  };
+}
+
+function isFitted(surface: ThumbnailSurface, ratio: number): boolean {
+  return surface === "preview" && previewFramingFor(ratio) === "fit";
+}
+
+function frameFor(surface: ThumbnailSurface, fitted: boolean): string {
+  if (surface === "natural") return "shot";
+  if (surface === "mark") return "cover img-cover";
+  return fitted ? "cover img-cover preview fitted" : "cover img-cover preview";
+}
+
+function frameStyleFor(fitted: boolean, ratio: number): CSSProperties | undefined {
+  return fitted ? cssVars({ "--frame-ratio": String(ratio) }) : undefined;
 }
 
 export interface ThumbnailProps {
   note: Note;
   sizes: string;
+  surface: ThumbnailSurface;
   fallback?: ReactNode;
-  natural?: boolean;
 }
 
-export function Thumbnail({ note, sizes, fallback = null, natural = false }: ThumbnailProps) {
+export function Thumbnail({ note, sizes, surface, fallback = null }: ThumbnailProps) {
   const source = note.image || note.siteImage || "";
   const [state, setState] = useState<ThumbnailState>(() => recall(source));
 
@@ -48,15 +77,16 @@ export function Thumbnail({ note, sizes, fallback = null, natural = false }: Thu
   const settle = (event: SyntheticEvent<HTMLImageElement>): void => {
     const { naturalWidth, naturalHeight } = event.currentTarget;
     rememberLoadedImage(state.src, naturalWidth, naturalHeight);
-    setState({ ...state, settled: true });
+    setState({ ...state, settled: true, ratio: naturalRatioOf(state.src) });
   };
 
   const srcSet = thumbnailSrcSetFor(state.src);
-  const frame = natural ? "shot" : "cover img-cover";
+  const natural = surface === "natural";
   const fill = natural ? "shot-img" : "img-fill";
+  const fitted = isFitted(surface, state.ratio);
 
   return (
-    <div className={frame}>
+    <div className={frameFor(surface, fitted)} style={frameStyleFor(fitted, state.ratio)}>
       <img
         className={state.settled ? fill : `${fill} unsettled`}
         src={state.src}

@@ -17,6 +17,17 @@ describe("NoteRow", () => {
     expect(slot.querySelector(".img-fill")).toHaveAttribute("src", "https://example.com/og.png");
   });
 
+  it("keeps the mark filled, so the column stays even whatever shape the picture is", () => {
+    const { slot } = renderRow(makeNote({ siteImage: "https://example.com/repo.png" }));
+    const picture = slot.querySelector("img") as HTMLImageElement;
+
+    Object.defineProperty(picture, "naturalWidth", { value: 1280 });
+    Object.defineProperty(picture, "naturalHeight", { value: 640 });
+    fireEvent.load(picture);
+
+    expect(slot.querySelector(".cover")).not.toHaveClass("fitted");
+  });
+
   it("falls back to the site's own icon when there is no thumbnail", () => {
     const { slot } = renderRow(makeNote({ favicon: "https://example.com/apple-touch-icon.png" }));
     const icon = slot.querySelector("img");
