@@ -306,6 +306,54 @@ describe("readLink", () => {
     expect(fetcher.mock.calls.map((call) => call[0])).not.toContain(relayedUrl(OWN_RELAY, url));
   });
 
+  it("asks oembed for a post the old site answered with its login wall", async () => {
+    const url = "https://www.reddit.com/r/JRPG/comments/1pok2l5/art_direction/";
+    const loginWall = `
+      <html><head><title>Welcome to Reddit</title>
+        <meta name="description" content="Log in or sign up to personalize your feed, join conversations, vote, and explore communities." />
+      </head></html>
+    `;
+    const oembed = `https://www.reddit.com/oembed?url=${encodeURIComponent(
+      "https://www.reddit.com/r/JRPG/comments/1pok2l5/art_direction/",
+    )}`;
+    const fetcher = vi.fn(
+      fetcherFor({
+        ...relayRoute("https://old.reddit.com/r/JRPG/comments/1pok2l5/art_direction/", loginWall),
+        ...relayRoute(
+          oembed,
+          JSON.stringify({
+            title: "Jrpgs with experimental/unique art direction?",
+            author_name: "WingNo4260",
+            provider_name: "reddit",
+          }),
+        ),
+      }),
+    );
+
+    const preview = await readLink(url, deps({ fetcher }));
+
+    expect(preview).toMatchObject({
+      title: "Jrpgs with experimental/unique art direction?",
+      description: "u/WingNo4260",
+      siteName: "Reddit",
+      cat: "forum",
+    });
+  });
+
+  it("falls back to the permalink slug when the login wall is all either source gives", async () => {
+    const url = "https://www.reddit.com/r/JRPG/comments/1pok2l5/art_direction/";
+    const loginWall = "<html><head><title>Welcome to Reddit</title></head></html>";
+    const fetcher = vi.fn(
+      fetcherFor(
+        relayRoute("https://old.reddit.com/r/JRPG/comments/1pok2l5/art_direction/", loginWall),
+      ),
+    );
+
+    const preview = await readLink(url, deps({ fetcher }));
+
+    expect(preview).toMatchObject({ title: "Art Direction", siteName: "Reddit", cat: "forum" });
+  });
+
   it("never asks www.reddit.com, whose answer to a robot is a holding page", async () => {
     const url = "https://www.reddit.com/r/spiderman/";
     const holdingPage = "<html><head><title>Reddit</title></head><body></body></html>";
