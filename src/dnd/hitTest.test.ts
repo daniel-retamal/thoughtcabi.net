@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { DND_ATTR } from "./attributes";
 import { resolveDrop } from "./hitTest";
 import type {
+  DragPayload,
   DropTarget,
   NodeDrag,
   Point,
@@ -227,5 +228,74 @@ describe("resolvePlacement anchors", () => {
     expect(above.line.position).toBe(50);
     expect(below.beforeId).toBe("c");
     expect(below.line.position).toBe(100);
+  });
+});
+
+function buildTagRows(names: readonly string[]): HTMLElement[] {
+  return names.map((name, index) => {
+    const row = document.createElement("div");
+    row.setAttribute(DND_ATTR.tagRow, "");
+    row.setAttribute(DND_ATTR.dragId, name);
+    stubRect(row, rect(0, 200, index * 40, index * 40 + 40));
+    document.body.appendChild(row);
+    return row;
+  });
+}
+
+function tagDropAt(
+  point: Point,
+  elementUnderPoint: HTMLElement,
+  tag: string,
+): DropTarget | null {
+  document.elementFromPoint = () => elementUnderPoint;
+  const drag: DragPayload = { kind: "tag", tag, label: tag, color: "#f00" };
+  return resolveDrop({ drag, point, previous: null, validate: () => true }).target;
+}
+
+describe("tag drops", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  it("reorders when a tag lands among the tags", () => {
+    const rows = buildTagRows(["red", "green", "blue"]);
+
+    const target = tagDropAt({ x: 50, y: 75 }, rows[1] as HTMLElement, "red");
+
+    expect(target?.type).toBe("reorder-tag");
+    if (target?.type !== "reorder-tag") throw new Error("expected reorder-tag target");
+    expect(target.beforeTag).toBe("blue");
+    expect(target.line.axis).toBe("y");
+  });
+
+  it("never proposes the dragged tag as its own anchor", () => {
+    const rows = buildTagRows(["red", "green", "blue"]);
+
+    const target = tagDropAt({ x: 50, y: 50 }, rows[1] as HTMLElement, "green");
+
+    expect(target?.type).toBe("reorder-tag");
+    if (target?.type !== "reorder-tag") throw new Error("expected reorder-tag target");
+    expect(target.beforeTag).not.toBe("green");
+  });
+
+  it("still tags the card when a tag lands on one", () => {
+    const card = document.createElement("div");
+    card.setAttribute(DND_ATTR.tagDroppable, "");
+    card.setAttribute(DND_ATTR.dragId, "n1");
+    document.body.appendChild(card);
+
+    const target = tagDropAt({ x: 50, y: 50 }, card, "red");
+
+    expect(target?.type).toBe("assign-tag");
+    if (target?.type !== "assign-tag") throw new Error("expected assign-tag target");
+    expect(target.noteId).toBe("n1");
+    expect(target.tag).toBe("red");
+  });
+
+  it("does nothing when a tag lands on neither", () => {
+    const elsewhere = document.createElement("div");
+    document.body.appendChild(elsewhere);
+
+    expect(tagDropAt({ x: 50, y: 50 }, elsewhere, "red")).toBeNull();
   });
 });

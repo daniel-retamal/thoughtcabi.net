@@ -58,8 +58,19 @@ export interface ReorderShelfTarget {
   line: InsertionLine;
 }
 
+export interface ReorderTagTarget {
+  type: "reorder-tag";
+  beforeTag: string | null;
+  line: InsertionLine;
+}
+
 export type DropTarget =
-  AssignTagTarget | IntoFolderTarget | IntoLocationTarget | ReorderTarget | ReorderShelfTarget;
+  | AssignTagTarget
+  | IntoFolderTarget
+  | IntoLocationTarget
+  | ReorderTarget
+  | ReorderShelfTarget
+  | ReorderTagTarget;
 
 export interface DragCallbacks {
   onDrop(drag: DragPayload, target: DropTarget): void;

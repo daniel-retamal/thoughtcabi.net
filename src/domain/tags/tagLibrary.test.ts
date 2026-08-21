@@ -11,6 +11,7 @@ import {
   recolorTag,
   removeTag,
   renameTag,
+  reorderTags,
 } from "./tagLibrary";
 
 const RED = TAG_PALETTE[0];
@@ -100,6 +101,42 @@ describe("renameTag, recolorTag and removeTag", () => {
     renameTag(tags, "To read", "Later");
     recolorTag(tags, "Reference", RED);
     removeTag(tags, "To read");
+    expect(JSON.stringify(tags)).toBe(snapshot);
+  });
+});
+
+describe("reorderTags", () => {
+  const tags = [
+    { name: "To read", color: RED },
+    { name: "Reference", color: AMBER },
+    { name: "Later", color: TAG_PALETTE[2] },
+  ];
+
+  const names = (list: readonly Tag[]): string[] => list.map((tag) => tag.name);
+
+  it("moves a tag in front of the one it was dropped on", () => {
+    expect(names(reorderTags(tags, "Later", "Reference"))).toEqual([
+      "To read",
+      "Later",
+      "Reference",
+    ]);
+  });
+
+  it("sends a tag to the end when nothing follows the drop", () => {
+    expect(names(reorderTags(tags, "To read", null))).toEqual(["Reference", "Later", "To read"]);
+  });
+
+  it("appends rather than losing a tag when the anchor is unknown", () => {
+    expect(names(reorderTags(tags, "To read", "Gone"))).toEqual(["Reference", "Later", "To read"]);
+  });
+
+  it("leaves the list alone when the tag itself is unknown", () => {
+    expect(names(reorderTags(tags, "Gone", "Reference"))).toEqual(names(tags));
+  });
+
+  it("leaves the input array alone", () => {
+    const snapshot = JSON.stringify(tags);
+    reorderTags(tags, "Later", "To read");
     expect(JSON.stringify(tags)).toBe(snapshot);
   });
 });

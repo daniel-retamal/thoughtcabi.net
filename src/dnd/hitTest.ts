@@ -33,6 +33,9 @@ export function resolveDrop(context: HitTestContext): HitTestResult {
   const element = document.elementFromPoint(point.x, point.y);
 
   if (drag.kind === "tag") {
+    if (element?.closest(`[${DND_ATTR.tagRow}]`)) {
+      return { target: resolveTagInsertion(point, drag.tag), springElement: null };
+    }
     return { target: resolveTagDrop(element, drag.tag), springElement: null };
   }
 
@@ -172,6 +175,12 @@ function resolveRowInsertion(
     beforeId: readAttr(candidates[boundary] ?? null, DND_ATTR.dragId),
     line: insertionLineAround("y", rows, pick, rect, before),
   };
+}
+
+function resolveTagInsertion(point: Point, tag: string): DropTarget | null {
+  const insertion = resolveRowInsertion(point, `[${DND_ATTR.tagRow}]`, tag);
+  if (!insertion) return null;
+  return { type: "reorder-tag", beforeTag: insertion.beforeId, line: insertion.line };
 }
 
 function resolveShelfInsertion(point: Point, dragId: NodeId): DropTarget | null {

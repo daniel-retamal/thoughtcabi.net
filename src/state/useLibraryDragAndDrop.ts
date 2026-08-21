@@ -36,12 +36,16 @@ export function useLibraryDragAndDrop({
   };
 
   const onDrop = (drag: DragPayload, target: DropTarget): void => {
-    if (target.type === "assign-tag") {
-      dispatch({ type: "tag/assign", noteId: target.noteId, tag: target.tag });
+    if (drag.kind === "tag") {
+      if (target.type === "assign-tag") {
+        dispatch({ type: "tag/assign", noteId: target.noteId, tag: target.tag });
+      } else if (target.type === "reorder-tag") {
+        dispatch({ type: "tag/reorder", name: drag.tag, beforeName: target.beforeTag });
+      }
       return;
     }
 
-    if (drag.kind === "tag") return;
+    if (target.type === "assign-tag" || target.type === "reorder-tag") return;
 
     switch (target.type) {
       case "reorder-shelf":

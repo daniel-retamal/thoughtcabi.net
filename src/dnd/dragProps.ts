@@ -67,11 +67,15 @@ export function shelfDragProps(shelf: Shelf): ShelfDragProps {
 }
 
 export interface TagDragProps {
+  "data-tag-row": "";
+  "data-drag-id": string;
   onPointerDown: PointerHandler;
 }
 
 export function tagDragProps(tag: Tag): TagDragProps {
   return {
+    "data-tag-row": "",
+    "data-drag-id": tag.name,
     onPointerDown: beginDrag({ kind: "tag", tag: tag.name, label: tag.name, color: tag.color }),
   };
 }

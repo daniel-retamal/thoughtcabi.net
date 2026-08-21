@@ -214,6 +214,16 @@ describe("tag commands", () => {
     expect(noteAt(next, "note-a")?.tag).toBe("To read");
   });
 
+  it("reorders tags without touching the notes wearing them", () => {
+    const next = reduce(initialState(), {
+      type: "tag/reorder",
+      name: "Reference",
+      beforeName: "To read",
+    });
+    expect(next.tags.map((tag) => tag.name)).toEqual(["Reference", "To read"]);
+    expect(noteAt(next, "note-a")?.tag).toBe("To read");
+  });
+
   it("deletes a tag and clears it from its notes", () => {
     const next = reduce(initialState(), { type: "tag/remove", name: "To read" });
     expect(next.tags.map((tag) => tag.name)).toEqual(["Reference"]);

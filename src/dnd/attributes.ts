@@ -6,6 +6,7 @@ export const DND_ATTR = {
   folderTarget: "data-folder-target",
   tagDroppable: "data-tag-droppable",
   shelfRow: "data-shelf-row",
+  tagRow: "data-tag-row",
   shelfTarget: "data-shelf-target",
   crumb: "data-crumb",
   locationDrop: "data-location-drop",
