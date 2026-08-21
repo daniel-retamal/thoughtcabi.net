@@ -4,7 +4,7 @@ export type StorageProblem = "quota" | "unavailable";
 
 const MESSAGES: Readonly<Record<StorageProblem, string>> = {
   quota:
-    "This browser's storage is full, so recent changes have not been saved. Delete a few items to make room.",
+    "This browser's storage is full, so your most recent change was not saved. Export your cabinet to keep a copy, then delete a few items to make room.",
   unavailable: "This browser is blocking local storage. Nothing you change here will be saved.",
 };
 
