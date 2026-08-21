@@ -82,6 +82,24 @@
 .modal-body {
   padding: 24px 28px 26px;
   overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.modal-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.modal-scroll .modal-body {
+  overflow: visible;
+}
+
+.modal-footer {
+  flex: none;
+  padding: 18px 28px 26px;
+  border-top: 1px solid var(--hairline);
 }
 
 .modal-body .m-cat {
@@ -115,7 +133,6 @@
   gap: 1px;
   border-top: 1px solid var(--hairline);
   padding-top: 18px;
-  margin-bottom: 22px;
 }
 
 .modal-meta .mm {
