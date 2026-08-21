@@ -34,6 +34,17 @@
   height: 100%;
 }
 
+.folder-mosaic .cell-holding {
+  animation: breathe 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .folder-mosaic .cell-holding {
+    animation: none;
+    opacity: 0.8;
+  }
+}
+
 .folder-mosaic .cell-folder {
   color: var(--text-faint);
 }
