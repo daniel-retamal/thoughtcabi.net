@@ -1,4 +1,4 @@
-import type { Folder, Library, LibraryNode, Note, Shelf, Tag } from "@/domain/model";
+import type { Folder, Library, LibraryNode, Note, PendingNote, Shelf, Tag } from "@/domain/model";
 import type { IconName } from "@/icons/names";
 
 let counter = 0;
@@ -25,6 +25,17 @@ export function makeNote(overrides: Partial<Note> = {}): Note {
     siteName: "Example",
     cat: "link",
     catLabel: "Link",
+    ...overrides,
+  };
+}
+
+export function makePendingNote(overrides: Partial<PendingNote> = {}): PendingNote {
+  return {
+    id: overrides.id ?? nextId("n"),
+    type: "note",
+    url: "https://example.com/loading",
+    addedAt: 1_700_000_000_000,
+    loading: true,
     ...overrides,
   };
 }

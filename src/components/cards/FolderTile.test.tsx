@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { makeFolder, makeNote } from "@/test/factories";
+import { makeFolder, makeNote, makePendingNote } from "@/test/factories";
 import type { Folder } from "@/domain/model";
 import { FolderTile } from "./FolderTile";
 
@@ -44,6 +44,47 @@ describe("FolderTile", () => {
   it("shows a subfolder as a folder rather than as a missing picture", () => {
     const { cells } = renderTile(makeFolder("Nested", [makeFolder("Inside", [makeNote()])]));
     expect(cells[0]).toHaveClass("cell-folder");
+  });
+
+  it("gives the lead cell to a card, and a subfolder whatever is left", () => {
+    const { cells } = renderTile(
+      makeFolder("Nested", [
+        makeFolder("Inside", [makeNote()]),
+        makeNote({ siteImage: "https://example.com/og.png" }),
+      ]),
+    );
+
+    expect(cells[0]).toHaveClass("cell-tall");
+    expect(cells[0]?.querySelector(".img-fill")).toHaveAttribute(
+      "src",
+      "https://example.com/og.png",
+    );
+    expect(cells[1]).toHaveClass("cell-folder");
+  });
+
+  it("drops a subfolder off the mosaic before it drops a card", () => {
+    const { cells } = renderTile(
+      makeFolder("Nested", [
+        makeFolder("One", []),
+        makeFolder("Two", []),
+        makeNote(),
+        makeNote(),
+        makeNote(),
+      ]),
+    );
+
+    expect(cells).toHaveLength(3);
+    expect(cells.filter((cell) => cell.classList.contains("cell-folder"))).toHaveLength(0);
+  });
+
+  it("holds a cell for a link that is still loading instead of shuffling later", () => {
+    const { mosaic, cells } = renderTile(
+      makeFolder("Nested", [makePendingNote(), makeFolder("Inside", [])]),
+    );
+
+    expect(mosaic).toHaveClass("slots-2");
+    expect(cells[0]).toHaveClass("cell-holding");
+    expect(cells[1]).toHaveClass("cell-folder");
   });
 
   it("keeps the frame filled when a folder is empty", () => {

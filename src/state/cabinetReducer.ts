@@ -17,7 +17,14 @@ import {
 } from "@/domain/library/mutations";
 import { pendingPlacements, type NodePlacement } from "@/domain/library/tree";
 import type { Cabinet, Library, LibraryLocation, NodeId, Note, Shelf, Tag } from "@/domain/model";
-import { addTag, insertTag, recolorTag, removeTag, renameTag } from "@/domain/tags/tagLibrary";
+import {
+  addTag,
+  insertTag,
+  recolorTag,
+  removeTag,
+  renameTag,
+  reorderTags,
+} from "@/domain/tags/tagLibrary";
 import { mergeCabinets } from "@/domain/transfer/mergeCabinets";
 import type { IconName } from "@/icons/names";
 
@@ -35,6 +42,7 @@ export type CabinetAction =
   | { type: "note/resolvePending"; note: Note }
   | { type: "note/add"; location: LibraryLocation; note: Note }
   | { type: "note/move"; location: LibraryLocation; note: Note }
+  | { type: "note/setImage"; id: NodeId; image: string }
   | { type: "node/remove"; id: NodeId }
   | { type: "node/restore"; placement: NodePlacement }
   | { type: "node/moveIntoFolder"; id: NodeId; folderId: NodeId }
@@ -52,6 +60,7 @@ export type CabinetAction =
   | { type: "tag/rename"; from: string; to: string }
   | { type: "tag/recolor"; name: string; color: string }
   | { type: "tag/remove"; name: string }
+  | { type: "tag/reorder"; name: string; beforeName: string | null }
   | { type: "tag/restore"; index: number; tag: Tag; noteIds: readonly NodeId[] };
 
 function withLibrary(state: Cabinet, library: Library): Cabinet {
@@ -106,6 +115,12 @@ export function cabinetReducer(state: Cabinet, action: CabinetAction): Cabinet {
       return withLibrary(
         state,
         addChild(removeNode(library, action.note.id), action.location, action.note),
+      );
+
+    case "note/setImage":
+      return withLibrary(
+        state,
+        patchNotes(library, (note) => (note.id === action.id ? { image: action.image } : null)),
       );
 
     case "node/remove":
@@ -180,6 +195,9 @@ export function cabinetReducer(state: Cabinet, action: CabinetAction): Cabinet {
         library: patchNotes(library, (note) => (note.tag === action.name ? { tag: "" } : null)),
         tags: removeTag(tags, action.name),
       };
+
+    case "tag/reorder":
+      return withTags(state, reorderTags(tags, action.name, action.beforeName));
 
     case "tag/restore": {
       const wore = new Set(action.noteIds);

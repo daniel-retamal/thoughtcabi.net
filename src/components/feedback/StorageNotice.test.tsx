@@ -9,6 +9,8 @@ describe("StorageNotice", () => {
 
     const notice = screen.getByRole("alert");
     expect(notice).toHaveTextContent(/storage is full/i);
+    expect(notice).toHaveTextContent(/was not saved/i);
+    expect(notice).toHaveTextContent(/export your cabinet/i);
     expect(notice).toHaveTextContent(/delete a few items/i);
   });
 

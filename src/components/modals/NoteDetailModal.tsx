@@ -36,37 +36,41 @@ export function NoteDetailModal({ note, tags, location, onEdit, onClose }: NoteD
         <Icon name="x" />
       </button>
 
-      {hasThumbnail(note) ? <Thumbnail note={note} sizes={SHOT_WIDTH} surface="natural" /> : null}
+      <div className="modal-scroll">
+        {hasThumbnail(note) ? <Thumbnail note={note} sizes={SHOT_WIDTH} surface="natural" /> : null}
 
-      <div className="modal-body">
-        <div className="m-cat">
-          {note.url ? <span className="cat-chip">{note.catLabel}</span> : null}
-          {tag ? <TagBadge tag={tag} className="row-tag" /> : null}
-          <span className="card-time">Saved {relativeTime(note.addedAt)}</span>
-        </div>
+        <div className="modal-body">
+          <div className="m-cat">
+            {note.url ? <span className="cat-chip">{note.catLabel}</span> : null}
+            {tag ? <TagBadge tag={tag} className="row-tag" /> : null}
+            <span className="card-time">Saved {relativeTime(note.addedAt)}</span>
+          </div>
 
-        <h2>{note.title || "Untitled"}</h2>
-        {note.description ? <p className="m-desc">{note.description}</p> : null}
+          <h2>{note.title || "Untitled"}</h2>
+          {note.description ? <p className="m-desc">{note.description}</p> : null}
 
-        <div className="modal-meta">
-          {note.url ? (
-            <>
-              <div className="mm">
-                <span className="k">Source</span>
-                <span className="v">{note.siteName || note.domain}</span>
-              </div>
-              <div className="mm">
-                <span className="k">URL</span>
-                <span className="v">{note.url}</span>
-              </div>
-            </>
-          ) : null}
-          <div className="mm">
-            <span className="k">In folder</span>
-            <span className="v v-serif">{location}</span>
+          <div className="modal-meta">
+            {note.url ? (
+              <>
+                <div className="mm">
+                  <span className="k">Source</span>
+                  <span className="v">{note.siteName || note.domain}</span>
+                </div>
+                <div className="mm">
+                  <span className="k">URL</span>
+                  <span className="v">{note.url}</span>
+                </div>
+              </>
+            ) : null}
+            <div className="mm">
+              <span className="k">In folder</span>
+              <span className="v v-serif">{location}</span>
+            </div>
           </div>
         </div>
+      </div>
 
+      <div className="modal-footer">
         <div className="modal-actions">
           {note.url ? (
             <>

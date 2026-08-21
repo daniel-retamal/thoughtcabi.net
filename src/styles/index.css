@@ -15,6 +15,7 @@
 @import "./components/rows.css";
 @import "./components/empty.css";
 @import "./components/popover.css";
+@import "./components/menus.css";
 @import "./components/modals.css";
 @import "./components/forms.css";
 @import "./components/pickers.css";

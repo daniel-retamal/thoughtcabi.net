@@ -1,0 +1,63 @@
+.ctx-menu {
+  position: fixed;
+  z-index: 120;
+  min-width: 208px;
+  padding: 6px;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  animation: ctxIn 0.12s var(--ease-out);
+}
+
+@keyframes ctxIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.ctx-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  color: var(--text-muted);
+  text-align: left;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+
+.ctx-item:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.ctx-item svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+.ctx-danger:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ctx-menu {
+    animation: none;
+  }
+}

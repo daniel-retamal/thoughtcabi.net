@@ -1,8 +1,9 @@
 import { DND_ATTR } from "./attributes";
-import type { Axis, Point } from "./types";
+import type { Axis, InsertionLine, Point } from "./types";
 
 const LIST_ZONE_SLOP = 2;
 const GRID_ROW_WEIGHT = 100;
+const EDGE_GAP = 5;
 
 export function withinRect(element: Element, point: Point, margin: number): boolean {
   const rect = element.getBoundingClientRect();
@@ -91,4 +92,71 @@ export function folderUnder(point: Point, slop: number): HTMLElement | null {
   }
 
   return best;
+}
+
+export type PickSide = "previous" | "next";
+
+function wrapsToNextRow(previous: DOMRect, next: DOMRect): boolean {
+  return next.top >= previous.bottom || next.left < previous.left;
+}
+
+export function insertionLine(
+  axis: Axis,
+  previous: DOMRect | undefined,
+  next: DOMRect | undefined,
+  pick: DOMRect,
+  side: PickSide,
+): InsertionLine {
+  if (previous && next && !(axis === "x" && wrapsToNextRow(previous, next))) {
+    return axis === "x"
+      ? {
+          axis,
+          position: (previous.right + next.left) / 2,
+          crossStart: Math.min(previous.top, next.top),
+          crossSize: Math.max(previous.bottom, next.bottom) - Math.min(previous.top, next.top),
+        }
+      : {
+          axis,
+          position: (previous.bottom + next.top) / 2,
+          crossStart: previous.left,
+          crossSize: previous.width,
+        };
+  }
+
+  const leading = side === "next";
+  return axis === "x"
+    ? {
+        axis,
+        position: leading ? pick.left - EDGE_GAP : pick.right + EDGE_GAP,
+        crossStart: pick.top,
+        crossSize: pick.height,
+      }
+    : {
+        axis,
+        position: leading ? pick.top - EDGE_GAP : pick.bottom + EDGE_GAP,
+        crossStart: pick.left,
+        crossSize: pick.width,
+      };
+}
+
+export function insertionLineAround(
+  axis: Axis,
+  siblings: readonly HTMLElement[],
+  pick: HTMLElement,
+  pickRect: DOMRect,
+  before: boolean,
+): InsertionLine {
+  const boundary = siblings.indexOf(pick) + (before ? 0 : 1);
+  const rectOf = (element: HTMLElement | undefined): DOMRect | undefined => {
+    if (!element) return undefined;
+    return element === pick ? pickRect : element.getBoundingClientRect();
+  };
+
+  return insertionLine(
+    axis,
+    rectOf(siblings[boundary - 1]),
+    rectOf(siblings[boundary]),
+    pickRect,
+    before ? "next" : "previous",
+  );
 }

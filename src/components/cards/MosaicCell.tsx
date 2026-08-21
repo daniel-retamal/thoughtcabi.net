@@ -1,11 +1,11 @@
-import { isFolder, type Folder, type Note } from "@/domain/model";
+import { isFolder, isPendingNote, type Folder, type NoteEntry } from "@/domain/model";
 import { Icon } from "@/components/primitives/Icon";
 import { Monogram } from "@/components/primitives/Monogram";
 import { SiteMark } from "@/components/primitives/SiteMark";
 import { Thumbnail } from "./Thumbnail";
 
 export interface MosaicCellProps {
-  node: Folder | Note;
+  node: Folder | NoteEntry;
   sizes: string;
   tall: boolean;
 }
@@ -19,6 +19,10 @@ export function MosaicCell({ node, sizes, tall }: MosaicCellProps) {
         <Icon name="folder" />
       </div>
     );
+  }
+
+  if (isPendingNote(node)) {
+    return <div className={`${className} cell-holding`} />;
   }
 
   return (

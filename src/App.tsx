@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { createId } from "@/domain/ids";
+import { imageUrlFrom } from "@/domain/links/imageUrl";
 import type { LinkPreview } from "@/domain/links/linkPreview";
 import { availableColors } from "@/domain/tags/tagLibrary";
 import { notesWithTag } from "@/domain/library/search";
 import {
   containerAt,
+  findNode,
   firstShelf,
   isCabinetEmpty,
   parentContainerName,
@@ -13,15 +15,28 @@ import {
   requireShelf,
 } from "@/domain/library/tree";
 import { buildNote, type NoteDraft } from "@/domain/notes/buildNote";
-import type { Cabinet, Folder, LibraryLocation, Note, Shelf, Tag } from "@/domain/model";
+import {
+  isNote,
+  type Cabinet,
+  type Folder,
+  type LibraryLocation,
+  type NodeId,
+  type Note,
+  type Shelf,
+  type Tag,
+} from "@/domain/model";
 import { sameName } from "@/domain/transfer/mergeCabinets";
 import { withFreshIds } from "@/domain/transfer/reidentify";
+import { DND_ATTR } from "@/dnd/attributes";
 import { locationDropProps } from "@/dnd/dragProps";
 import type { IconName } from "@/icons/names";
+import { readClipboardImage, readClipboardText } from "@/lib/clipboard";
+import { downscaleImage } from "@/lib/downscaleImage";
 import { downloadTextFile } from "@/lib/files";
 import { cabinetFileName, serializeCabinet } from "@/storage/cabinetFile";
 import { readLink as readLinkFromWeb, type LinkReader } from "@/links/readLink";
 import { usePreferences } from "@/hooks/usePreferences";
+import { useImageDropTargets } from "@/hooks/useImageDropTargets";
 import { useSearchShortcut } from "@/hooks/useSearchShortcut";
 import { useToasts, type ToastAction } from "@/hooks/useToasts";
 import { useTransientIds } from "@/hooks/useTransientIds";
@@ -45,6 +60,8 @@ import { StorageNotice } from "@/components/feedback/StorageNotice";
 import { ToastStack } from "@/components/feedback/ToastStack";
 import { Icon } from "@/components/primitives/Icon";
 import { emptyStateFor } from "@/components/library/emptyStates";
+import { ContextMenu } from "@/components/menus/ContextMenu";
+import { contextMenuFor, type ContextTarget } from "@/components/menus/contextMenuItems";
 
 const FRESH_HIGHLIGHT_MS = 1500;
 
@@ -58,6 +75,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
   const { preferences, setView, updateAppearance, markOnboarded } = usePreferences();
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [noticeDismissed, setNoticeDismissed] = useState(false);
+  const [menu, setMenu] = useState<{ x: number; y: number; target: ContextTarget } | null>(null);
 
   const navigation = useNavigation(requireShelf(library, "").id);
   const { toasts, push: pushToast, undoable } = useToasts();
@@ -101,7 +119,24 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     if (placement) announceDeletion(subject, () => dispatch({ type: "node/restore", placement }));
   };
 
-  usePasteToSave({
+  const setThumbnail = (noteId: NodeId, image: string): void => {
+    const node = findNode(library, noteId);
+    const note = node && isNote(node) ? node : null;
+    if (!note || note.image === image) return;
+
+    const previous = note.image ?? "";
+    dispatch({ type: "note/setImage", id: noteId, image });
+    pushToast({
+      verb: "Thumbnail set on",
+      subject: note.title || note.domain || "Untitled",
+      action: {
+        kind: "undo",
+        run: () => dispatch({ type: "note/setImage", id: noteId, image: previous }),
+      },
+    });
+  };
+
+  const takePastedText = usePasteToSave({
     library,
     location: navigation.location,
     readLink,
@@ -109,7 +144,54 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     onSaved: (note, folder, location) => {
       pushToast({ subject: folder, action: viewAction(location, note) });
     },
+    onThumbnail: setThumbnail,
   });
+
+  useImageDropTargets(setThumbnail);
+
+  const pasteLinkFromClipboard = (): void => {
+    void readClipboardText().then((text) => {
+      if (!text || !takePastedText(text)) openCompose();
+    });
+  };
+
+  const pasteThumbnailOnto = (note: Note): void => {
+    void readClipboardImage().then(async (blob) => {
+      if (blob) {
+        const stored = await downscaleImage(await blobToDataUrl(blob)).catch(() => null);
+        if (stored) {
+          setThumbnail(note.id, stored.dataUrl);
+          return;
+        }
+      }
+
+      const text = await readClipboardText();
+      const image = imageUrlFrom(text);
+      if (image) setThumbnail(note.id, image);
+      else setDialog({ kind: "compose", mode: "edit", note });
+    });
+  };
+
+  const openContextMenu = (event: ReactMouseEvent<HTMLDivElement>): void => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target.closest("input, textarea, a, .ctx-menu")) return;
+    if (!window.getSelection()?.isCollapsed) return;
+
+    const card = target.closest(`[${DND_ATTR.dragKind}="item"][${DND_ATTR.dragId}]`);
+    const noteId = card?.getAttribute(DND_ATTR.dragId);
+    const node = noteId ? findNode(library, noteId) : undefined;
+    const note = node && isNote(node) ? node : null;
+
+    event.preventDefault();
+    setMenu({
+      x: event.clientX,
+      y: event.clientY,
+      target: note
+        ? { kind: "note", note }
+        : { kind: "background", canCreateFolder: viewState.canReorder },
+    });
+  };
 
   const openFolder = (folder: FolderEntry): void => {
     if (viewState.mode !== "searching" || !folder.shelfId) {
@@ -279,6 +361,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
           <div
             className="body-inner"
             {...(viewState.canReorder ? locationDropProps(navigation.location) : {})}
+            onContextMenu={openContextMenu}
           >
             {storageStatus !== "ok" && !noticeDismissed ? (
               <StorageNotice problem={storageStatus} onDismiss={() => setNoticeDismissed(true)} />
@@ -379,7 +462,33 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
         onImportCabinet={importCabinet}
       />
 
+      {menu ? (
+        <ContextMenu
+          x={menu.x}
+          y={menu.y}
+          items={contextMenuFor(menu.target, {
+            onPasteLink: pasteLinkFromClipboard,
+            onSaveLink: openCompose,
+            onNewFolder: () => setDialog({ kind: "new-folder" }),
+            onOpen: (note) => setDialog({ kind: "detail", note }),
+            onEdit: (note) => setDialog({ kind: "compose", mode: "edit", note }),
+            onPasteThumbnail: pasteThumbnailOnto,
+            onDelete: deleteNote,
+          })}
+          onClose={() => setMenu(null)}
+        />
+      ) : null}
+
       <ToastStack toasts={toasts} />
     </div>
   );
+}
+
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
+    reader.onerror = () => reject(new Error("unreadable"));
+    reader.readAsDataURL(blob);
+  });
 }

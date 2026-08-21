@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { LinkPreview } from "@/domain/links/linkPreview";
 import { TAG_PALETTE } from "@/domain/tags/palette";
@@ -35,6 +35,16 @@ function pasteText(text: string): void {
   Object.defineProperty(event, "clipboardData", { value: { getData: () => text } });
   act(() => {
     document.dispatchEvent(event);
+  });
+}
+
+function pointAt(element: HTMLElement): void {
+  element.getBoundingClientRect = () => ({ left: 0, right: 100, top: 0, bottom: 100 }) as DOMRect;
+  document.elementFromPoint = () => element;
+  act(() => {
+    window.dispatchEvent(
+      new MouseEvent("pointermove", { clientX: 50, clientY: 50, bubbles: true }),
+    );
   });
 }
 
@@ -462,6 +472,77 @@ describe("App", () => {
       "src",
       "https://example.com/favicon.ico",
     );
+  });
+
+  it("hangs a pasted picture on the card under the pointer, and takes it back", async () => {
+    withSaves();
+    const { readLink } = deferredReader();
+    render(<App readLink={readLink} />);
+
+    const card = document.querySelector('[data-drag-kind="item"]') as HTMLElement;
+    const noteId = card.getAttribute("data-drag-id");
+    pointAt(card);
+
+    pasteText("https://example.com/replacement.png");
+
+    const updated = document.querySelector(`[data-drag-id="${noteId}"]`) as HTMLElement;
+    expect(updated.querySelector("img")).toHaveAttribute(
+      "src",
+      "https://example.com/replacement.png",
+    );
+    expect(document.querySelector(".card.pending")).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Undo" }));
+    expect(
+      document.querySelector(`[data-drag-id="${noteId}"] img[src*="replacement.png"]`),
+    ).toBeNull();
+  });
+
+  it("still saves a page pasted over a card, rather than framing it", () => {
+    withSaves();
+    const { readLink } = deferredReader();
+    render(<App readLink={readLink} />);
+
+    pointAt(document.querySelector('[data-drag-kind="item"]') as HTMLElement);
+    pasteText("https://example.com/an-article");
+
+    expect(document.querySelector(".card.pending")).toBeInTheDocument();
+  });
+
+  it("saves a link from the clipboard with the mouse alone", async () => {
+    Object.defineProperty(navigator, "clipboard", {
+      value: { readText: () => Promise.resolve("https://example.com/by-mouse") },
+      configurable: true,
+    });
+    const { readLink } = deferredReader();
+    render(<App readLink={readLink} />);
+
+    fireEvent.contextMenu(content(), { clientX: 120, clientY: 140 });
+    await userEvent.click(await screen.findByRole("menuitem", { name: "Paste link" }));
+
+    await waitFor(() => {
+      expect(document.querySelector(".card.pending")).toBeInTheDocument();
+    });
+  });
+
+  it("offers a card its own actions on right click, and leaves a field to the browser", async () => {
+    withSaves();
+    render(<App />);
+
+    const card = document.querySelector('[data-drag-kind="item"]') as HTMLElement;
+    fireEvent.contextMenu(card, { clientX: 60, clientY: 60 });
+
+    expect(await screen.findByRole("menuitem", { name: "Edit" })).toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: "Paste link" })).not.toBeInTheDocument();
+
+    await userEvent.keyboard("{Escape}");
+
+    const native = fireEvent.contextMenu(screen.getByPlaceholderText(/Search/i), {
+      clientX: 10,
+      clientY: 10,
+    });
+    expect(native).toBe(true);
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   });
 
   it("leaves pasted text that is not a link alone", () => {

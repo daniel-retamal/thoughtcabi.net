@@ -183,6 +183,32 @@ describe("shelf commands", () => {
   });
 });
 
+describe("note/setImage", () => {
+  it("overrides one note's thumbnail and leaves the page's own alone", () => {
+    const next = reduce(initialState(), {
+      type: "note/setImage",
+      id: "note-a",
+      image: "https://example.com/mine.png",
+    });
+
+    expect(noteAt(next, "note-a")?.image).toBe("https://example.com/mine.png");
+    expect(noteAt(next, "note-a")?.siteImage).toBe(noteAt(initialState(), "note-a")?.siteImage);
+    expect(noteAt(next, "note-b")?.image).toBe(noteAt(initialState(), "note-b")?.image);
+  });
+
+  it("clears the override when handed an empty picture, which is what undo does", () => {
+    const set = reduce(initialState(), {
+      type: "note/setImage",
+      id: "note-a",
+      image: "https://example.com/mine.png",
+    });
+    const undone = reduce(set, { type: "note/setImage", id: "note-a", image: "" });
+
+    expect(undone.tags).toEqual(initialState().tags);
+    expect(noteAt(undone, "note-a")?.image).toBe("");
+  });
+});
+
 describe("tag commands", () => {
   it("assigns a tag to one note only", () => {
     const next = reduce(initialState(), {
@@ -211,6 +237,16 @@ describe("tag commands", () => {
   it("recolors a tag without touching notes", () => {
     const next = reduce(initialState(), { type: "tag/recolor", name: "To read", color: RED });
     expect(next.tags[0]?.color).toBe(RED);
+    expect(noteAt(next, "note-a")?.tag).toBe("To read");
+  });
+
+  it("reorders tags without touching the notes wearing them", () => {
+    const next = reduce(initialState(), {
+      type: "tag/reorder",
+      name: "Reference",
+      beforeName: "To read",
+    });
+    expect(next.tags.map((tag) => tag.name)).toEqual(["Reference", "To read"]);
     expect(noteAt(next, "note-a")?.tag).toBe("To read");
   });
 

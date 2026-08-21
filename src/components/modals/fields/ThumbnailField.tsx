@@ -1,11 +1,16 @@
 import { useRef, type ClipboardEvent, type DragEvent } from "react";
+import { downscaleImage } from "@/lib/downscaleImage";
+import { hasImagePayload, readDroppedImage } from "@/lib/imageDrop";
 import { Icon } from "@/components/primitives/Icon";
 
 function readImageFile(file: File | null | undefined, onLoaded: (dataUrl: string) => void): void {
   if (!file?.type.startsWith("image")) return;
   const reader = new FileReader();
   reader.onload = () => {
-    if (typeof reader.result === "string") onLoaded(reader.result);
+    if (typeof reader.result !== "string") return;
+    void downscaleImage(reader.result)
+      .then((stored) => onLoaded(stored.dataUrl))
+      .catch(() => onLoaded(reader.result as string));
   };
   reader.readAsDataURL(file);
 }
@@ -18,19 +23,27 @@ export interface ThumbnailFieldProps {
 export function ThumbnailField({ value, onChange }: ThumbnailFieldProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const take = (transfer: DataTransfer): boolean => {
+    if (!hasImagePayload(transfer)) return false;
+    void readDroppedImage(transfer).then((image) => {
+      if (image) onChange(image);
+    });
+    return true;
+  };
+
   const onPaste = (event: ClipboardEvent): void => {
-    const item = Array.from(event.clipboardData.items).find((entry) =>
-      entry.type.startsWith("image"),
-    );
-    const file = item?.getAsFile();
-    if (!file) return;
-    event.preventDefault();
-    readImageFile(file, onChange);
+    if (take(event.clipboardData)) event.preventDefault();
   };
 
   const onDrop = (event: DragEvent): void => {
     event.preventDefault();
-    readImageFile(event.dataTransfer.files.item(0), onChange);
+    event.stopPropagation();
+    take(event.dataTransfer);
+  };
+
+  const allowDrop = (event: DragEvent): void => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
   };
 
   if (value) {
@@ -40,6 +53,8 @@ export function ThumbnailField({ value, onChange }: ThumbnailFieldProps) {
         tabIndex={0}
         style={{ backgroundImage: `url(${value})` }}
         onPaste={onPaste}
+        onDragOver={allowDrop}
+        onDrop={onDrop}
       >
         <button
           type="button"
@@ -59,7 +74,7 @@ export function ThumbnailField({ value, onChange }: ThumbnailFieldProps) {
       className="img-drop"
       tabIndex={0}
       onPaste={onPaste}
-      onDragOver={(event) => event.preventDefault()}
+      onDragOver={allowDrop}
       onDrop={onDrop}
       onClick={() => fileInputRef.current?.click()}
     >

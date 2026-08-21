@@ -30,3 +30,17 @@ export function acceptsPreviewImage(measurement: ImageMeasurement): boolean {
   if (measurement.status === "unknown") return true;
   return isPreviewSized(measurement.size);
 }
+
+export const STORED_MAX_EDGE = 1280;
+export const STORED_QUALITY = 0.82;
+
+export function storedImageSize({ width, height }: ImageSize): ImageSize {
+  const edge = Math.max(width, height);
+  if (edge <= STORED_MAX_EDGE || edge === 0) return { width, height };
+
+  const scale = STORED_MAX_EDGE / edge;
+  return {
+    width: Math.max(1, Math.round(width * scale)),
+    height: Math.max(1, Math.round(height * scale)),
+  };
+}

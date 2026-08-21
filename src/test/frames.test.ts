@@ -115,6 +115,27 @@ describe("the picture frame", () => {
     expect(shot).not.toMatch(/^\s*(width|height|aspect-ratio):/m);
   });
 
+  it("scrolls the picture along with everything under it, and pins only the actions", () => {
+    const scroll = ruleFor("components/modals.css", ".modal-scroll");
+    const footer = ruleFor("components/modals.css", ".modal-footer");
+
+    expect(scroll).toContain("overflow-y: auto;");
+    expect(scroll).toContain("min-height: 0;");
+    expect(scroll).toContain("flex: 1 1 auto;");
+    expect(footer).toContain("flex: none;");
+  });
+
+  it("gives that scroller the app's own slim scrollbar, not the platform's", () => {
+    const source = readFileSync(join(STYLES, "base.css"), "utf8");
+    const blocks = [...source.matchAll(/([^{}]*::-webkit-scrollbar[^{}]*)\{([^}]*)\}/g)];
+
+    const track = blocks.find((block) => (block[2] ?? "").includes("width: 10px"));
+    const thumb = blocks.find((block) => (block[2] ?? "").includes("background: var(--border);"));
+
+    expect(track?.[1]).toContain(".modal-scroll::-webkit-scrollbar");
+    expect(thumb?.[1]).toContain(".modal-scroll::-webkit-scrollbar-thumb");
+  });
+
   it("lets no surface put the detail picture back in a box", () => {
     for (const file of stylesheets(STYLES)) {
       const source = readFileSync(file, "utf8");

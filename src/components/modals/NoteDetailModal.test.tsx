@@ -35,6 +35,22 @@ describe("NoteDetailModal", () => {
     expect(container.querySelector(".shot img")).toHaveAttribute("sizes", "min(612px, 88vw)");
   });
 
+  it("keeps its actions out of the scrolling region, however tall the picture is", () => {
+    const { container } = renderDetail(makeNote({ siteImage: "https://example.com/tall.png" }));
+
+    const footer = container.querySelector(".modal-footer");
+    expect(footer).not.toBeNull();
+    expect(footer).toContainElement(screen.getByRole("link", { name: /Open original/ }));
+    expect(container.querySelector(".modal-scroll .modal-actions")).toBeNull();
+  });
+
+  it("scrolls the picture away with the text rather than holding it above them", () => {
+    const { container } = renderDetail(makeNote({ siteImage: "https://example.com/tall.png" }));
+
+    expect(container.querySelector(".modal-scroll > .shot")).not.toBeNull();
+    expect(container.querySelector(".modal-scroll > .modal-body")).not.toBeNull();
+  });
+
   it("has no picture region at all when the save has no picture", () => {
     const { container } = renderDetail(makeNote({ favicon: "https://example.com/icon.png" }));
 

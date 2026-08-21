@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { acceptsPreviewImage, imageSizeFrom, isPreviewSized } from "./imageCandidate";
+import {
+  acceptsPreviewImage,
+  imageSizeFrom,
+  isPreviewSized,
+  storedImageSize,
+} from "./imageCandidate";
 
 describe("imageSizeFrom", () => {
   it("reads declared dimensions", () => {
@@ -52,5 +57,15 @@ describe("acceptsPreviewImage", () => {
       true,
     );
     expect(acceptsPreviewImage({ status: "measured", size: { width: 1, height: 1 } })).toBe(false);
+  });
+
+  it("caps what gets stored at the widest a card or the detail view can use", () => {
+    expect(storedImageSize({ width: 4032, height: 3024 })).toEqual({ width: 1280, height: 960 });
+    expect(storedImageSize({ width: 3024, height: 4032 })).toEqual({ width: 960, height: 1280 });
+  });
+
+  it("leaves a picture that already fits exactly as it is", () => {
+    expect(storedImageSize({ width: 1200, height: 630 })).toEqual({ width: 1200, height: 630 });
+    expect(storedImageSize({ width: 0, height: 0 })).toEqual({ width: 0, height: 0 });
   });
 });

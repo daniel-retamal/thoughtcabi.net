@@ -52,13 +52,15 @@ svg {
 
 .sidebar::-webkit-scrollbar,
 .body::-webkit-scrollbar,
-.modal-body::-webkit-scrollbar {
+.modal-body::-webkit-scrollbar,
+.modal-scroll::-webkit-scrollbar {
   width: 10px;
 }
 
 .sidebar::-webkit-scrollbar-thumb,
 .body::-webkit-scrollbar-thumb,
-.modal-body::-webkit-scrollbar-thumb {
+.modal-body::-webkit-scrollbar-thumb,
+.modal-scroll::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 10px;
   border: 3px solid transparent;
@@ -66,7 +68,8 @@ svg {
 }
 
 .sidebar::-webkit-scrollbar-thumb:hover,
-.body::-webkit-scrollbar-thumb:hover {
+.body::-webkit-scrollbar-thumb:hover,
+.modal-scroll::-webkit-scrollbar-thumb:hover {
   background: var(--border-strong);
   background-clip: padding-box;
   border: 3px solid transparent;

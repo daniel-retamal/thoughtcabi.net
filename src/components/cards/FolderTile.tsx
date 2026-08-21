@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { isFolder, isNote, type Folder, type Note } from "@/domain/model";
+import { isFolder, isNote, isPendingNote, type Folder, type NoteEntry } from "@/domain/model";
 import { collectNotes, directCounts } from "@/domain/library/tree";
 import { folderDragProps } from "@/dnd/dragProps";
 import { useArmed } from "@/hooks/useArmed";
@@ -20,13 +20,16 @@ export interface FolderTileProps extends FolderHandlers {
   folder: Folder;
 }
 
-function previewNodes(folder: Folder): (Folder | Note)[] {
-  const shown: (Folder | Note)[] = [];
+function previewNodes(folder: Folder): (Folder | NoteEntry)[] {
+  const notes: NoteEntry[] = [];
+  const folders: Folder[] = [];
+
   for (const child of folder.children) {
-    if (isFolder(child) || isNote(child)) shown.push(child);
-    if (shown.length === MOSAIC_SLOTS) break;
+    if (isNote(child) || isPendingNote(child)) notes.push(child);
+    else if (isFolder(child)) folders.push(child);
   }
-  return shown;
+
+  return [...notes, ...folders].slice(0, MOSAIC_SLOTS);
 }
 
 function cellWidth(index: number, slots: number): string {

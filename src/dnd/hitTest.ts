@@ -1,11 +1,16 @@
 import type { NodeId } from "@/domain/model";
 import { CONTENT_BODY_SELECTOR, DND_ATTR, readAttr, readLocation } from "./attributes";
-import { folderUnder, insideInnerZone, nearestElement, withinRect } from "./geometry";
+import {
+  folderUnder,
+  insertionLineAround,
+  insideInnerZone,
+  nearestElement,
+  withinRect,
+} from "./geometry";
 import type { Axis, DragPayload, DropTarget, InsertionLine, NodeDrag, Point } from "./types";
 
 const FOLDER_HALO = 6;
 const STICKY_FOLDER_SLACK = 5;
-const EDGE_GAP = 5;
 
 export interface HitTestContext {
   drag: DragPayload;
@@ -28,6 +33,9 @@ export function resolveDrop(context: HitTestContext): HitTestResult {
   const element = document.elementFromPoint(point.x, point.y);
 
   if (drag.kind === "tag") {
+    if (element?.closest(`[${DND_ATTR.tagRow}]`)) {
+      return { target: resolveTagInsertion(point, drag.tag), springElement: null };
+    }
     return { target: resolveTagDrop(element, drag.tag), springElement: null };
   }
 
@@ -113,115 +121,70 @@ function resolvePlacement(context: NodeHitContext, element: Element | null): Dro
   const location = readLocation(root);
   const siblings = Array.from(
     root.querySelectorAll<HTMLElement>(`[${DND_ATTR.dragKind}="${drag.kind}"]`),
-  ).filter(
-    (node) =>
-      node.closest(`[${DND_ATTR.zone}]`) !== null && readAttr(node, DND_ATTR.dragId) !== drag.id,
-  );
+  ).filter((node) => node.closest(`[${DND_ATTR.zone}]`) !== null);
+  const candidates = siblings.filter((node) => readAttr(node, DND_ATTR.dragId) !== drag.id);
 
-  if (siblings.length === 0) {
+  if (candidates.length === 0) {
     if (!location) return null;
     const target: DropTarget = { type: "into-nav", location, element: root };
     return validate(drag, target) ? target : null;
   }
 
-  const zone = nearestElement(siblings, point, null)?.closest<HTMLElement>(`[${DND_ATTR.zone}]`);
+  const zone = nearestElement(candidates, point, null)?.closest<HTMLElement>(`[${DND_ATTR.zone}]`);
   if (!zone || !location) return null;
 
-  const zoneSiblings = siblings.filter((node) => node.closest(`[${DND_ATTR.zone}]`) === zone);
+  const inZone = (node: HTMLElement): boolean => node.closest(`[${DND_ATTR.zone}]`) === zone;
+  const zoneSiblings = siblings.filter(inZone);
+  const zoneCandidates = candidates.filter(inZone);
   const axis: Axis = zone.getAttribute(DND_ATTR.zone) === "list" ? "y" : "x";
-  const pick = nearestElement(zoneSiblings, point, axis);
+  const pick = nearestElement(zoneCandidates, point, axis);
   if (!pick) return null;
 
   const rect = pick.getBoundingClientRect();
   const before =
     axis === "x" ? point.x < (rect.left + rect.right) / 2 : point.y < (rect.top + rect.bottom) / 2;
 
-  const index = zoneSiblings.indexOf(pick);
-  const insertIndex = before ? index : index + 1;
-  const beforeId = readAttr(zoneSiblings[insertIndex] ?? null, DND_ATTR.dragId);
-  const line = reorderLine(axis, zoneSiblings[insertIndex - 1], zoneSiblings[insertIndex], pick, rect);
+  const boundary = zoneCandidates.indexOf(pick) + (before ? 0 : 1);
+  const beforeId = readAttr(zoneCandidates[boundary] ?? null, DND_ATTR.dragId);
+  const line = insertionLineAround(axis, zoneSiblings, pick, rect, before);
 
   const target: DropTarget = { type: "reorder", location, beforeId, line, element: zone };
   return validate(drag, target) ? target : null;
 }
 
-function resolveShelfInsertion(point: Point, dragId: NodeId): DropTarget | null {
-  const rows = Array.from(document.querySelectorAll<HTMLElement>(`[${DND_ATTR.shelfRow}]`)).filter(
-    (row) => readAttr(row, DND_ATTR.dragId) !== dragId,
-  );
-  if (rows.length === 0) return null;
-
-  let best: HTMLElement | null = null;
-  let bestDistance = Infinity;
-  let bestRect: DOMRect | null = null;
-  let before = true;
-
-  for (const row of rows) {
-    const rect = row.getBoundingClientRect();
-    const centerY = (rect.top + rect.bottom) / 2;
-    const distance = Math.abs(point.y - centerY);
-    if (distance < bestDistance) {
-      bestDistance = distance;
-      best = row;
-      bestRect = rect;
-      before = point.y < centerY;
-    }
-  }
-
-  if (!best || !bestRect) return null;
-
-  const ids = rows.map((row) => readAttr(row, DND_ATTR.dragId));
-  const bestIndex = ids.indexOf(readAttr(best, DND_ATTR.dragId));
-  const insertIndex = before ? bestIndex : bestIndex + 1;
-  const beforeId = ids[insertIndex] ?? null;
-  const line = reorderLine("y", rows[insertIndex - 1], rows[insertIndex], best, bestRect);
-
-  return { type: "reorder-shelf", beforeId, line };
+interface RowInsertion {
+  beforeId: string | null;
+  line: InsertionLine;
 }
 
-function reorderLine(
-  axis: Axis,
-  previous: HTMLElement | undefined,
-  next: HTMLElement | undefined,
-  pick: HTMLElement,
-  pickRect: DOMRect,
-): InsertionLine {
-  const rectOf = (el: HTMLElement | undefined): DOMRect | null =>
-    el ? (el === pick ? pickRect : el.getBoundingClientRect()) : null;
+function resolveRowInsertion(
+  point: Point,
+  rowSelector: string,
+  dragId: string,
+): RowInsertion | null {
+  const rows = Array.from(document.querySelectorAll<HTMLElement>(rowSelector));
+  const candidates = rows.filter((row) => readAttr(row, DND_ATTR.dragId) !== dragId);
+  const pick = nearestElement(candidates, point, "y");
+  if (!pick) return null;
 
-  const prevRect = rectOf(previous);
-  const nextRect = rectOf(next);
+  const rect = pick.getBoundingClientRect();
+  const before = point.y < (rect.top + rect.bottom) / 2;
+  const boundary = candidates.indexOf(pick) + (before ? 0 : 1);
 
-  if (prevRect && nextRect) {
-    return axis === "x"
-      ? {
-          axis,
-          position: (prevRect.right + nextRect.left) / 2,
-          crossStart: prevRect.top,
-          crossSize: prevRect.height,
-        }
-      : {
-          axis,
-          position: (prevRect.bottom + nextRect.top) / 2,
-          crossStart: prevRect.left,
-          crossSize: prevRect.width,
-        };
-  }
+  return {
+    beforeId: readAttr(candidates[boundary] ?? null, DND_ATTR.dragId),
+    line: insertionLineAround("y", rows, pick, rect, before),
+  };
+}
 
-  const edgeRect = prevRect ?? nextRect ?? pickRect;
-  const atStart = !prevRect;
+function resolveTagInsertion(point: Point, tag: string): DropTarget | null {
+  const insertion = resolveRowInsertion(point, `[${DND_ATTR.tagRow}]`, tag);
+  if (!insertion) return null;
+  return { type: "reorder-tag", beforeTag: insertion.beforeId, line: insertion.line };
+}
 
-  return axis === "x"
-    ? {
-        axis,
-        position: atStart ? edgeRect.left - EDGE_GAP : edgeRect.right + EDGE_GAP,
-        crossStart: edgeRect.top,
-        crossSize: edgeRect.height,
-      }
-    : {
-        axis,
-        position: atStart ? edgeRect.top - EDGE_GAP : edgeRect.bottom + EDGE_GAP,
-        crossStart: edgeRect.left,
-        crossSize: edgeRect.width,
-      };
+function resolveShelfInsertion(point: Point, dragId: NodeId): DropTarget | null {
+  const insertion = resolveRowInsertion(point, `[${DND_ATTR.shelfRow}]`, dragId);
+  if (!insertion) return null;
+  return { type: "reorder-shelf", beforeId: insertion.beforeId, line: insertion.line };
 }

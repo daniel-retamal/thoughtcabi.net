@@ -43,6 +43,19 @@ export function insertTag(tags: readonly Tag[], index: number, tag: Tag): Tag[] 
   return next;
 }
 
+export function reorderTags(tags: readonly Tag[], name: string, beforeName: string | null): Tag[] {
+  const index = tags.findIndex((tag) => tag.name === name);
+  if (index < 0) return [...tags];
+
+  const next = [...tags];
+  const [moved] = next.splice(index, 1);
+  if (!moved) return [...tags];
+
+  const beforeIndex = beforeName == null ? -1 : next.findIndex((tag) => tag.name === beforeName);
+  next.splice(beforeIndex < 0 ? next.length : beforeIndex, 0, moved);
+  return next;
+}
+
 export function renameTag(tags: readonly Tag[], from: string, to: string): Tag[] {
   return tags.map((tag) => (tag.name === from ? { ...tag, name: to } : tag));
 }

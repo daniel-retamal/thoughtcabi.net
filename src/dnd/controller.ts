@@ -138,7 +138,11 @@ export class DragController {
       return;
     }
 
-    if (target.type === "reorder" || target.type === "reorder-shelf") {
+    if (
+      target.type === "reorder" ||
+      target.type === "reorder-shelf" ||
+      target.type === "reorder-tag"
+    ) {
       this.indicator.show(target.line);
       return;
     }
