@@ -5,6 +5,7 @@ import { availableColors } from "@/domain/tags/tagLibrary";
 import { notesWithTag } from "@/domain/library/search";
 import {
   containerAt,
+  findNode,
   firstShelf,
   isCabinetEmpty,
   parentContainerName,
@@ -13,7 +14,16 @@ import {
   requireShelf,
 } from "@/domain/library/tree";
 import { buildNote, type NoteDraft } from "@/domain/notes/buildNote";
-import type { Cabinet, Folder, LibraryLocation, Note, Shelf, Tag } from "@/domain/model";
+import {
+  isNote,
+  type Cabinet,
+  type Folder,
+  type LibraryLocation,
+  type NodeId,
+  type Note,
+  type Shelf,
+  type Tag,
+} from "@/domain/model";
 import { sameName } from "@/domain/transfer/mergeCabinets";
 import { withFreshIds } from "@/domain/transfer/reidentify";
 import { locationDropProps } from "@/dnd/dragProps";
@@ -22,6 +32,7 @@ import { downloadTextFile } from "@/lib/files";
 import { cabinetFileName, serializeCabinet } from "@/storage/cabinetFile";
 import { readLink as readLinkFromWeb, type LinkReader } from "@/links/readLink";
 import { usePreferences } from "@/hooks/usePreferences";
+import { useImageDropTargets } from "@/hooks/useImageDropTargets";
 import { useSearchShortcut } from "@/hooks/useSearchShortcut";
 import { useToasts, type ToastAction } from "@/hooks/useToasts";
 import { useTransientIds } from "@/hooks/useTransientIds";
@@ -101,6 +112,23 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     if (placement) announceDeletion(subject, () => dispatch({ type: "node/restore", placement }));
   };
 
+  const setThumbnail = (noteId: NodeId, image: string): void => {
+    const node = findNode(library, noteId);
+    const note = node && isNote(node) ? node : null;
+    if (!note || note.image === image) return;
+
+    const previous = note.image ?? "";
+    dispatch({ type: "note/setImage", id: noteId, image });
+    pushToast({
+      verb: "Thumbnail set on",
+      subject: note.title || note.domain || "Untitled",
+      action: {
+        kind: "undo",
+        run: () => dispatch({ type: "note/setImage", id: noteId, image: previous }),
+      },
+    });
+  };
+
   usePasteToSave({
     library,
     location: navigation.location,
@@ -109,7 +137,10 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     onSaved: (note, folder, location) => {
       pushToast({ subject: folder, action: viewAction(location, note) });
     },
+    onThumbnail: setThumbnail,
   });
+
+  useImageDropTargets(setThumbnail);
 
   const openFolder = (folder: FolderEntry): void => {
     if (viewState.mode !== "searching" || !folder.shelfId) {

@@ -188,3 +188,9 @@ body.dnd-active .row-actions {
     animation: none;
   }
 }
+
+:root[data-card-surface] .img-drop-over {
+  outline: 2.5px dashed var(--accent);
+  outline-offset: -2.5px;
+  border-radius: var(--r-md);
+}

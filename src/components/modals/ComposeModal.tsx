@@ -83,6 +83,7 @@ export function ComposeModal({
       kind={isEditing ? "Edit link" : "Save link"}
       heading={isEditing ? "Edit this entry" : "Add to your cabinet"}
       onClose={onCancel}
+      onImageDrop={setImage}
     >
       <Field label="Title">
         <input
@@ -107,7 +108,7 @@ export function ComposeModal({
         </div>
       </Field>
 
-      <Field label="Thumbnail" hint="— optional · paste or drop to override the site's">
+      <Field label="Thumbnail" hint="— optional · drop one anywhere in this dialog">
         <ThumbnailField value={image} onChange={setImage} />
       </Field>
 

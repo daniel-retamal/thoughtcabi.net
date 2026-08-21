@@ -38,6 +38,16 @@ function pasteText(text: string): void {
   });
 }
 
+function pointAt(element: HTMLElement): void {
+  element.getBoundingClientRect = () => ({ left: 0, right: 100, top: 0, bottom: 100 }) as DOMRect;
+  document.elementFromPoint = () => element;
+  act(() => {
+    window.dispatchEvent(
+      new MouseEvent("pointermove", { clientX: 50, clientY: 50, bubbles: true }),
+    );
+  });
+}
+
 function deferredReader(): {
   readLink: () => Promise<LinkPreview | null>;
   resolve: (preview: LinkPreview | null) => Promise<void>;
@@ -462,6 +472,41 @@ describe("App", () => {
       "src",
       "https://example.com/favicon.ico",
     );
+  });
+
+  it("hangs a pasted picture on the card under the pointer, and takes it back", async () => {
+    withSaves();
+    const { readLink } = deferredReader();
+    render(<App readLink={readLink} />);
+
+    const card = document.querySelector('[data-drag-kind="item"]') as HTMLElement;
+    const noteId = card.getAttribute("data-drag-id");
+    pointAt(card);
+
+    pasteText("https://example.com/replacement.png");
+
+    const updated = document.querySelector(`[data-drag-id="${noteId}"]`) as HTMLElement;
+    expect(updated.querySelector("img")).toHaveAttribute(
+      "src",
+      "https://example.com/replacement.png",
+    );
+    expect(document.querySelector(".card.pending")).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Undo" }));
+    expect(
+      document.querySelector(`[data-drag-id="${noteId}"] img[src*="replacement.png"]`),
+    ).toBeNull();
+  });
+
+  it("still saves a page pasted over a card, rather than framing it", () => {
+    withSaves();
+    const { readLink } = deferredReader();
+    render(<App readLink={readLink} />);
+
+    pointAt(document.querySelector('[data-drag-kind="item"]') as HTMLElement);
+    pasteText("https://example.com/an-article");
+
+    expect(document.querySelector(".card.pending")).toBeInTheDocument();
   });
 
   it("leaves pasted text that is not a link alone", () => {

@@ -1,5 +1,6 @@
 import { useRef, type ClipboardEvent, type DragEvent } from "react";
 import { downscaleImage } from "@/lib/downscaleImage";
+import { hasImagePayload, readDroppedImage } from "@/lib/imageDrop";
 import { Icon } from "@/components/primitives/Icon";
 
 function readImageFile(file: File | null | undefined, onLoaded: (dataUrl: string) => void): void {
@@ -22,22 +23,28 @@ export interface ThumbnailFieldProps {
 export function ThumbnailField({ value, onChange }: ThumbnailFieldProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const take = (transfer: DataTransfer): boolean => {
+    if (!hasImagePayload(transfer)) return false;
+    void readDroppedImage(transfer).then((image) => {
+      if (image) onChange(image);
+    });
+    return true;
+  };
+
   const onPaste = (event: ClipboardEvent): void => {
-    const item = Array.from(event.clipboardData.items).find((entry) =>
-      entry.type.startsWith("image"),
-    );
-    const file = item?.getAsFile();
-    if (!file) return;
-    event.preventDefault();
-    readImageFile(file, onChange);
+    if (take(event.clipboardData)) event.preventDefault();
   };
 
   const onDrop = (event: DragEvent): void => {
     event.preventDefault();
-    readImageFile(event.dataTransfer.files.item(0), onChange);
+    event.stopPropagation();
+    take(event.dataTransfer);
   };
 
-  const allowDrop = (event: DragEvent): void => event.preventDefault();
+  const allowDrop = (event: DragEvent): void => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+  };
 
   if (value) {
     return (

@@ -42,6 +42,7 @@ export type CabinetAction =
   | { type: "note/resolvePending"; note: Note }
   | { type: "note/add"; location: LibraryLocation; note: Note }
   | { type: "note/move"; location: LibraryLocation; note: Note }
+  | { type: "note/setImage"; id: NodeId; image: string }
   | { type: "node/remove"; id: NodeId }
   | { type: "node/restore"; placement: NodePlacement }
   | { type: "node/moveIntoFolder"; id: NodeId; folderId: NodeId }
@@ -114,6 +115,12 @@ export function cabinetReducer(state: Cabinet, action: CabinetAction): Cabinet {
       return withLibrary(
         state,
         addChild(removeNode(library, action.note.id), action.location, action.note),
+      );
+
+    case "note/setImage":
+      return withLibrary(
+        state,
+        patchNotes(library, (note) => (note.id === action.id ? { image: action.image } : null)),
       );
 
     case "node/remove":
