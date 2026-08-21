@@ -28,10 +28,10 @@ export function usePasteToSave({
   dispatch,
   onSaved,
   onThumbnail,
-}: PasteToSaveOptions): void {
+}: PasteToSaveOptions): (text: string) => boolean {
   const pointer = usePointerPosition();
 
-  useGlobalPaste((text) => {
+  const takeText = (text: string): boolean => {
     const image = imageUrlFrom(text);
     const noteId = image ? noteUnder(pointer.current) : null;
     if (image && noteId) {
@@ -58,7 +58,10 @@ export function usePasteToSave({
       });
 
     return true;
-  });
+  };
+
+  useGlobalPaste(takeText);
+  return takeText;
 }
 
 function noteUnder(point: { x: number; y: number } | null): NodeId | null {

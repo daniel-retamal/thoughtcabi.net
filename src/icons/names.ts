@@ -9,6 +9,7 @@ export const ICON_NAMES = [
   "check",
   "chevron-down",
   "chevron-right",
+  "clipboard-paste",
   "code-xml",
   "coffee",
   "compass",
