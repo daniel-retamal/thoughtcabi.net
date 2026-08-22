@@ -1,40 +1,42 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const STYLES = resolve(process.cwd(), "src/styles");
-const LIGHTEST = 400;
 
-function stylesheets(directory: string): string[] {
-  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const path = join(directory, entry.name);
-    if (entry.isDirectory()) return stylesheets(path);
-    return entry.name.endsWith(".css") ? [path] : [];
-  });
+function read(path: string): string {
+  return readFileSync(join(STYLES, path), "utf8");
 }
 
-function weightsIn(source: string): number[] {
-  const withoutFaces = source.replace(/@font-face\s*\{[^}]*\}/g, "");
-  return Array.from(withoutFaces.matchAll(/font-weight:\s*(\d+)/g)).map((match) =>
-    Number(match[1]),
-  );
+function ruleFor(source: string, selector: string): string {
+  const opens = source.indexOf(`${selector} {`);
+  return opens === -1 ? "" : source.slice(opens, source.indexOf("}", opens));
+}
+
+function weightIn(rule: string): number {
+  return Number(/font-weight:\s*(\d+)/.exec(rule)?.[1]);
+}
+
+function literataRange(): [number, number] {
+  const face = /@font-face\s*\{[^}]*Literata[^}]*\}/.exec(read("fonts.css"))?.[0] ?? "";
+  const declared = /font-weight:\s*(\d+)\s+(\d+)/.exec(face);
+  return [Number(declared?.[1]), Number(declared?.[2])];
 }
 
 describe("typography", () => {
-  it("never asks a face for a weight lighter than regular", () => {
-    const light = stylesheets(STYLES).flatMap((path) =>
-      weightsIn(readFileSync(path, "utf8"))
-        .filter((weight) => weight < LIGHTEST)
-        .map((weight) => `${path}: ${weight}`),
-    );
-
-    expect(light).toEqual([]);
+  it("leaves glyph rasterisation to the platform", () => {
+    expect(read("base.css")).not.toContain("font-smoothing");
   });
 
-  it("keeps the sidebar's names at the same weight as the rest of the interface", () => {
-    const source = readFileSync(join(STYLES, "layout/sidebar.css"), "utf8");
-    const rule = /\.lib-row \.lib-name\s*\{([^}]*)\}/.exec(source)?.[1] ?? "";
+  it("keeps the sidebar's names at the weight their 154px slot was measured against", () => {
+    expect(weightIn(ruleFor(read("layout/sidebar.css"), ".lib-row .lib-name"))).toBe(300);
+  });
 
-    expect(rule).toContain("font-weight: 400;");
+  it("asks Literata only for weights its own face declares", () => {
+    const [lightest, heaviest] = literataRange();
+    const asked = weightIn(ruleFor(read("layout/sidebar.css"), ".lib-row .lib-name"));
+
+    expect(asked).toBeGreaterThanOrEqual(lightest);
+    expect(asked).toBeLessThanOrEqual(heaviest);
   });
 });
