@@ -17,7 +17,6 @@ body {
   background-image: var(--grain);
   background-attachment: fixed;
   background-blend-mode: overlay;
-  -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
