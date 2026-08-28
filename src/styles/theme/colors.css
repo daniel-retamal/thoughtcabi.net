@@ -110,6 +110,62 @@
   --ring-paper: var(--tone-bg);
 }
 
+:root[data-color="paper"] {
+  --tone-bg: #f7f5f0;
+  --tone-panel: #efede7;
+  --tone-panel-2: #e9e7e1;
+  --tone-raise: #ffffff;
+  --tone-plate: #1c1b19;
+  --tone-plate-raise: #262421;
+  --tone-paper: #ffffff;
+  --tone-on-field: #23221f;
+  --tone-ink: #1a1a1c;
+  --tone-shadow: 62 58 50;
+  --ring-paper: var(--tone-ink);
+}
+
+:root[data-color="linen"] {
+  --tone-bg: #e6e2da;
+  --tone-panel: #dfdbd2;
+  --tone-panel-2: #d8d4cb;
+  --tone-raise: #f4f2ed;
+  --tone-plate: #22211e;
+  --tone-plate-raise: #2c2b27;
+  --tone-paper: #fbfaf7;
+  --tone-on-field: #23221f;
+  --tone-ink: #1a1a1c;
+  --tone-shadow: 62 58 50;
+  --ring-paper: var(--tone-ink);
+}
+
+:root[data-color="graphite"] {
+  --tone-bg: #2a2a2c;
+  --tone-panel: #37373a;
+  --tone-panel-2: #313134;
+  --tone-raise: #424246;
+  --tone-plate: #3a3a3e;
+  --tone-plate-raise: #45454a;
+  --tone-paper: #f2f0ea;
+  --tone-on-field: #f2f0ea;
+  --tone-ink: #1d1d20;
+  --tone-shadow: 6 6 8;
+  --ring-paper: var(--tone-bg);
+}
+
+:root[data-color="onyx"] {
+  --tone-bg: #0c0c0d;
+  --tone-panel: #17171a;
+  --tone-panel-2: #131316;
+  --tone-raise: #202024;
+  --tone-plate: #1a1a1e;
+  --tone-plate-raise: #232328;
+  --tone-paper: #f0eee8;
+  --tone-on-field: #f0eee8;
+  --tone-ink: #0c0c0d;
+  --tone-shadow: 0 0 2;
+  --ring-paper: var(--tone-bg);
+}
+
 :root[data-color] {
   --bg: var(--tone-bg);
   --surface: var(--tone-panel);
@@ -136,4 +192,10 @@
     0 22px 50px -18px rgb(var(--tone-shadow) / 0.75), 0 6px 16px -8px rgb(var(--tone-shadow) / 0.4);
   --shadow-md: 0 14px 30px -18px rgb(var(--tone-shadow) / 0.6);
   --shadow-sm: 0 1px 2px rgb(var(--tone-shadow) / 0.3);
+}
+
+:root[data-field="light"] {
+  --danger: #c0392b;
+  --danger-on: var(--tone-paper);
+  --danger-soft: color-mix(in oklab, #c0392b 9%, transparent);
 }

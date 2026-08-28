@@ -42,6 +42,30 @@ export const COLOR_FAMILIES: readonly [ColorFamily, ...ColorFamily[]] = [
       { id: "pine", label: "Pine", field: "#0A2018", paper: "#F0E9DB", plate: "#16382C" },
     ],
   },
+  {
+    id: "mono",
+    label: "Mono",
+    colors: [
+      {
+        id: "paper",
+        label: "Paper",
+        field: "#F7F5F0",
+        paper: "#FFFFFF",
+        plate: "#1C1B19",
+        light: true,
+      },
+      {
+        id: "linen",
+        label: "Linen",
+        field: "#E6E2DA",
+        paper: "#FBFAF7",
+        plate: "#22211E",
+        light: true,
+      },
+      { id: "graphite", label: "Graphite", field: "#2A2A2C", paper: "#F2F0EA", plate: "#3A3A3E" },
+      { id: "onyx", label: "Onyx", field: "#0C0C0D", paper: "#F0EEE8", plate: "#1A1A1E" },
+    ],
+  },
 ];
 
 export const THEME_COLORS: readonly ThemeColor[] = COLOR_FAMILIES.flatMap(
