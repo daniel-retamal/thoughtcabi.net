@@ -130,17 +130,69 @@ body.dnd-active .row-actions {
   bottom: -2px;
 }
 
-.dnd-over {
+.dnd-over,
+.dnd-spring,
+.img-drop-over {
   position: relative;
 }
 
-:root[data-card-surface] .folder-tile.dnd-over,
-:root[data-card-surface] .row-folder.dnd-over {
-  outline: 2.5px solid var(--accent);
-  outline-offset: -2.5px;
+:root[data-card-surface] .card.dnd-over::after,
+:root[data-card-surface] .folder-tile.dnd-over::after,
+:root[data-card-surface] .row-item.dnd-over::after,
+:root[data-card-surface] .row-folder.dnd-over::after,
+:root[data-card-surface] .card.dnd-spring::after,
+:root[data-card-surface] .folder-tile.dnd-spring::after,
+:root[data-card-surface] .row-item.dnd-spring::after,
+:root[data-card-surface] .row-folder.dnd-spring::after,
+:root[data-card-surface] .card.img-drop-over::after,
+:root[data-card-surface] .folder-tile.img-drop-over::after,
+:root[data-card-surface] .row-item.img-drop-over::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow:
+    inset 0 0 0 2px var(--ring-gutter),
+    inset 0 0 0 4px var(--ring);
 }
 
-.lib-row.dnd-over {
+:root[data-card-surface] .card.dnd-spring::after,
+:root[data-card-surface] .folder-tile.dnd-spring::after,
+:root[data-card-surface] .row-item.dnd-spring::after,
+:root[data-card-surface] .row-folder.dnd-spring::after {
+  animation: dnd-dwell 0.6s var(--ease-out) both;
+}
+
+:root[data-card-surface] .card.img-drop-over::after,
+:root[data-card-surface] .folder-tile.img-drop-over::after,
+:root[data-card-surface] .row-item.img-drop-over::after {
+  box-shadow: inset 0 0 0 2px var(--ring-gutter);
+  outline: 2px dashed var(--ring);
+  outline-offset: -4px;
+}
+
+@keyframes dnd-dwell {
+  0% {
+    opacity: 0.35;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-card-surface] .card.dnd-spring::after,
+  :root[data-card-surface] .folder-tile.dnd-spring::after,
+  :root[data-card-surface] .row-item.dnd-spring::after,
+  :root[data-card-surface] .row-folder.dnd-spring::after {
+    animation: none;
+  }
+}
+
+.lib-row.dnd-over,
+.lib-row.dnd-spring {
   background: var(--accent-softer);
   box-shadow:
     inset 0 0 0 2px var(--accent),
@@ -149,48 +201,12 @@ body.dnd-active .row-actions {
   z-index: 9003;
 }
 
-.crumb.dnd-over {
+.crumb.dnd-over,
+.crumb.dnd-spring {
   background: var(--accent-softer);
   color: var(--accent);
   box-shadow: inset 0 0 0 2px var(--accent);
   border-radius: 8px;
   position: relative;
   z-index: 9003;
-}
-
-:root[data-card-surface] .card.dnd-over,
-:root[data-card-surface] .row-item.dnd-over:not(.row-folder) {
-  outline: 2.5px solid var(--accent);
-  outline-offset: -2.5px;
-  border-radius: var(--r-md);
-}
-
-.dnd-spring {
-  position: relative;
-  background: var(--accent-softer) !important;
-  box-shadow: inset 0 0 0 2px var(--accent) !important;
-  animation: dnd-dwell 0.6s var(--ease-out) both;
-}
-
-@keyframes dnd-dwell {
-  0% {
-    box-shadow: inset 0 0 0 2px color-mix(in oklab, var(--accent) 35%, transparent) !important;
-  }
-  100% {
-    box-shadow:
-      inset 0 0 0 2px var(--accent),
-      0 0 0 4px var(--accent-softer) !important;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .dnd-spring {
-    animation: none;
-  }
-}
-
-:root[data-card-surface] .img-drop-over {
-  outline: 2.5px dashed var(--accent);
-  outline-offset: -2.5px;
-  border-radius: var(--r-md);
 }

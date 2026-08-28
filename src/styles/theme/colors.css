@@ -8,6 +8,7 @@
   --tone-cream: #f2ecde;
   --tone-ink: #111c6e;
   --tone-shadow: 4 8 60;
+  --ring-paper: var(--tone-bg);
 }
 
 :root[data-color="cobalt"] {
@@ -20,6 +21,7 @@
   --tone-cream: #f1ebdc;
   --tone-ink: #101a66;
   --tone-shadow: 2 6 44;
+  --ring-paper: var(--tone-bg);
 }
 
 :root[data-color="navy"] {
@@ -32,6 +34,7 @@
   --tone-cream: #f3efe4;
   --tone-ink: #0c2149;
   --tone-shadow: 2 10 40;
+  --ring-paper: var(--tone-bg);
 }
 
 :root[data-color="midnight"] {
@@ -44,6 +47,7 @@
   --tone-cream: #efeadc;
   --tone-ink: #0b1026;
   --tone-shadow: 0 2 20;
+  --ring-paper: var(--tone-bg);
 }
 
 :root[data-color="emerald"] {
@@ -56,6 +60,7 @@
   --tone-cream: #f3ebdd;
   --tone-ink: #03462c;
   --tone-shadow: 4 60 38;
+  --ring-paper: var(--tone-bg);
 }
 
 :root[data-color="viridian"] {
@@ -68,6 +73,7 @@
   --tone-cream: #f2eadb;
   --tone-ink: #0d4631;
   --tone-shadow: 2 44 29;
+  --ring-paper: var(--tone-bg);
 }
 
 :root[data-color="forest"] {
@@ -80,6 +86,7 @@
   --tone-cream: #f3eee4;
   --tone-ink: #0d3527;
   --tone-shadow: 2 40 27;
+  --ring-paper: var(--tone-bg);
 }
 
 :root[data-color="pine"] {
@@ -92,6 +99,7 @@
   --tone-cream: #f0e9db;
   --tone-ink: #0a2018;
   --tone-shadow: 0 20 13;
+  --ring-paper: var(--tone-bg);
 }
 
 :root[data-color] {
