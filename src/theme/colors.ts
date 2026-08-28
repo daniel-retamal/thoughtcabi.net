@@ -4,7 +4,9 @@ export interface ThemeColor {
   id: string;
   label: string;
   field: string;
-  cream: string;
+  paper: string;
+  plate: string;
+  light?: true;
 }
 
 export interface ColorFamily {
@@ -18,20 +20,26 @@ export const COLOR_FAMILIES: readonly [ColorFamily, ...ColorFamily[]] = [
     id: "blue",
     label: "Blue",
     colors: [
-      { id: "ultramarine", label: "Ultramarine", field: "#101C86", cream: "#F2ECDE" },
-      { id: "cobalt", label: "Cobalt", field: "#0F1A6B", cream: "#F1EBDC" },
-      { id: "navy", label: "Navy", field: "#0D2350", cream: "#F3EFE4" },
-      { id: "midnight", label: "Midnight", field: "#0B1026", cream: "#EFEADC" },
+      {
+        id: "ultramarine",
+        label: "Ultramarine",
+        field: "#101C86",
+        paper: "#F2ECDE",
+        plate: "#1D2CA1",
+      },
+      { id: "cobalt", label: "Cobalt", field: "#0F1A6B", paper: "#F1EBDC", plate: "#1B2893" },
+      { id: "navy", label: "Navy", field: "#0D2350", paper: "#F3EFE4", plate: "#19366A" },
+      { id: "midnight", label: "Midnight", field: "#0B1026", paper: "#EFEADC", plate: "#171D3F" },
     ],
   },
   {
     id: "green",
     label: "Green",
     colors: [
-      { id: "emerald", label: "Emerald", field: "#00603A", cream: "#F3EBDD" },
-      { id: "viridian", label: "Viridian", field: "#0D4A34", cream: "#F2EADB" },
-      { id: "forest", label: "Forest", field: "#0F3B2C", cream: "#F3EEE4" },
-      { id: "pine", label: "Pine", field: "#0A2018", cream: "#F0E9DB" },
+      { id: "emerald", label: "Emerald", field: "#00603A", paper: "#F3EBDD", plate: "#078050" },
+      { id: "viridian", label: "Viridian", field: "#0D4A34", paper: "#F2EADB", plate: "#197050" },
+      { id: "forest", label: "Forest", field: "#0F3B2C", paper: "#F3EEE4", plate: "#1B5340" },
+      { id: "pine", label: "Pine", field: "#0A2018", paper: "#F0E9DB", plate: "#16382C" },
     ],
   },
 ];
@@ -75,4 +83,5 @@ export function toCardSurface(value: unknown): CardSurface | null {
 export function applyAppearance(appearance: Appearance, root: HTMLElement): void {
   root.setAttribute("data-color", appearance.color);
   root.setAttribute("data-card-surface", appearance.cards);
+  root.setAttribute("data-field", colorById(appearance.color).light ? "light" : "dark");
 }
