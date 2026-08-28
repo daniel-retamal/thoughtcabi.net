@@ -1,15 +1,14 @@
-import { useState } from "react";
 import type { Note, Tag } from "@/domain/model";
 import { hasThumbnail } from "@/domain/notes/buildNote";
 import { findTag } from "@/domain/tags/tagLibrary";
 import { relativeTime } from "@/lib/relativeTime";
+import { useCopyLink } from "@/hooks/useCopyLink";
 import { Icon } from "@/components/primitives/Icon";
 import { Button } from "@/components/primitives/Button";
 import { TagBadge } from "@/components/primitives/TagBadge";
 import { Thumbnail } from "@/components/cards/Thumbnail";
 import { Modal } from "./Modal";
 
-const COPIED_FEEDBACK_MS = 1400;
 const SHOT_WIDTH = "min(612px, 88vw)";
 
 export interface NoteDetailModalProps {
@@ -21,14 +20,8 @@ export interface NoteDetailModalProps {
 }
 
 export function NoteDetailModal({ note, tags, location, onEdit, onClose }: NoteDetailModalProps) {
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyLink();
   const tag = findTag(tags, note.tag);
-
-  const copyLink = (): void => {
-    void navigator.clipboard?.writeText(note.url).catch(() => undefined);
-    setCopied(true);
-    setTimeout(() => setCopied(false), COPIED_FEEDBACK_MS);
-  };
 
   return (
     <Modal onClose={onClose}>
@@ -77,7 +70,7 @@ export function NoteDetailModal({ note, tags, location, onEdit, onClose }: NoteD
               <a className="primary" href={note.url} target="_blank" rel="noreferrer">
                 <Icon name="external-link" /> Open original
               </a>
-              <Button variant="ghost" icon={copied ? "check" : "copy"} onClick={copyLink}>
+              <Button variant="ghost" icon={copied ? "check" : "copy"} onClick={() => copy(note.url)}>
                 {copied ? "Copied" : "Copy link"}
               </Button>
               <Button

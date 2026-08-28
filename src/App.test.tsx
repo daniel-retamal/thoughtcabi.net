@@ -282,6 +282,22 @@ describe("App", () => {
       return within(sidebar()).getByText(name).closest(".lib-row") as HTMLElement;
     }
 
+    it("copies a card's link from the card, and says so where a reader can hear it", async () => {
+      const writeText = vi.fn(() => Promise.resolve());
+      Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+
+      withSaves();
+      render(<App />);
+
+      await userEvent.click(screen.getByText("Essays"));
+      const card = screen.getByText("On Rereading").closest(".card") as HTMLElement;
+      await userEvent.click(within(card).getByLabelText("Copy link"));
+
+      expect(writeText).toHaveBeenCalledWith("https://example.com/a");
+      expect(within(card).getByLabelText("Copied")).toBeInTheDocument();
+      expect(within(card).queryByLabelText("Copy link")).toBeNull();
+    });
+
     it("takes a card back out of the bin when asked", async () => {
       withSaves();
       render(<App />);

@@ -16,6 +16,7 @@ export interface ContextMenuHandlers {
   onSaveLink: () => void;
   onNewFolder: () => void;
   onOpen: (note: Note) => void;
+  onCopyLink: (note: Note) => void;
   onEdit: (note: Note) => void;
   onPasteThumbnail: (note: Note) => void;
   onDelete: (note: Note) => void;
@@ -44,6 +45,7 @@ export function contextMenuFor(target: ContextTarget, handlers: ContextMenuHandl
       label: "Open original",
       run: () => window.open(note.url, "_blank", "noreferrer"),
     });
+    items.push({ icon: "copy", label: "Copy link", run: () => handlers.onCopyLink(note) });
   }
 
   items.push({ icon: "pencil-line", label: "Edit", run: () => handlers.onEdit(note) });

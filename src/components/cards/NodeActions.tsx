@@ -1,5 +1,6 @@
 import type { Folder, Note } from "@/domain/model";
 import { stopPropagation } from "@/lib/events";
+import { useCopyLink } from "@/hooks/useCopyLink";
 import { ActionButton } from "@/components/primitives/ActionButton";
 
 export interface NoteActionsProps {
@@ -10,14 +11,23 @@ export interface NoteActionsProps {
 }
 
 export function NoteActions({ note, className, onEdit, onDelete }: NoteActionsProps) {
+  const { copied, copy } = useCopyLink();
+
   return (
     <div className={className} onClick={stopPropagation}>
       {note.domain ? (
-        <ActionButton
-          icon="external-link"
-          label="Open original"
-          onClick={() => window.open(note.url, "_blank", "noopener")}
-        />
+        <>
+          <ActionButton
+            icon="external-link"
+            label="Open original"
+            onClick={() => window.open(note.url, "_blank", "noopener")}
+          />
+          <ActionButton
+            icon={copied ? "check" : "copy"}
+            label={copied ? "Copied" : "Copy link"}
+            onClick={() => copy(note.url)}
+          />
+        </>
       ) : null}
       <ActionButton icon="pencil-line" label="Edit" onClick={() => onEdit(note)} />
       <ActionButton icon="trash-2" label="Remove" onClick={() => onDelete(note)} />

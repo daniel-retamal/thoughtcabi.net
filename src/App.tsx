@@ -30,7 +30,7 @@ import { withFreshIds } from "@/domain/transfer/reidentify";
 import { DND_ATTR } from "@/dnd/attributes";
 import { locationDropProps } from "@/dnd/dragProps";
 import type { IconName } from "@/icons/names";
-import { readClipboardImage, readClipboardText } from "@/lib/clipboard";
+import { readClipboardImage, readClipboardText, writeClipboardText } from "@/lib/clipboard";
 import { downscaleImage } from "@/lib/downscaleImage";
 import { downloadTextFile } from "@/lib/files";
 import { cabinetFileName, serializeCabinet } from "@/storage/cabinetFile";
@@ -471,6 +471,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
             onSaveLink: openCompose,
             onNewFolder: () => setDialog({ kind: "new-folder" }),
             onOpen: (note) => setDialog({ kind: "detail", note }),
+            onCopyLink: (note) => writeClipboardText(note.url),
             onEdit: (note) => setDialog({ kind: "compose", mode: "edit", note }),
             onPasteThumbnail: pasteThumbnailOnto,
             onDelete: deleteNote,

@@ -8,6 +8,7 @@ function handlers(): ContextMenuHandlers {
     onSaveLink: vi.fn(),
     onNewFolder: vi.fn(),
     onOpen: vi.fn(),
+    onCopyLink: vi.fn(),
     onEdit: vi.fn(),
     onPasteThumbnail: vi.fn(),
     onDelete: vi.fn(),
@@ -36,6 +37,7 @@ describe("contextMenuFor", () => {
     expect(labels(items)).toEqual([
       "Open",
       "Open original",
+      "Copy link",
       "Edit",
       "Paste as thumbnail",
       "Delete",
@@ -47,6 +49,7 @@ describe("contextMenuFor", () => {
     const items = contextMenuFor({ kind: "note", note: makeNote({ url: "" }) }, handlers());
 
     expect(labels(items)).not.toContain("Open original");
+    expect(labels(items)).not.toContain("Copy link");
   });
 
   it("hands each card action the card it was opened on", () => {
@@ -56,5 +59,8 @@ describe("contextMenuFor", () => {
 
     items.find((item) => item.label === "Paste as thumbnail")?.run();
     expect(spies.onPasteThumbnail).toHaveBeenCalledWith(note);
+
+    items.find((item) => item.label === "Copy link")?.run();
+    expect(spies.onCopyLink).toHaveBeenCalledWith(note);
   });
 });

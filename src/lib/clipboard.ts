@@ -19,3 +19,7 @@ export async function readClipboardImage(): Promise<Blob | null> {
     return null;
   }
 }
+
+export function writeClipboardText(text: string): void {
+  void navigator.clipboard?.writeText(text).catch(() => undefined);
+}
