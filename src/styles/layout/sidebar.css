@@ -4,7 +4,7 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  padding: 14px 12px 10px;
+  padding: 14px var(--sidebar-pad) 10px;
   background: color-mix(in oklab, var(--surface-2) 52%, transparent);
 }
 
@@ -39,7 +39,12 @@
   height: 15px;
 }
 
-.sidebar .side-section-label:not(:first-child) {
+.side-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.side-section + .side-section {
   margin-top: 22px;
 }
 
@@ -82,7 +87,7 @@
 .lib-row.active::before {
   content: "";
   position: absolute;
-  left: -12px;
+  left: calc(var(--sidebar-pad) * -1);
   top: 50%;
   transform: translateY(-50%);
   width: 3px;
@@ -178,4 +183,51 @@
 .lib-ghost .ring svg {
   width: 13px;
   height: 13px;
+}
+
+.side-toggle {
+  display: flex;
+  justify-content: flex-end;
+  padding-bottom: 6px;
+}
+
+.side-toggle .iconbtn {
+  width: 30px;
+  height: 30px;
+}
+
+.side-toggle .iconbtn svg {
+  width: 16px;
+  height: 16px;
+}
+
+:root[data-sidebar="rail"] .side-toggle {
+  justify-content: center;
+}
+
+:root[data-sidebar="rail"] .lib-name,
+:root[data-sidebar="rail"] .lib-edit,
+:root[data-sidebar="rail"] .side-section-label span,
+:root[data-sidebar="rail"] .lib-ghost {
+  display: none;
+}
+
+:root[data-sidebar="rail"] .lib-row {
+  justify-content: center;
+  padding: 8px 0;
+  gap: 0;
+}
+
+:root[data-sidebar="rail"] .lib-dot {
+  margin: 0;
+}
+
+:root[data-sidebar="rail"] .side-section-label {
+  order: 2;
+  justify-content: center;
+  padding: 6px 0 0;
+}
+
+:root[data-sidebar="rail"] .side-section-label button {
+  color: var(--text-muted);
 }

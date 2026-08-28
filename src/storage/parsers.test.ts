@@ -172,11 +172,18 @@ describe("parseCabinet", () => {
 describe("parsePreferences", () => {
   it("accepts a complete value", () => {
     expect(
-      parsePreferences({ view: "list", color: "emerald", cards: "color", onboarded: true }),
+      parsePreferences({
+        view: "list",
+        color: "emerald",
+        cards: "color",
+        sidebar: "rail",
+        onboarded: true,
+      }),
     ).toEqual({
       view: "list",
       color: "emerald",
       cards: "color",
+      sidebar: "rail",
       onboarded: true,
     });
   });
@@ -186,6 +193,7 @@ describe("parsePreferences", () => {
       view: "grid",
       color: "navy",
       cards: "color",
+      sidebar: "wide",
       onboarded: false,
     });
     expect(parsePreferences({ palette: "bento" })?.color).toBe("ultramarine");
@@ -198,12 +206,16 @@ describe("parsePreferences", () => {
       view: "grid",
       color: "ultramarine",
       cards: "cream",
+      sidebar: "wide",
       onboarded: false,
     });
-    expect(parsePreferences({ view: "list", color: "chartreuse", onboarded: "yes" })).toEqual({
+    expect(
+      parsePreferences({ view: "list", color: "chartreuse", sidebar: "narrow", onboarded: "yes" }),
+    ).toEqual({
       view: "list",
       color: "ultramarine",
       cards: "cream",
+      sidebar: "wide",
       onboarded: false,
     });
   });

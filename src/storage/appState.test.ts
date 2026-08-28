@@ -97,6 +97,7 @@ describe("migrating from the four original keys", () => {
       view: "list",
       color: "midnight",
       cards: "color",
+      sidebar: "wide",
       onboarded: false,
     });
     expect(localStorage.getItem(LEGACY_KEYS.view)).toBeNull();
@@ -123,7 +124,13 @@ describe("preferences", () => {
   });
 
   it("round-trips as one JSON value", () => {
-    const preferences = { view: "list", color: "forest", cards: "color", onboarded: true } as const;
+    const preferences = {
+      view: "list",
+      color: "forest",
+      cards: "color",
+      sidebar: "rail",
+      onboarded: true,
+    } as const;
     expect(savePreferences(preferences)).toBe("ok");
     expect(loadPreferences()).toEqual(preferences);
   });
@@ -142,6 +149,7 @@ describe("preferences", () => {
       view: DEFAULT_PREFERENCES.view,
       color: DEFAULT_PREFERENCES.color,
       cards: "color",
+      sidebar: DEFAULT_PREFERENCES.sidebar,
       onboarded: false,
     });
   });

@@ -38,6 +38,7 @@ import { readLink as readLinkFromWeb, type LinkReader } from "@/links/readLink";
 import { usePreferences } from "@/hooks/usePreferences";
 import { useImageDropTargets } from "@/hooks/useImageDropTargets";
 import { useSearchShortcut } from "@/hooks/useSearchShortcut";
+import { useSidebarShortcut } from "@/hooks/useSidebarShortcut";
 import { useToasts, type ToastAction } from "@/hooks/useToasts";
 import { useTransientIds } from "@/hooks/useTransientIds";
 import { useUndoShortcut } from "@/hooks/useUndoShortcut";
@@ -72,7 +73,7 @@ export interface AppProps {
 export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
   const { cabinet, dispatch, storageStatus } = useCabinet();
   const { library, tags } = cabinet;
-  const { preferences, setView, updateAppearance, markOnboarded } = usePreferences();
+  const { preferences, setView, setSidebar, updateAppearance, markOnboarded } = usePreferences();
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [noticeDismissed, setNoticeDismissed] = useState(false);
   const [menu, setMenu] = useState<{ x: number; y: number; target: ContextTarget } | null>(null);
@@ -97,7 +98,12 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     markOnboarded();
   }, [cabinetEmpty, preferences.onboarded, markOnboarded]);
 
+  const toggleSidebar = (): void => {
+    setSidebar(preferences.sidebar === "wide" ? "rail" : "wide");
+  };
+
   useSearchShortcut(searchRef);
+  useSidebarShortcut(toggleSidebar);
   useUndoShortcut(undoable);
   useLibraryDragAndDrop({ library, navigation, dispatch, pushToast });
 
@@ -347,6 +353,8 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
           activeShelfId={navigation.state.shelfId}
           atShelfRoot={navigation.state.path.length === 0}
           activeTag={navigation.state.activeTag}
+          mode={preferences.sidebar}
+          onToggleMode={toggleSidebar}
           onOpenShelf={(shelf) => navigation.openShelf(shelf.id)}
           onNewShelf={() => setDialog({ kind: "shelf", mode: "new" })}
           onEditShelf={(shelf) => setDialog({ kind: "shelf", mode: "edit", shelf })}

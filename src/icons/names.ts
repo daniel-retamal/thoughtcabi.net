@@ -38,6 +38,7 @@ export const ICON_NAMES = [
   "music",
   "newspaper",
   "palette",
+  "panel-left",
   "pencil-line",
   "pen-tool",
   "plane",

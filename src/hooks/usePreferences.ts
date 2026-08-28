@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Appearance, Preferences, ViewMode } from "@/domain/model";
+import type { Appearance, Preferences, SidebarMode, ViewMode } from "@/domain/model";
 import { loadPreferences, savePreferences } from "@/storage/appState";
 import { STORAGE_KEYS } from "@/storage/keys";
 import { isSelfWrite, parseJson } from "@/storage/localStore";
@@ -10,6 +10,7 @@ import { applyAppearance } from "@/theme/colors";
 export interface PreferencesStore {
   preferences: Preferences;
   setView: (view: ViewMode) => void;
+  setSidebar: (sidebar: SidebarMode) => void;
   updateAppearance: (changes: Partial<Appearance>) => void;
   markOnboarded: () => void;
 }
@@ -19,6 +20,7 @@ export function usePreferences(): PreferencesStore {
 
   useEffect(() => {
     applyAppearance(preferences, document.documentElement);
+    document.documentElement.setAttribute("data-sidebar", preferences.sidebar);
     savePreferences(preferences);
   }, [preferences]);
 
@@ -36,6 +38,10 @@ export function usePreferences(): PreferencesStore {
     setPreferences((current) => ({ ...current, view }));
   }, []);
 
+  const setSidebar = useCallback((sidebar: SidebarMode) => {
+    setPreferences((current) => ({ ...current, sidebar }));
+  }, []);
+
   const updateAppearance = useCallback((changes: Partial<Appearance>) => {
     setPreferences((current) => ({ ...current, ...changes }));
   }, []);
@@ -44,5 +50,5 @@ export function usePreferences(): PreferencesStore {
     setPreferences((current) => ({ ...current, onboarded: true }));
   }, []);
 
-  return { preferences, setView, updateAppearance, markOnboarded };
+  return { preferences, setView, setSidebar, updateAppearance, markOnboarded };
 }

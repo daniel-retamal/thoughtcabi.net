@@ -1,4 +1,5 @@
 import {
+  DEFAULT_SIDEBAR_MODE,
   DEFAULT_VIEW_MODE,
   type Cabinet,
   type Folder,
@@ -8,6 +9,7 @@ import {
   type NoteEntry,
   type Preferences,
   type Shelf,
+  type SidebarMode,
   type SiteCategory,
   type Tag,
   type ViewMode,
@@ -101,9 +103,7 @@ function parseShelf(value: unknown): Shelf | null {
 
 export function parseLibrary(value: unknown): Library | null {
   if (!Array.isArray(value)) return null;
-  const shelves = value
-    .map(parseShelf)
-    .filter((shelf): shelf is Shelf => shelf !== null);
+  const shelves = value.map(parseShelf).filter((shelf): shelf is Shelf => shelf !== null);
   return shelves.length > 0 ? shelves : null;
 }
 
@@ -133,12 +133,17 @@ export function parseCabinet(value: unknown): Cabinet | null {
   return { library, tags: parseTags(record.tags) ?? [] };
 }
 
+export function toSidebarMode(value: unknown): SidebarMode | null {
+  return value === "wide" || value === "rail" ? value : null;
+}
+
 export function parsePreferences(value: unknown): Preferences | null {
   const record = asRecord(value);
   if (!record) return null;
 
   return {
     view: parseViewMode(record.view) ?? DEFAULT_VIEW_MODE,
+    sidebar: toSidebarMode(record.sidebar) ?? DEFAULT_SIDEBAR_MODE,
     color: toColorId(record.color ?? record.palette) ?? DEFAULT_APPEARANCE.color,
     cards: toCardSurface(record.cards) ?? DEFAULT_APPEARANCE.cards,
     onboarded: record.onboarded === true,

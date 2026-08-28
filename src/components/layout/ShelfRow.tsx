@@ -7,15 +7,17 @@ import { ActionButton } from "@/components/primitives/ActionButton";
 export interface ShelfRowProps {
   shelf: Shelf;
   active: boolean;
+  named: boolean;
   onOpen: (shelf: Shelf) => void;
   onEdit: (shelf: Shelf) => void;
 }
 
-export function ShelfRow({ shelf, active, onOpen, onEdit }: ShelfRowProps) {
+export function ShelfRow({ shelf, active, named, onOpen, onEdit }: ShelfRowProps) {
   return (
     <div
       className={active ? "lib-row active" : "lib-row"}
       {...shelfDragProps(shelf)}
+      title={named ? undefined : shelf.name}
       onClick={() => onOpen(shelf)}
     >
       <span className="lib-tile" style={cssVars({ "--tint": "var(--accent)" })}>

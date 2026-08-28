@@ -141,6 +141,31 @@ describe("App", () => {
     expect(screen.getByText("Essays")).toBeInTheDocument();
   });
 
+  it("narrows the sidebar to a rail and remembers it across a remount", async () => {
+    withSaves();
+    const first = render(<App />);
+
+    expect(document.documentElement).toHaveAttribute("data-sidebar", "wide");
+    await userEvent.click(within(sidebar()).getByLabelText("Narrow sidebar"));
+    expect(document.documentElement).toHaveAttribute("data-sidebar", "rail");
+
+    first.unmount();
+    render(<App />);
+
+    expect(document.documentElement).toHaveAttribute("data-sidebar", "rail");
+    expect(within(sidebar()).getByLabelText("Widen sidebar")).toBeInTheDocument();
+  });
+
+  it("keeps every shelf and tag in the rail, so none of them stops being a drop target", async () => {
+    withSaves();
+    render(<App />);
+
+    await userEvent.click(within(sidebar()).getByLabelText("Narrow sidebar"));
+
+    expect(sidebar().querySelectorAll("[data-shelf-row]")).toHaveLength(2);
+    expect(sidebar().querySelectorAll("[data-tag-row]")).toHaveLength(3);
+  });
+
   it("switches shelves from the sidebar", async () => {
     withSaves();
     render(<App />);
