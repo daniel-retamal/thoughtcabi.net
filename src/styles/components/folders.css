@@ -197,9 +197,17 @@
     transform 0.16s;
 }
 
-.folder-tile:hover .folder-actions {
-  opacity: 1;
-  transform: none;
+@media (hover: hover) {
+  .folder-tile:hover .folder-actions {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (hover: none) {
+  .folder-actions {
+    display: none;
+  }
 }
 
 .folder-actions button {

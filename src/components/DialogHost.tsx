@@ -23,6 +23,7 @@ export interface DialogHostProps {
   readLink: LinkReader;
   onClose: () => void;
   onEditNote: (note: Note) => void;
+  onDeleteNote: (note: Note) => void;
   onSaveNote: (draft: NoteDraft, preview: LinkPreview | null, editing: Note | null) => void;
   onCreateTag: (name: string, color: string) => void;
   onSaveShelf: (shelf: Shelf | null, name: string, icon: IconName) => void;
@@ -44,6 +45,7 @@ export function DialogHost({
   readLink,
   onClose,
   onEditNote,
+  onDeleteNote,
   onSaveNote,
   onCreateTag,
   onSaveShelf,
@@ -65,6 +67,7 @@ export function DialogHost({
           tags={tags}
           location={detailLocationLabel(dialog.note)}
           onEdit={onEditNote}
+          onDelete={onDeleteNote}
           onClose={onClose}
         />
       );

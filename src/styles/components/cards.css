@@ -162,9 +162,17 @@
   z-index: 3;
 }
 
-.card:hover .card-actions {
-  opacity: 1;
-  transform: none;
+@media (hover: hover) {
+  .card:hover .card-actions {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (hover: none) {
+  .card-actions {
+    display: none;
+  }
 }
 
 .card-actions button {

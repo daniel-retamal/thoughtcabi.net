@@ -447,6 +447,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
         }
         onClose={closeDialog}
         onEditNote={(note) => setDialog({ kind: "compose", mode: "edit", note })}
+        onDeleteNote={deleteNote}
         onSaveNote={saveNote}
         onCreateTag={(name, color) => dispatch({ type: "tag/add", name, color })}
         onSaveShelf={saveShelf}

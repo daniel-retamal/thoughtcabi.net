@@ -136,8 +136,16 @@
     color 0.12s;
 }
 
-.lib-row:hover .lib-edit {
-  opacity: 1;
+@media (hover: hover) {
+  .lib-row:hover .lib-edit {
+    opacity: 1;
+  }
+}
+
+@media (hover: none) {
+  .lib-edit {
+    display: none;
+  }
 }
 
 .lib-edit:hover {

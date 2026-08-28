@@ -16,10 +16,18 @@ export interface NoteDetailModalProps {
   tags: readonly Tag[];
   location: string;
   onEdit: (note: Note) => void;
+  onDelete: (note: Note) => void;
   onClose: () => void;
 }
 
-export function NoteDetailModal({ note, tags, location, onEdit, onClose }: NoteDetailModalProps) {
+export function NoteDetailModal({
+  note,
+  tags,
+  location,
+  onEdit,
+  onDelete,
+  onClose,
+}: NoteDetailModalProps) {
   const { copied, copy } = useCopyLink();
   const tag = findTag(tags, note.tag);
 
@@ -70,7 +78,11 @@ export function NoteDetailModal({ note, tags, location, onEdit, onClose }: NoteD
               <a className="primary" href={note.url} target="_blank" rel="noreferrer">
                 <Icon name="external-link" /> Open original
               </a>
-              <Button variant="ghost" icon={copied ? "check" : "copy"} onClick={() => copy(note.url)}>
+              <Button
+                variant="ghost"
+                icon={copied ? "check" : "copy"}
+                onClick={() => copy(note.url)}
+              >
                 {copied ? "Copied" : "Copy link"}
               </Button>
               <Button
@@ -79,6 +91,13 @@ export function NoteDetailModal({ note, tags, location, onEdit, onClose }: NoteD
                 icon="pencil-line"
                 title="Edit"
                 onClick={() => onEdit(note)}
+              />
+              <Button
+                variant="danger"
+                className="icon-only"
+                icon="trash-2"
+                title="Delete"
+                onClick={() => onDelete(note)}
               />
             </>
           ) : (
@@ -89,6 +108,13 @@ export function NoteDetailModal({ note, tags, location, onEdit, onClose }: NoteD
               <Button variant="ghost" onClick={onClose}>
                 Done
               </Button>
+              <Button
+                variant="danger"
+                className="icon-only"
+                icon="trash-2"
+                title="Delete"
+                onClick={() => onDelete(note)}
+              />
             </>
           )}
         </div>

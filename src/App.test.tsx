@@ -323,6 +323,23 @@ describe("App", () => {
       expect(within(card).queryByLabelText("Copy link")).toBeNull();
     });
 
+    it("deletes from the detail sheet, closes it, and still offers the undo", async () => {
+      withSaves();
+      render(<App />);
+
+      await userEvent.click(screen.getByText("Essays"));
+      await userEvent.click(screen.getByText("On Rereading"));
+
+      const modal = document.querySelector(".modal") as HTMLElement;
+      await userEvent.click(within(modal).getByRole("button", { name: "Delete" }));
+
+      expect(document.querySelector(".modal")).toBeNull();
+      expect(toast()).toHaveTextContent("Deleted On Rereading");
+
+      await userEvent.click(within(toast()).getByRole("button", { name: "Undo" }));
+      expect(within(content()).getByText("On Rereading")).toBeInTheDocument();
+    });
+
     it("takes a card back out of the bin when asked", async () => {
       withSaves();
       render(<App />);
