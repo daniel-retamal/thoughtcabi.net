@@ -1,34 +1,40 @@
-import { useRef, useState, type RefObject } from "react";
-import type { Appearance } from "@/domain/model";
+import type { ReactNode, RefObject } from "react";
 import { Icon } from "@/components/primitives/Icon";
 import { ModKey } from "@/components/primitives/ModKey";
-import { DisplayPopover } from "@/components/display/DisplayPopover";
 
 export interface AppHeaderProps {
   query: string;
   searchRef: RefObject<HTMLInputElement>;
-  appearance: Appearance;
+  controls: ReactNode;
+  compact: boolean;
   onQueryChange: (query: string) => void;
-  onAppearanceChange: (changes: Partial<Appearance>) => void;
-  onTransfer: () => void;
+  onOpenDrawer: () => void;
   onCompose: () => void;
 }
 
 export function AppHeader({
   query,
   searchRef,
-  appearance,
+  controls,
+  compact,
   onQueryChange,
-  onAppearanceChange,
-  onTransfer,
+  onOpenDrawer,
   onCompose,
 }: AppHeaderProps) {
-  const [displayOpen, setDisplayOpen] = useState(false);
-  const displayButtonRef = useRef<HTMLButtonElement>(null);
-
   return (
     <header className="header">
       <div className="brand">
+        {compact ? (
+          <button
+            type="button"
+            className="iconbtn"
+            title="Shelves and tags"
+            aria-label="Shelves and tags"
+            onClick={onOpenDrawer}
+          >
+            <Icon name="panel-left" />
+          </button>
+        ) : null}
         <span className="mark">
           <Icon name="brain-circuit" />
         </span>
@@ -66,37 +72,7 @@ export function AppHeader({
       </div>
 
       <div className="header-actions">
-        <button
-          type="button"
-          className="iconbtn"
-          title="Export & import"
-          aria-label="Export and import"
-          onClick={onTransfer}
-        >
-          <Icon name="archive" />
-        </button>
-
-        <div className="pop-wrap">
-          <button
-            ref={displayButtonRef}
-            type="button"
-            className={displayOpen ? "iconbtn active" : "iconbtn"}
-            title="Display"
-            aria-label="Display settings"
-            onClick={() => setDisplayOpen((open) => !open)}
-          >
-            <Icon name="sliders-horizontal" />
-          </button>
-          {displayOpen ? (
-            <DisplayPopover
-              appearance={appearance}
-              anchorRef={displayButtonRef}
-              onChange={onAppearanceChange}
-              onClose={() => setDisplayOpen(false)}
-            />
-          ) : null}
-        </div>
-
+        {controls}
         <button type="button" className="btn-paste" onClick={onCompose}>
           <Icon name="plus" /> Save
         </button>

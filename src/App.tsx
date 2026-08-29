@@ -37,6 +37,8 @@ import { cabinetFileName, serializeCabinet } from "@/storage/cabinetFile";
 import { readLink as readLinkFromWeb, type LinkReader } from "@/links/readLink";
 import { usePreferences } from "@/hooks/usePreferences";
 import { useImageDropTargets } from "@/hooks/useImageDropTargets";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useOnEscape } from "@/hooks/useOnEscape";
 import { useSearchShortcut } from "@/hooks/useSearchShortcut";
 import { useSidebarShortcut } from "@/hooks/useSidebarShortcut";
 import { useToasts, type ToastAction } from "@/hooks/useToasts";
@@ -50,6 +52,7 @@ import { usePasteToSave } from "@/state/usePasteToSave";
 import type { Dialog } from "@/state/dialogs";
 import { DialogHost } from "@/components/DialogHost";
 import type { ImportMode } from "@/components/modals/TransferModal";
+import { AppControls } from "@/components/layout/AppControls";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { ContentToolbar } from "@/components/layout/ContentToolbar";
@@ -98,9 +101,24 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     markOnboarded();
   }, [cabinetEmpty, preferences.onboarded, markOnboarded]);
 
+  const compact = useMediaQuery("(max-width: 760px)");
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const closeDrawer = (): void => setDrawerOpen(false);
+
   const toggleSidebar = (): void => {
+    if (compact) {
+      setDrawerOpen((open) => !open);
+      return;
+    }
     setSidebar(preferences.sidebar === "wide" ? "rail" : "wide");
   };
+
+  useOnEscape(closeDrawer);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-drawer", drawerOpen ? "open" : "shut");
+  }, [drawerOpen]);
 
   useSearchShortcut(searchRef);
   useSidebarShortcut(toggleSidebar);
@@ -334,17 +352,29 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
       })
     : null;
 
+  const controls = (
+    <AppControls
+      appearance={preferences}
+      onAppearanceChange={updateAppearance}
+      onTransfer={() => setDialog({ kind: "transfer" })}
+    />
+  );
+
   return (
     <div className="app">
       <AppHeader
         query={navigation.state.query}
         searchRef={searchRef}
-        appearance={preferences}
+        compact={compact}
+        controls={compact ? null : controls}
         onQueryChange={navigation.setQuery}
-        onAppearanceChange={updateAppearance}
-        onTransfer={() => setDialog({ kind: "transfer" })}
+        onOpenDrawer={() => setDrawerOpen(true)}
         onCompose={openCompose}
       />
+
+      {drawerOpen ? (
+        <div className="scrim drawer-scrim" onClick={closeDrawer} aria-hidden="true" />
+      ) : null}
 
       <div className="main">
         <Sidebar
@@ -353,12 +383,19 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
           activeShelfId={navigation.state.shelfId}
           atShelfRoot={navigation.state.path.length === 0}
           activeTag={navigation.state.activeTag}
-          mode={preferences.sidebar}
+          mode={compact ? "wide" : preferences.sidebar}
+          footer={compact ? controls : null}
           onToggleMode={toggleSidebar}
-          onOpenShelf={(shelf) => navigation.openShelf(shelf.id)}
+          onOpenShelf={(shelf) => {
+            navigation.openShelf(shelf.id);
+            closeDrawer();
+          }}
           onNewShelf={() => setDialog({ kind: "shelf", mode: "new" })}
           onEditShelf={(shelf) => setDialog({ kind: "shelf", mode: "edit", shelf })}
-          onSelectTag={navigation.selectTag}
+          onSelectTag={(name) => {
+            navigation.selectTag(name);
+            closeDrawer();
+          }}
           onNewTag={() =>
             setDialog({ kind: "tag", mode: "new", color: availableColors(tags)[0] ?? "" })
           }

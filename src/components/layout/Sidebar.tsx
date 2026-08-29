@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { Shelf, SidebarMode, Tag } from "@/domain/model";
 import { Icon } from "@/components/primitives/Icon";
 import { ShelfRow } from "./ShelfRow";
@@ -11,6 +12,7 @@ export interface SidebarProps {
   atShelfRoot: boolean;
   activeTag: string | null;
   mode: SidebarMode;
+  footer: ReactNode;
   onToggleMode: () => void;
   onOpenShelf: (shelf: Shelf) => void;
   onNewShelf: () => void;
@@ -27,6 +29,7 @@ export function Sidebar({
   atShelfRoot,
   activeTag,
   mode,
+  footer,
   onToggleMode,
   onOpenShelf,
   onNewShelf,
@@ -87,6 +90,8 @@ export function Sidebar({
           ))
         )}
       </SidebarSection>
+
+      {footer ? <div className="side-footer">{footer}</div> : null}
     </aside>
   );
 }

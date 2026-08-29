@@ -141,6 +141,52 @@ describe("App", () => {
     expect(screen.getByText("Essays")).toBeInTheDocument();
   });
 
+  describe("on a phone", () => {
+    const desktop = window.matchMedia;
+
+    beforeEach(() => {
+      window.matchMedia = (query: string) =>
+        ({
+          media: query,
+          matches: query.includes("760px"),
+          onchange: null,
+          addEventListener: () => {},
+          removeEventListener: () => {},
+          addListener: () => {},
+          removeListener: () => {},
+          dispatchEvent: () => false,
+        }) as MediaQueryList;
+    });
+
+    afterEach(() => {
+      window.matchMedia = desktop;
+    });
+
+    it("opens the shelves in a drawer and closes it once one is picked", async () => {
+      withSaves();
+      render(<App />);
+
+      expect(document.documentElement).toHaveAttribute("data-drawer", "shut");
+
+      await userEvent.click(screen.getByLabelText("Shelves and tags"));
+      expect(document.documentElement).toHaveAttribute("data-drawer", "open");
+
+      await userEvent.click(within(sidebar()).getByText("Research"));
+
+      expect(document.documentElement).toHaveAttribute("data-drawer", "shut");
+      expect(screen.getByText("Zettelkasten")).toBeInTheDocument();
+    });
+
+    it("keeps search in the header and moves the other controls into the drawer", () => {
+      withSaves();
+      render(<App />);
+
+      expect(screen.getByLabelText("Search your cabinet")).toBeInTheDocument();
+      expect(within(sidebar()).getByLabelText("Export and import")).toBeInTheDocument();
+      expect(within(sidebar()).getByLabelText("Display settings")).toBeInTheDocument();
+    });
+  });
+
   it("narrows the sidebar to a rail and remembers it across a remount", async () => {
     withSaves();
     const first = render(<App />);
