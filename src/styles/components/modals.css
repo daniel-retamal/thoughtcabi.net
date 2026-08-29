@@ -82,6 +82,7 @@
 .modal-body {
   padding: 24px 28px 26px;
   overflow-y: auto;
+  scrollbar-gutter: stable both-edges;
   flex: 1 1 auto;
   min-height: 0;
 }
@@ -90,6 +91,7 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  scrollbar-gutter: stable both-edges;
 }
 
 .modal-scroll .modal-body {

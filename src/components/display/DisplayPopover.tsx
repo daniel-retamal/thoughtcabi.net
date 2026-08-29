@@ -18,8 +18,8 @@ export function DisplayPopover({ appearance, anchorRef, onChange, onClose }: Dis
   const family = familyOfColor(appearance.color);
 
   const surfaces: readonly { id: CardSurface; label: string; chip: string }[] = [
-    { id: "cream", label: "Cream", chip: current.cream },
-    { id: "color", label: family.label, chip: current.field },
+    { id: "cream", label: "Cream", chip: current.paper },
+    { id: "color", label: family.label, chip: current.plate },
   ];
 
   useOnClickOutside([popoverRef, anchorRef], onClose);
@@ -53,7 +53,7 @@ export function DisplayPopover({ appearance, anchorRef, onChange, onClose }: Dis
                 style={{ background: color.field }}
                 onClick={() => onChange({ color: color.id })}
               >
-                <span className="tick" style={{ color: color.cream }}>
+                <span className="tick" style={{ color: color.light ? color.plate : color.paper }}>
                   <Icon name="check" />
                 </span>
               </button>

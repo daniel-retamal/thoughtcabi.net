@@ -30,14 +30,19 @@ import { withFreshIds } from "@/domain/transfer/reidentify";
 import { DND_ATTR } from "@/dnd/attributes";
 import { locationDropProps } from "@/dnd/dragProps";
 import type { IconName } from "@/icons/names";
-import { readClipboardImage, readClipboardText } from "@/lib/clipboard";
+import { readClipboardImage, readClipboardText, writeClipboardText } from "@/lib/clipboard";
 import { downscaleImage } from "@/lib/downscaleImage";
+import { cssVars } from "@/lib/cssVars";
 import { downloadTextFile } from "@/lib/files";
 import { cabinetFileName, serializeCabinet } from "@/storage/cabinetFile";
 import { readLink as readLinkFromWeb, type LinkReader } from "@/links/readLink";
 import { usePreferences } from "@/hooks/usePreferences";
 import { useImageDropTargets } from "@/hooks/useImageDropTargets";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useOnEscape } from "@/hooks/useOnEscape";
 import { useSearchShortcut } from "@/hooks/useSearchShortcut";
+import { useSidebarResize } from "@/hooks/useSidebarResize";
+import { useSidebarShortcut } from "@/hooks/useSidebarShortcut";
 import { useToasts, type ToastAction } from "@/hooks/useToasts";
 import { useTransientIds } from "@/hooks/useTransientIds";
 import { useUndoShortcut } from "@/hooks/useUndoShortcut";
@@ -49,10 +54,12 @@ import { usePasteToSave } from "@/state/usePasteToSave";
 import type { Dialog } from "@/state/dialogs";
 import { DialogHost } from "@/components/DialogHost";
 import type { ImportMode } from "@/components/modals/TransferModal";
-import { AppHeader } from "@/components/layout/AppHeader";
+import { AppControls } from "@/components/layout/AppControls";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { ContentToolbar } from "@/components/layout/ContentToolbar";
+import { PaneBar } from "@/components/layout/PaneBar";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { SidebarGrip } from "@/components/layout/SidebarGrip";
 import { LibraryContent } from "@/components/library/LibraryContent";
 import { EmptyPlate } from "@/components/feedback/EmptyPlate";
 import { EmptyQuiet } from "@/components/feedback/EmptyQuiet";
@@ -72,7 +79,8 @@ export interface AppProps {
 export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
   const { cabinet, dispatch, storageStatus } = useCabinet();
   const { library, tags } = cabinet;
-  const { preferences, setView, updateAppearance, markOnboarded } = usePreferences();
+  const { preferences, setView, setSidebar, setSidebarSize, updateAppearance, markOnboarded } =
+    usePreferences();
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [noticeDismissed, setNoticeDismissed] = useState(false);
   const [menu, setMenu] = useState<{ x: number; y: number; target: ContextTarget } | null>(null);
@@ -81,6 +89,8 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
   const { toasts, push: pushToast, undoable } = useToasts();
   const fresh = useTransientIds(FRESH_HIGHLIGHT_MS);
   const searchRef = useRef<HTMLInputElement>(null);
+  const shellRef = useRef<HTMLDivElement>(null);
+  const brandRef = useRef<HTMLDivElement>(null);
 
   const view = preferences.view;
   const viewState = useLibraryView(library, navigation.state, view);
@@ -97,7 +107,36 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     markOnboarded();
   }, [cabinetEmpty, preferences.onboarded, markOnboarded]);
 
+  const compact = useMediaQuery("(max-width: 760px)");
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const closeDrawer = (): void => setDrawerOpen(false);
+
+  const toggleSidebar = (): void => {
+    if (compact) {
+      setDrawerOpen((open) => !open);
+      return;
+    }
+    setSidebar(preferences.sidebar === "wide" ? "rail" : "wide");
+  };
+
+  useOnEscape(closeDrawer);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-drawer", drawerOpen ? "open" : "shut");
+  }, [drawerOpen]);
+
+  const sidebarResize = useSidebarResize({
+    shellRef,
+    brandRef,
+    mode: preferences.sidebar,
+    width: preferences.sidebarWidth,
+    onResize: setSidebarSize,
+    onToggle: toggleSidebar,
+  });
+
   useSearchShortcut(searchRef);
+  useSidebarShortcut(toggleSidebar);
   useUndoShortcut(undoable);
   useLibraryDragAndDrop({ library, navigation, dispatch, pushToast });
 
@@ -328,104 +367,136 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
       })
     : null;
 
+  const controls = (
+    <AppControls
+      appearance={preferences}
+      onAppearanceChange={updateAppearance}
+      onTransfer={() => setDialog({ kind: "transfer" })}
+    />
+  );
+
+  const crumbs =
+    viewState.mode === "searching" ? (
+      <div className="crumbs">
+        <span className="crumb current">
+          <Icon name="search" />
+          <span className="ctxt">Results across all shelves</span>
+        </span>
+      </div>
+    ) : viewState.mode === "tagged" ? (
+      <div className="crumbs">
+        <span className="crumb current">
+          <span className="tag-crumb-dot" style={{ background: activeTagColor }} />
+          <span className="ctxt">{navigation.state.activeTag}</span>
+        </span>
+      </div>
+    ) : (
+      <Breadcrumbs crumbs={viewState.crumbs} onJump={navigation.jumpToDepth} />
+    );
+
   return (
     <div className="app">
-      <AppHeader
-        query={navigation.state.query}
-        searchRef={searchRef}
-        appearance={preferences}
-        onQueryChange={navigation.setQuery}
-        onAppearanceChange={updateAppearance}
-        onTransfer={() => setDialog({ kind: "transfer" })}
-        onCompose={openCompose}
-      />
+      {drawerOpen ? (
+        <div className="scrim drawer-scrim" onClick={closeDrawer} aria-hidden="true" />
+      ) : null}
 
-      <div className="main">
+      <div
+        className="shell"
+        ref={shellRef}
+        style={cssVars({ "--sidebar-set": `${preferences.sidebarWidth}px` })}
+      >
         <Sidebar
           shelves={library}
           tags={tags}
           activeShelfId={navigation.state.shelfId}
           atShelfRoot={navigation.state.path.length === 0}
           activeTag={navigation.state.activeTag}
-          onOpenShelf={(shelf) => navigation.openShelf(shelf.id)}
+          mode={compact ? "wide" : preferences.sidebar}
+          brandRef={brandRef}
+          footer={compact ? controls : null}
+          onOpenShelf={(shelf) => {
+            navigation.openShelf(shelf.id);
+            closeDrawer();
+          }}
           onNewShelf={() => setDialog({ kind: "shelf", mode: "new" })}
           onEditShelf={(shelf) => setDialog({ kind: "shelf", mode: "edit", shelf })}
-          onSelectTag={navigation.selectTag}
+          onSelectTag={(name) => {
+            navigation.selectTag(name);
+            closeDrawer();
+          }}
           onNewTag={() =>
             setDialog({ kind: "tag", mode: "new", color: availableColors(tags)[0] ?? "" })
           }
           onEditTag={(tag) => setDialog({ kind: "tag", mode: "edit", tag })}
         />
 
-        <div className="body">
-          <div
-            className="body-inner"
-            {...(viewState.canReorder ? locationDropProps(navigation.location) : {})}
-            onContextMenu={openContextMenu}
-          >
-            {storageStatus !== "ok" && !noticeDismissed ? (
-              <StorageNotice problem={storageStatus} onDismiss={() => setNoticeDismissed(true)} />
-            ) : null}
+        <div className="pane">
+          <PaneBar
+            query={navigation.state.query}
+            searchRef={searchRef}
+            crumbs={crumbs}
+            controls={compact ? null : controls}
+            compact={compact}
+            wide={preferences.sidebar === "wide"}
+            onToggleSidebar={toggleSidebar}
+            onQueryChange={navigation.setQuery}
+            onCompose={openCompose}
+          />
 
-            <ContentToolbar
-              noteCount={viewState.notes.length}
-              folderCount={viewState.folders.length}
-              view={view}
-              showTools={!cabinetEmpty}
-              canCreateFolder={viewState.canReorder}
-              onViewChange={setView}
-              onNewFolder={() => setDialog({ kind: "new-folder" })}
+          <div className="pane-body">
+            <div
+              className="body-inner"
+              {...(viewState.canReorder ? locationDropProps(navigation.location) : {})}
+              onContextMenu={openContextMenu}
             >
-              {viewState.mode === "searching" ? (
-                <div className="crumbs">
-                  <span className="crumb current">
-                    <Icon name="search" />
-                    <span className="ctxt">Results across all shelves</span>
-                  </span>
-                </div>
-              ) : viewState.mode === "tagged" ? (
-                <div className="crumbs">
-                  <span className="crumb current">
-                    <span className="tag-crumb-dot" style={{ background: activeTagColor }} />
-                    <span className="ctxt">{navigation.state.activeTag}</span>
-                  </span>
-                </div>
-              ) : (
-                <Breadcrumbs crumbs={viewState.crumbs} onJump={navigation.jumpToDepth} />
-              )}
-            </ContentToolbar>
+              {storageStatus !== "ok" && !noticeDismissed ? (
+                <StorageNotice problem={storageStatus} onDismiss={() => setNoticeDismissed(true)} />
+              ) : null}
 
-            {emptyState ? (
-              emptyState.kind === "plate" ? (
-                <EmptyPlate
-                  title={emptyState.title}
-                  text={emptyState.text}
-                  primer={emptyState.primer}
-                  onSaveLink={openCompose}
-                />
+              <ContentToolbar
+                noteCount={viewState.notes.length}
+                folderCount={viewState.folders.length}
+                view={view}
+                showTools={!cabinetEmpty}
+                canCreateFolder={viewState.canReorder}
+                onViewChange={setView}
+                onNewFolder={() => setDialog({ kind: "new-folder" })}
+              />
+
+              {emptyState ? (
+                emptyState.kind === "plate" ? (
+                  <EmptyPlate
+                    title={emptyState.title}
+                    text={emptyState.text}
+                    primer={emptyState.primer}
+                    onSaveLink={openCompose}
+                  />
+                ) : (
+                  <EmptyQuiet
+                    title={emptyState.title}
+                    text={emptyState.text}
+                    onClearSearch={emptyState.clearable ? () => navigation.setQuery("") : undefined}
+                  />
+                )
               ) : (
-                <EmptyQuiet
-                  title={emptyState.title}
-                  text={emptyState.text}
-                  onClearSearch={emptyState.clearable ? () => navigation.setQuery("") : undefined}
-                />
-              )
-            ) : (
-              <div className="fade-swap" key={viewState.contentKey}>
-                <LibraryContent
-                  view={view}
-                  folders={viewState.folders}
-                  notes={viewState.notes}
-                  tags={tags}
-                  isFresh={fresh.has}
-                  canReorder={viewState.canReorder}
-                  noteHandlers={noteHandlers}
-                  folderHandlers={folderHandlers}
-                />
-              </div>
-            )}
+                <div className="fade-swap" key={viewState.contentKey}>
+                  <LibraryContent
+                    view={view}
+                    folders={viewState.folders}
+                    notes={viewState.notes}
+                    tags={tags}
+                    isFresh={fresh.has}
+                    canReorder={viewState.canReorder}
+                    noteHandlers={noteHandlers}
+                    folderHandlers={folderHandlers}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
+
+        {compact ? null : <SidebarGrip handlers={sidebarResize} />}
       </div>
 
       <DialogHost
@@ -439,6 +510,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
         }
         onClose={closeDialog}
         onEditNote={(note) => setDialog({ kind: "compose", mode: "edit", note })}
+        onDeleteNote={deleteNote}
         onSaveNote={saveNote}
         onCreateTag={(name, color) => dispatch({ type: "tag/add", name, color })}
         onSaveShelf={saveShelf}
@@ -471,6 +543,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
             onSaveLink: openCompose,
             onNewFolder: () => setDialog({ kind: "new-folder" }),
             onOpen: (note) => setDialog({ kind: "detail", note }),
+            onCopyLink: (note) => writeClipboardText(note.url),
             onEdit: (note) => setDialog({ kind: "compose", mode: "edit", note }),
             onPasteThumbnail: pasteThumbnailOnto,
             onDelete: deleteNote,

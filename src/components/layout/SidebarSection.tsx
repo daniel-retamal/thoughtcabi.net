@@ -10,7 +10,7 @@ export interface SidebarSectionProps {
 
 export function SidebarSection({ title, addLabel, onAdd, children }: SidebarSectionProps) {
   return (
-    <>
+    <div className="side-section">
       <div className="side-section-label">
         <span>{title}</span>
         <button type="button" title={addLabel} aria-label={addLabel} onClick={onAdd}>
@@ -18,6 +18,6 @@ export function SidebarSection({ title, addLabel, onAdd, children }: SidebarSect
         </button>
       </div>
       {children}
-    </>
+    </div>
   );
 }

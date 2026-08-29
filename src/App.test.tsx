@@ -12,6 +12,10 @@ function sidebar(): HTMLElement {
   return document.querySelector("aside.sidebar") as HTMLElement;
 }
 
+function paneBar(): HTMLElement {
+  return document.querySelector(".pane-bar") as HTMLElement;
+}
+
 function content(): HTMLElement {
   return document.querySelector(".body-inner") as HTMLElement;
 }
@@ -139,6 +143,87 @@ describe("App", () => {
 
     await userEvent.click(within(crumbs).getByText("Reading"));
     expect(screen.getByText("Essays")).toBeInTheDocument();
+  });
+
+  describe("on a phone", () => {
+    const desktop = window.matchMedia;
+
+    beforeEach(() => {
+      window.matchMedia = (query: string) =>
+        ({
+          media: query,
+          matches: query.includes("760px"),
+          onchange: null,
+          addEventListener: () => {},
+          removeEventListener: () => {},
+          addListener: () => {},
+          removeListener: () => {},
+          dispatchEvent: () => false,
+        }) as MediaQueryList;
+    });
+
+    afterEach(() => {
+      window.matchMedia = desktop;
+    });
+
+    it("opens the shelves in a drawer and closes it once one is picked", async () => {
+      withSaves();
+      render(<App />);
+
+      expect(document.documentElement).toHaveAttribute("data-drawer", "shut");
+
+      await userEvent.click(screen.getByLabelText("Shelves and tags"));
+      expect(document.documentElement).toHaveAttribute("data-drawer", "open");
+
+      await userEvent.click(within(sidebar()).getByText("Research"));
+
+      expect(document.documentElement).toHaveAttribute("data-drawer", "shut");
+      expect(screen.getByText("Zettelkasten")).toBeInTheDocument();
+    });
+
+    it("keeps search in the pane bar and moves the other controls into the drawer", () => {
+      withSaves();
+      render(<App />);
+
+      expect(screen.getByLabelText("Search your cabinet")).toBeInTheDocument();
+      expect(within(sidebar()).getByLabelText("Export and import")).toBeInTheDocument();
+      expect(within(sidebar()).getByLabelText("Display settings")).toBeInTheDocument();
+    });
+  });
+
+  it("keeps the wordmark in the sidebar and the toggle in the pane bar", () => {
+    withSaves();
+    render(<App />);
+
+    expect(within(sidebar()).getByText("thoughtcabi")).toBeInTheDocument();
+    expect(within(paneBar()).getByLabelText("Narrow sidebar")).toBeInTheDocument();
+    expect(within(paneBar()).getByLabelText("Search your cabinet")).toBeInTheDocument();
+    expect(within(sidebar()).queryByLabelText("Narrow sidebar")).not.toBeInTheDocument();
+  });
+
+  it("narrows the sidebar to a rail and remembers it across a remount", async () => {
+    withSaves();
+    const first = render(<App />);
+
+    expect(document.documentElement).toHaveAttribute("data-sidebar", "wide");
+    await userEvent.click(within(paneBar()).getByLabelText("Narrow sidebar"));
+    expect(document.documentElement).toHaveAttribute("data-sidebar", "rail");
+
+    first.unmount();
+    render(<App />);
+
+    expect(document.documentElement).toHaveAttribute("data-sidebar", "rail");
+    expect(within(paneBar()).getByLabelText("Widen sidebar")).toBeInTheDocument();
+  });
+
+  it("keeps every shelf and tag in the rail, so none of them stops being a drop target", async () => {
+    withSaves();
+    render(<App />);
+
+    await userEvent.click(within(paneBar()).getByLabelText("Narrow sidebar"));
+
+    expect(sidebar().querySelectorAll("[data-shelf-row]")).toHaveLength(2);
+    expect(sidebar().querySelectorAll("[data-tag-row]")).toHaveLength(3);
   });
 
   it("switches shelves from the sidebar", async () => {
@@ -281,6 +366,39 @@ describe("App", () => {
     function sidebarRow(name: string): HTMLElement {
       return within(sidebar()).getByText(name).closest(".lib-row") as HTMLElement;
     }
+
+    it("copies a card's link from the card, and says so where a reader can hear it", async () => {
+      const writeText = vi.fn(() => Promise.resolve());
+      Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+
+      withSaves();
+      render(<App />);
+
+      await userEvent.click(screen.getByText("Essays"));
+      const card = screen.getByText("On Rereading").closest(".card") as HTMLElement;
+      await userEvent.click(within(card).getByLabelText("Copy link"));
+
+      expect(writeText).toHaveBeenCalledWith("https://example.com/a");
+      expect(within(card).getByLabelText("Copied")).toBeInTheDocument();
+      expect(within(card).queryByLabelText("Copy link")).toBeNull();
+    });
+
+    it("deletes from the detail sheet, closes it, and still offers the undo", async () => {
+      withSaves();
+      render(<App />);
+
+      await userEvent.click(screen.getByText("Essays"));
+      await userEvent.click(screen.getByText("On Rereading"));
+
+      const modal = document.querySelector(".modal") as HTMLElement;
+      await userEvent.click(within(modal).getByRole("button", { name: "Delete" }));
+
+      expect(document.querySelector(".modal")).toBeNull();
+      expect(toast()).toHaveTextContent("Deleted On Rereading");
+
+      await userEvent.click(within(toast()).getByRole("button", { name: "Undo" }));
+      expect(within(content()).getByText("On Rereading")).toBeInTheDocument();
+    });
 
     it("takes a card back out of the bin when asked", async () => {
       withSaves();

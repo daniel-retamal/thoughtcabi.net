@@ -1,6 +1,8 @@
-import type { Shelf, Tag } from "@/domain/model";
+import type { ReactNode, RefObject } from "react";
+import type { Shelf, SidebarMode, Tag } from "@/domain/model";
 import { Icon } from "@/components/primitives/Icon";
 import { ShelfRow } from "./ShelfRow";
+import { SideBrand } from "./SideBrand";
 import { SidebarSection } from "./SidebarSection";
 import { TagRow } from "./TagRow";
 
@@ -10,6 +12,9 @@ export interface SidebarProps {
   activeShelfId: string;
   atShelfRoot: boolean;
   activeTag: string | null;
+  mode: SidebarMode;
+  brandRef: RefObject<HTMLDivElement>;
+  footer: ReactNode;
   onOpenShelf: (shelf: Shelf) => void;
   onNewShelf: () => void;
   onEditShelf: (shelf: Shelf) => void;
@@ -24,6 +29,9 @@ export function Sidebar({
   activeShelfId,
   atShelfRoot,
   activeTag,
+  mode,
+  brandRef,
+  footer,
   onOpenShelf,
   onNewShelf,
   onEditShelf,
@@ -31,14 +39,19 @@ export function Sidebar({
   onNewTag,
   onEditTag,
 }: SidebarProps) {
+  const wide = mode === "wide";
+
   return (
-    <aside className="sidebar">
+    <aside className="sidebar" id="cabinet-sidebar">
+      <SideBrand brandRef={brandRef} />
+
       <SidebarSection title="Library" addLabel="New shelf" onAdd={onNewShelf}>
         {shelves.map((shelf) => (
           <ShelfRow
             key={shelf.id}
             shelf={shelf}
             active={activeShelfId === shelf.id && atShelfRoot && !activeTag}
+            named={wide}
             onOpen={onOpenShelf}
             onEdit={onEditShelf}
           />
@@ -59,12 +72,15 @@ export function Sidebar({
               key={tag.name}
               tag={tag}
               active={activeTag === tag.name}
+              named={wide}
               onSelect={onSelectTag}
               onEdit={onEditTag}
             />
           ))
         )}
       </SidebarSection>
+
+      {footer ? <div className="side-footer">{footer}</div> : null}
     </aside>
   );
 }

@@ -1,5 +1,11 @@
 import { withoutPendingNotes } from "@/domain/library/mutations";
-import { DEFAULT_VIEW_MODE, type Cabinet, type Preferences } from "@/domain/model";
+import {
+  DEFAULT_SIDEBAR_MODE,
+  DEFAULT_SIDEBAR_WIDTH,
+  DEFAULT_VIEW_MODE,
+  type Cabinet,
+  type Preferences,
+} from "@/domain/model";
 import { createStarterCabinet } from "@/domain/seed/starterCabinet";
 import { DEFAULT_APPEARANCE } from "@/theme/colors";
 import { STORAGE_KEYS } from "./keys";
@@ -9,6 +15,8 @@ import { parseCabinet, parsePreferences } from "./parsers";
 
 export const DEFAULT_PREFERENCES: Preferences = {
   view: DEFAULT_VIEW_MODE,
+  sidebar: DEFAULT_SIDEBAR_MODE,
+  sidebarWidth: DEFAULT_SIDEBAR_WIDTH,
   onboarded: false,
   ...DEFAULT_APPEARANCE,
 };

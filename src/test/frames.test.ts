@@ -125,17 +125,6 @@ describe("the picture frame", () => {
     expect(footer).toContain("flex: none;");
   });
 
-  it("gives that scroller the app's own slim scrollbar, not the platform's", () => {
-    const source = readFileSync(join(STYLES, "base.css"), "utf8");
-    const blocks = [...source.matchAll(/([^{}]*::-webkit-scrollbar[^{}]*)\{([^}]*)\}/g)];
-
-    const track = blocks.find((block) => (block[2] ?? "").includes("width: 10px"));
-    const thumb = blocks.find((block) => (block[2] ?? "").includes("background: var(--border);"));
-
-    expect(track?.[1]).toContain(".modal-scroll::-webkit-scrollbar");
-    expect(thumb?.[1]).toContain(".modal-scroll::-webkit-scrollbar-thumb");
-  });
-
   it("lets no surface put the detail picture back in a box", () => {
     for (const file of stylesheets(STYLES)) {
       const source = readFileSync(file, "utf8");

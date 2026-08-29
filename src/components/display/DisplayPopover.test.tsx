@@ -21,7 +21,7 @@ function renderPopover(appearance: Appearance) {
 const BLUE = { color: "ultramarine", cards: "cream" } as const;
 
 describe("DisplayPopover", () => {
-  it("groups the eight depths into a blue row and a green row", () => {
+  it("groups the twelve depths into a blue row, a green row and a mono row", () => {
     renderPopover(BLUE);
 
     const blue = within(screen.getByRole("group", { name: "Blue" }));
@@ -35,6 +35,30 @@ describe("DisplayPopover", () => {
     expect(green.getByRole("button", { name: "Viridian" })).toBeInTheDocument();
     expect(green.getByRole("button", { name: "Forest" })).toBeInTheDocument();
     expect(green.getByRole("button", { name: "Pine" })).toBeInTheDocument();
+
+    const mono = within(screen.getByRole("group", { name: "Mono" }));
+    expect(mono.getByRole("button", { name: "Paper" })).toBeInTheDocument();
+    expect(mono.getByRole("button", { name: "Linen" })).toBeInTheDocument();
+    expect(mono.getByRole("button", { name: "Graphite" })).toBeInTheDocument();
+    expect(mono.getByRole("button", { name: "Onyx" })).toBeInTheDocument();
+  });
+
+  it("ticks a light swatch in ink, so the mark is not white on white", () => {
+    renderPopover({ color: "paper", cards: "cream" });
+
+    const swatch = screen.getByRole("button", { name: "Paper" });
+    expect(swatch.querySelector(".tick")).toHaveStyle({ color: "#1C1B19" });
+
+    const deep = screen.getByRole("button", { name: "Midnight" });
+    expect(deep.querySelector(".tick")).toHaveStyle({ color: "#EFEADC" });
+  });
+
+  it("shows the card a surface would actually give you, not the field", () => {
+    renderPopover({ color: "paper", cards: "cream" });
+
+    const chips = document.querySelectorAll(".surface-chip");
+    expect(chips[0]).toHaveStyle({ background: "#FFFFFF" });
+    expect(chips[1]).toHaveStyle({ background: "#1C1B19" });
   });
 
   it("names the chosen color and marks only its swatch", () => {

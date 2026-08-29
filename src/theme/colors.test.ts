@@ -11,13 +11,23 @@ import {
 describe("COLOR_FAMILIES", () => {
   it("runs one ladder per family, the same depth on each", () => {
     const depths = COLOR_FAMILIES.map((family) => family.colors.length);
-    expect(COLOR_FAMILIES.map((family) => family.id)).toEqual(["blue", "green"]);
+    expect(COLOR_FAMILIES.map((family) => family.id)).toEqual(["blue", "green", "mono"]);
     expect(new Set(depths).size).toBe(1);
   });
 
   it("gives every depth its own id and its own field", () => {
     expect(new Set(THEME_COLORS.map((color) => color.id)).size).toBe(THEME_COLORS.length);
     expect(new Set(THEME_COLORS.map((color) => color.field)).size).toBe(THEME_COLORS.length);
+  });
+
+  it("calls only a light field light, and gives every depth a plate that is not its paper", () => {
+    const light = THEME_COLORS.filter((color) => color.light).map((color) => color.id);
+    expect(light).toEqual(["paper", "linen"]);
+
+    for (const color of THEME_COLORS) {
+      expect(luminance(color.field) > 0.5, color.id).toBe(color.light === true);
+      expect(color.plate, color.id).not.toBe(color.paper);
+    }
   });
 
   it("darkens down each ladder", () => {

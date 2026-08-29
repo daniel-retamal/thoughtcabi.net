@@ -5,9 +5,11 @@
   --tone-raise: #20309f;
   --tone-plate: #1d2ca1;
   --tone-plate-raise: #2436aa;
-  --tone-cream: #f2ecde;
+  --tone-paper: #f2ecde;
+  --tone-on-field: #f2ecde;
   --tone-ink: #111c6e;
   --tone-shadow: 4 8 60;
+  --ring-paper: var(--tone-bg);
 }
 
 :root[data-color="cobalt"] {
@@ -17,9 +19,11 @@
   --tone-raise: #1d2a92;
   --tone-plate: #1b2893;
   --tone-plate-raise: #212f9e;
-  --tone-cream: #f1ebdc;
+  --tone-paper: #f1ebdc;
+  --tone-on-field: #f1ebdc;
   --tone-ink: #101a66;
   --tone-shadow: 2 6 44;
+  --ring-paper: var(--tone-bg);
 }
 
 :root[data-color="navy"] {
@@ -29,9 +33,11 @@
   --tone-raise: #1b3a6e;
   --tone-plate: #19366a;
   --tone-plate-raise: #1f417b;
-  --tone-cream: #f3efe4;
+  --tone-paper: #f3efe4;
+  --tone-on-field: #f3efe4;
   --tone-ink: #0c2149;
   --tone-shadow: 2 10 40;
+  --ring-paper: var(--tone-bg);
 }
 
 :root[data-color="midnight"] {
@@ -41,9 +47,11 @@
   --tone-raise: #1b2246;
   --tone-plate: #171d3f;
   --tone-plate-raise: #1f264e;
-  --tone-cream: #efeadc;
+  --tone-paper: #efeadc;
+  --tone-on-field: #efeadc;
   --tone-ink: #0b1026;
   --tone-shadow: 0 2 20;
+  --ring-paper: var(--tone-bg);
 }
 
 :root[data-color="emerald"] {
@@ -53,9 +61,11 @@
   --tone-raise: #0b7e51;
   --tone-plate: #078050;
   --tone-plate-raise: #0d8c5a;
-  --tone-cream: #f3ebdd;
+  --tone-paper: #f3ebdd;
+  --tone-on-field: #f3ebdd;
   --tone-ink: #03462c;
   --tone-shadow: 4 60 38;
+  --ring-paper: var(--tone-bg);
 }
 
 :root[data-color="viridian"] {
@@ -65,9 +75,11 @@
   --tone-raise: #1a7252;
   --tone-plate: #197050;
   --tone-plate-raise: #1d7f5c;
-  --tone-cream: #f2eadb;
+  --tone-paper: #f2eadb;
+  --tone-on-field: #f2eadb;
   --tone-ink: #0d4631;
   --tone-shadow: 2 44 29;
+  --ring-paper: var(--tone-bg);
 }
 
 :root[data-color="forest"] {
@@ -77,9 +89,11 @@
   --tone-raise: #1d5944;
   --tone-plate: #1b5340;
   --tone-plate-raise: #21634c;
-  --tone-cream: #f3eee4;
+  --tone-paper: #f3eee4;
+  --tone-on-field: #f3eee4;
   --tone-ink: #0d3527;
   --tone-shadow: 2 40 27;
+  --ring-paper: var(--tone-bg);
 }
 
 :root[data-color="pine"] {
@@ -89,9 +103,67 @@
   --tone-raise: #1a4032;
   --tone-plate: #16382c;
   --tone-plate-raise: #1d4738;
-  --tone-cream: #f0e9db;
+  --tone-paper: #f0e9db;
+  --tone-on-field: #f0e9db;
   --tone-ink: #0a2018;
   --tone-shadow: 0 20 13;
+  --ring-paper: var(--tone-bg);
+}
+
+:root[data-color="paper"] {
+  --tone-bg: #f7f5f0;
+  --tone-panel: #efede7;
+  --tone-panel-2: #e9e7e1;
+  --tone-raise: #ffffff;
+  --tone-plate: #1c1b19;
+  --tone-plate-raise: #262421;
+  --tone-paper: #ffffff;
+  --tone-on-field: #23221f;
+  --tone-ink: #1a1a1c;
+  --tone-shadow: 62 58 50;
+  --ring-paper: var(--tone-ink);
+}
+
+:root[data-color="linen"] {
+  --tone-bg: #e6e2da;
+  --tone-panel: #dfdbd2;
+  --tone-panel-2: #d8d4cb;
+  --tone-raise: #f4f2ed;
+  --tone-plate: #22211e;
+  --tone-plate-raise: #2c2b27;
+  --tone-paper: #fbfaf7;
+  --tone-on-field: #23221f;
+  --tone-ink: #1a1a1c;
+  --tone-shadow: 62 58 50;
+  --ring-paper: var(--tone-ink);
+}
+
+:root[data-color="graphite"] {
+  --tone-bg: #2a2a2c;
+  --tone-panel: #37373a;
+  --tone-panel-2: #313134;
+  --tone-raise: #424246;
+  --tone-plate: #3a3a3e;
+  --tone-plate-raise: #45454a;
+  --tone-paper: #f2f0ea;
+  --tone-on-field: #f2f0ea;
+  --tone-ink: #1d1d20;
+  --tone-shadow: 6 6 8;
+  --ring-paper: var(--tone-bg);
+}
+
+:root[data-color="onyx"] {
+  --tone-bg: #0c0c0d;
+  --tone-panel: #17171a;
+  --tone-panel-2: #131316;
+  --tone-raise: #202024;
+  --tone-plate: #1a1a1e;
+  --tone-plate-raise: #232328;
+  --tone-paper: #f0eee8;
+  --tone-on-field: #f0eee8;
+  --tone-ink: #0c0c0d;
+  --tone-shadow: 0 0 2;
+  --ring-paper: var(--tone-bg);
 }
 
 :root[data-color] {
@@ -99,20 +171,20 @@
   --surface: var(--tone-panel);
   --surface-2: var(--tone-panel-2);
   --raise: var(--tone-raise);
-  --text: var(--tone-cream);
-  --text-muted: color-mix(in oklab, var(--tone-cream) 72%, transparent);
-  --text-faint: color-mix(in oklab, var(--tone-cream) 48%, transparent);
-  --border: color-mix(in oklab, var(--tone-cream) 15%, transparent);
-  --border-strong: color-mix(in oklab, var(--tone-cream) 26%, transparent);
-  --hairline: color-mix(in oklab, var(--tone-cream) 11%, transparent);
-  --accent: var(--tone-cream);
+  --text: var(--tone-on-field);
+  --text-muted: color-mix(in oklab, var(--tone-on-field) 72%, transparent);
+  --text-faint: color-mix(in oklab, var(--tone-on-field) 48%, transparent);
+  --border: color-mix(in oklab, var(--tone-on-field) 15%, transparent);
+  --border-strong: color-mix(in oklab, var(--tone-on-field) 26%, transparent);
+  --hairline: color-mix(in oklab, var(--tone-on-field) 11%, transparent);
+  --accent: var(--tone-on-field);
   --accent-on: var(--tone-bg);
-  --accent-soft: color-mix(in oklab, var(--tone-cream) 15%, transparent);
-  --accent-softer: color-mix(in oklab, var(--tone-cream) 8%, transparent);
+  --accent-soft: color-mix(in oklab, var(--tone-on-field) 15%, transparent);
+  --accent-softer: color-mix(in oklab, var(--tone-on-field) 8%, transparent);
   --mark-field: var(--tone-panel-2);
-  --mark-plate: var(--tone-cream);
+  --mark-plate: var(--tone-paper);
   --mark-plate-ring: color-mix(in oklab, var(--tone-ink) 14%, transparent);
-  --mark-letter: color-mix(in oklab, var(--tone-cream) 48%, transparent);
+  --mark-letter: color-mix(in oklab, var(--tone-paper) 48%, transparent);
   --danger: #ff9584;
   --danger-on: var(--tone-ink);
   --danger-soft: color-mix(in oklab, #ff9584 18%, transparent);
@@ -120,4 +192,10 @@
     0 22px 50px -18px rgb(var(--tone-shadow) / 0.75), 0 6px 16px -8px rgb(var(--tone-shadow) / 0.4);
   --shadow-md: 0 14px 30px -18px rgb(var(--tone-shadow) / 0.6);
   --shadow-sm: 0 1px 2px rgb(var(--tone-shadow) / 0.3);
+}
+
+:root[data-field="light"] {
+  --danger: #c0392b;
+  --danger-on: var(--tone-paper);
+  --danger-soft: color-mix(in oklab, #c0392b 9%, transparent);
 }

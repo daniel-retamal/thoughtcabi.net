@@ -172,11 +172,19 @@ describe("parseCabinet", () => {
 describe("parsePreferences", () => {
   it("accepts a complete value", () => {
     expect(
-      parsePreferences({ view: "list", color: "emerald", cards: "color", onboarded: true }),
+      parsePreferences({
+        view: "list",
+        color: "emerald",
+        cards: "color",
+        sidebar: "rail",
+        onboarded: true,
+      }),
     ).toEqual({
       view: "list",
       color: "emerald",
       cards: "color",
+      sidebar: "rail",
+      sidebarWidth: 268,
       onboarded: true,
     });
   });
@@ -186,6 +194,8 @@ describe("parsePreferences", () => {
       view: "grid",
       color: "navy",
       cards: "color",
+      sidebar: "wide",
+      sidebarWidth: 268,
       onboarded: false,
     });
     expect(parsePreferences({ palette: "bento" })?.color).toBe("ultramarine");
@@ -198,14 +208,27 @@ describe("parsePreferences", () => {
       view: "grid",
       color: "ultramarine",
       cards: "cream",
+      sidebar: "wide",
+      sidebarWidth: 268,
       onboarded: false,
     });
-    expect(parsePreferences({ view: "list", color: "chartreuse", onboarded: "yes" })).toEqual({
+    expect(
+      parsePreferences({ view: "list", color: "chartreuse", sidebar: "narrow", onboarded: "yes" }),
+    ).toEqual({
       view: "list",
       color: "ultramarine",
       cards: "cream",
+      sidebar: "wide",
+      sidebarWidth: 268,
       onboarded: false,
     });
+  });
+
+  it("clamps a dragged width back into the range the shell can render", () => {
+    expect(parsePreferences({ sidebarWidth: 900 })?.sidebarWidth).toBe(380);
+    expect(parsePreferences({ sidebarWidth: 40 })?.sidebarWidth).toBe(242);
+    expect(parsePreferences({ sidebarWidth: "wide" })?.sidebarWidth).toBe(268);
+    expect(parsePreferences({ sidebarWidth: 310 })?.sidebarWidth).toBe(310);
   });
 
   it("rejects anything that is not a record", () => {

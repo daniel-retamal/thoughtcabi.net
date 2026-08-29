@@ -1,13 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { fireEvent } from "@testing-library/dom";
+import userEvent from "@testing-library/user-event";
 import { makeNote, makeTag } from "@/test/factories";
 import { TAG_PALETTE } from "@/domain/tags/palette";
 import type { Note } from "@/domain/model";
 import { NoteDetailModal } from "./NoteDetailModal";
 
 function renderDetail(note: Note = makeNote()) {
-  const handlers = { onEdit: vi.fn(), onClose: vi.fn() };
+  const handlers = { onEdit: vi.fn(), onDelete: vi.fn(), onClose: vi.fn() };
   const { container } = render(
     <NoteDetailModal
       note={note}
@@ -72,5 +73,23 @@ describe("NoteDetailModal", () => {
 
     expect(screen.getByRole("heading", { name: "On Rereading" })).toBeInTheDocument();
     expect(screen.getByText("Example")).toBeInTheDocument();
+  });
+  it("carries a delete, so a thumb that never gets a context menu can still reach one", async () => {
+    const note = makeNote();
+    const { handlers } = renderDetail(note);
+
+    await userEvent.click(screen.getByRole("button", { name: "Delete" }));
+
+    expect(handlers.onDelete).toHaveBeenCalledWith(note);
+  });
+
+  it("offers the same four actions in the same order as a card", () => {
+    const { container } = renderDetail();
+    const footer = container.querySelector(".modal-actions") as HTMLElement;
+    const labels = [...footer.children].map(
+      (child) => child.textContent?.trim() || child.getAttribute("aria-label"),
+    );
+
+    expect(labels).toEqual(["Open original", "Copy link", "Edit", "Delete"]);
   });
 });

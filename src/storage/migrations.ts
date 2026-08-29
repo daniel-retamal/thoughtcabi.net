@@ -1,4 +1,10 @@
-import { DEFAULT_VIEW_MODE, type Cabinet, type Preferences } from "@/domain/model";
+import {
+  DEFAULT_SIDEBAR_MODE,
+  DEFAULT_SIDEBAR_WIDTH,
+  DEFAULT_VIEW_MODE,
+  type Cabinet,
+  type Preferences,
+} from "@/domain/model";
 import { createStarterCabinet } from "@/domain/seed/starterCabinet";
 import { DEFAULT_APPEARANCE } from "@/theme/colors";
 import { LEGACY_KEYS, STORAGE_KEYS } from "./keys";
@@ -33,6 +39,8 @@ export function migratePreferences(): Preferences | null {
     view: view ?? DEFAULT_VIEW_MODE,
     color: appearance?.color ?? DEFAULT_APPEARANCE.color,
     cards: appearance?.cards ?? DEFAULT_APPEARANCE.cards,
+    sidebar: DEFAULT_SIDEBAR_MODE,
+    sidebarWidth: DEFAULT_SIDEBAR_WIDTH,
     onboarded: false,
   };
 

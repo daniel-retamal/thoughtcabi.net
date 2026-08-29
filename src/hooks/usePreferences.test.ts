@@ -23,10 +23,13 @@ describe("usePreferences", () => {
       view: "grid",
       color: "ultramarine",
       cards: "cream",
+      sidebar: "wide",
+      sidebarWidth: 268,
       onboarded: false,
     });
     expect(document.documentElement).toHaveAttribute("data-color", "ultramarine");
     expect(document.documentElement).toHaveAttribute("data-card-surface", "cream");
+    expect(document.documentElement).toHaveAttribute("data-sidebar", "wide");
   });
 
   it("persists the view and the appearance to the same key", () => {
@@ -39,8 +42,30 @@ describe("usePreferences", () => {
       view: "list",
       color: "midnight",
       cards: "cream",
+      sidebar: "wide",
+      sidebarWidth: 268,
       onboarded: false,
     });
+  });
+
+  it("remembers a dragged width alongside the mode", () => {
+    const { result } = renderHook(() => usePreferences());
+
+    act(() => result.current.setSidebarSize({ mode: "rail", width: 312 }));
+
+    expect(result.current.preferences.sidebar).toBe("rail");
+    expect(result.current.preferences.sidebarWidth).toBe(312);
+    expect(localStorage.getItem(STORAGE_KEYS.preferences)).toContain('"sidebarWidth":312');
+  });
+
+  it("remembers a narrowed sidebar, and paints it onto the document", () => {
+    const { result } = renderHook(() => usePreferences());
+
+    act(() => result.current.setSidebar("rail"));
+
+    expect(result.current.preferences.sidebar).toBe("rail");
+    expect(document.documentElement).toHaveAttribute("data-sidebar", "rail");
+    expect(localStorage.getItem(STORAGE_KEYS.preferences)).toContain('"sidebar":"rail"');
   });
 
   it("remembers that the cabinet has been used, once", () => {
@@ -62,6 +87,8 @@ describe("usePreferences", () => {
       view: "list",
       color: "emerald",
       cards: "color",
+      sidebar: "wide",
+      sidebarWidth: 268,
       onboarded: false,
     });
   });

@@ -25,8 +25,8 @@ export const DND_CLASS = {
   spring: "dnd-spring",
 } as const;
 
-export const SCROLLABLE_SELECTOR = ".body, .sidebar, .dest-menu";
-export const CONTENT_BODY_SELECTOR = ".body";
+export const SCROLLABLE_SELECTOR = ".pane-body, .sidebar, .dest-menu";
+export const CONTENT_BODY_SELECTOR = ".pane-body";
 export const GHOST_STRIP_SELECTOR =
   ".card-actions,.folder-actions,.row-actions,.lib-edit,.row-chevron";
 

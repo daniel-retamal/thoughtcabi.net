@@ -11,8 +11,9 @@
 
   --ease: cubic-bezier(0.2, 0.7, 0.25, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --sidebar-w: 268px;
-  --header-h: 62px;
+  --rail-w: 60px;
+  --desk-pad: 10px;
+  --bar-h: 52px;
   --tile-w: 264px;
   --tile-gap: 18px;
   --tile-step: calc(var(--tile-w) + var(--tile-gap));

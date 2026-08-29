@@ -203,8 +203,16 @@
   padding-left: 18px;
 }
 
-.row-item:hover .row-actions {
-  opacity: 1;
+@media (hover: hover) {
+  .row-item:hover .row-actions {
+    opacity: 1;
+  }
+}
+
+@media (hover: none) {
+  .row-actions {
+    display: none;
+  }
 }
 
 .row-actions button {

@@ -65,6 +65,12 @@ export const DEFAULT_VIEW_MODE: ViewMode = "grid";
 
 export type CardSurface = "cream" | "color";
 
+export type SidebarMode = "wide" | "rail";
+
+export const DEFAULT_SIDEBAR_MODE: SidebarMode = "wide";
+
+export const DEFAULT_SIDEBAR_WIDTH = 268;
+
 export interface Appearance {
   color: string;
   cards: CardSurface;
@@ -72,6 +78,8 @@ export interface Appearance {
 
 export interface Preferences extends Appearance {
   view: ViewMode;
+  sidebar: SidebarMode;
+  sidebarWidth: number;
   onboarded: boolean;
 }
 

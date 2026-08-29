@@ -6,15 +6,17 @@ import { ActionButton } from "@/components/primitives/ActionButton";
 export interface TagRowProps {
   tag: Tag;
   active: boolean;
+  named: boolean;
   onSelect: (name: string) => void;
   onEdit: (tag: Tag) => void;
 }
 
-export function TagRow({ tag, active, onSelect, onEdit }: TagRowProps) {
+export function TagRow({ tag, active, named, onSelect, onEdit }: TagRowProps) {
   return (
     <div
       className={active ? "lib-row active" : "lib-row"}
       {...tagDragProps(tag)}
+      title={named ? undefined : tag.name}
       onClick={() => onSelect(tag.name)}
     >
       <span className="lib-dot" style={cssVars({ "--tint": tag.color })} />

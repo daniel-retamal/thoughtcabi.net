@@ -162,9 +162,17 @@
   z-index: 3;
 }
 
-.card:hover .card-actions {
-  opacity: 1;
-  transform: none;
+@media (hover: hover) {
+  .card:hover .card-actions {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (hover: none) {
+  .card-actions {
+    display: none;
+  }
 }
 
 .card-actions button {
@@ -217,7 +225,9 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  box-shadow: 0 0 0 2px var(--accent);
+  box-shadow:
+    inset 0 0 0 2px var(--ring-gutter),
+    inset 0 0 0 4px var(--ring);
   opacity: 0;
   animation: ring 1.2s var(--ease-out) forwards;
   pointer-events: none;

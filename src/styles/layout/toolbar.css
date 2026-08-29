@@ -1,9 +1,8 @@
 .toolbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 18px;
-  padding: 6px 2px 18px;
+  padding: 0 2px 16px;
   flex-wrap: nowrap;
 }
 
@@ -15,7 +14,6 @@
   overflow: hidden;
   flex: 1 1 auto;
   min-width: 0;
-  margin-left: -9px;
 }
 
 .crumb {
@@ -24,7 +22,7 @@
   gap: 7px;
   padding: 5px 9px;
   border-radius: var(--r-sm);
-  font-size: 17px;
+  font-size: 16px;
   color: var(--text-muted);
   transition:
     background 0.14s,
@@ -67,15 +65,13 @@
   width: 16px;
   height: 16px;
   flex: none;
-  transform: translateY(1px);
-}
-
-.crumb .tag-crumb-dot {
-  transform: translateY(1px);
 }
 
 .crumb .ctxt {
   white-space: nowrap;
+  text-box: trim-both cap alphabetic;
+  padding-block: 5px;
+  margin-block: -5px;
 }
 
 .crumb-sep {
@@ -103,6 +99,7 @@
   align-items: center;
   gap: 8px;
   flex: none;
+  margin-left: auto;
 }
 
 .count-pill {
@@ -155,13 +152,13 @@
   font-size: 12.5px;
   font-weight: 500;
   letter-spacing: 0.03em;
-  color: var(--text-faint);
+  color: var(--text);
 }
 
 .section-head .line {
   flex: 1;
   height: 1px;
-  background: var(--hairline);
+  background: var(--border-strong);
 }
 
 .section-head:not(:first-child) {
