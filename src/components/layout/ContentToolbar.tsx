@@ -1,10 +1,8 @@
-import type { ReactNode } from "react";
 import type { ViewMode } from "@/domain/model";
 import { pluralize } from "@/lib/text";
 import { Icon } from "@/components/primitives/Icon";
 
 export interface ContentToolbarProps {
-  children: ReactNode;
   noteCount: number;
   folderCount: number;
   view: ViewMode;
@@ -15,7 +13,6 @@ export interface ContentToolbarProps {
 }
 
 export function ContentToolbar({
-  children,
   noteCount,
   folderCount,
   view,
@@ -24,21 +21,18 @@ export function ContentToolbar({
   onViewChange,
   onNewFolder,
 }: ContentToolbarProps) {
-  if (!showTools) {
-    return <div className="toolbar">{children}</div>;
-  }
+  if (!showTools) return null;
 
   return (
     <div className="toolbar">
-      {children}
-      <div className="tools-right">
-        {noteCount + folderCount > 0 ? (
-          <span className="count-pill">
-            {pluralize(noteCount, "item")}
-            {folderCount ? ` · ${folderCount} folders` : ""}
-          </span>
-        ) : null}
+      {noteCount + folderCount > 0 ? (
+        <span className="count-pill">
+          {pluralize(noteCount, "item")}
+          {folderCount ? ` · ${folderCount} folders` : ""}
+        </span>
+      ) : null}
 
+      <div className="tools-right">
         {canCreateFolder ? (
           <button
             type="button"

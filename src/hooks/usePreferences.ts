@@ -5,12 +5,14 @@ import { STORAGE_KEYS } from "@/storage/keys";
 import { isSelfWrite, parseJson } from "@/storage/localStore";
 import { parsePreferences } from "@/storage/parsers";
 import { watchStorage } from "@/storage/watch";
+import type { SidebarSize } from "@/lib/sidebarWidth";
 import { applyAppearance } from "@/theme/colors";
 
 export interface PreferencesStore {
   preferences: Preferences;
   setView: (view: ViewMode) => void;
   setSidebar: (sidebar: SidebarMode) => void;
+  setSidebarSize: (size: SidebarSize) => void;
   updateAppearance: (changes: Partial<Appearance>) => void;
   markOnboarded: () => void;
 }
@@ -42,6 +44,10 @@ export function usePreferences(): PreferencesStore {
     setPreferences((current) => ({ ...current, sidebar }));
   }, []);
 
+  const setSidebarSize = useCallback((size: SidebarSize) => {
+    setPreferences((current) => ({ ...current, sidebar: size.mode, sidebarWidth: size.width }));
+  }, []);
+
   const updateAppearance = useCallback((changes: Partial<Appearance>) => {
     setPreferences((current) => ({ ...current, ...changes }));
   }, []);
@@ -50,5 +56,5 @@ export function usePreferences(): PreferencesStore {
     setPreferences((current) => ({ ...current, onboarded: true }));
   }, []);
 
-  return { preferences, setView, setSidebar, updateAppearance, markOnboarded };
+  return { preferences, setView, setSidebar, setSidebarSize, updateAppearance, markOnboarded };
 }

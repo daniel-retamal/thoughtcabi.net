@@ -1,5 +1,6 @@
 import {
   DEFAULT_SIDEBAR_MODE,
+  DEFAULT_SIDEBAR_WIDTH,
   DEFAULT_VIEW_MODE,
   type Cabinet,
   type Folder,
@@ -17,6 +18,7 @@ import {
 import { toSiteCategory } from "@/domain/links/category";
 import { asNumber, asRecord, asText, type JsonRecord } from "@/lib/json";
 import { toIconName } from "@/icons/names";
+import { toStoredWidth } from "@/lib/sidebarWidth";
 import { DEFAULT_APPEARANCE, toCardSurface, toColorId } from "@/theme/colors";
 
 const str = asText;
@@ -137,6 +139,11 @@ export function toSidebarMode(value: unknown): SidebarMode | null {
   return value === "wide" || value === "rail" ? value : null;
 }
 
+export function toSidebarWidth(value: unknown): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  return toStoredWidth(value);
+}
+
 export function parsePreferences(value: unknown): Preferences | null {
   const record = asRecord(value);
   if (!record) return null;
@@ -144,6 +151,7 @@ export function parsePreferences(value: unknown): Preferences | null {
   return {
     view: parseViewMode(record.view) ?? DEFAULT_VIEW_MODE,
     sidebar: toSidebarMode(record.sidebar) ?? DEFAULT_SIDEBAR_MODE,
+    sidebarWidth: toSidebarWidth(record.sidebarWidth) ?? DEFAULT_SIDEBAR_WIDTH,
     color: toColorId(record.color ?? record.palette) ?? DEFAULT_APPEARANCE.color,
     cards: toCardSurface(record.cards) ?? DEFAULT_APPEARANCE.cards,
     onboarded: record.onboarded === true,

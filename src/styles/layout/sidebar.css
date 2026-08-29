@@ -1,11 +1,61 @@
 .sidebar {
-  border-right: 1px solid var(--hairline);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  padding: 14px var(--sidebar-pad) 10px;
-  background: color-mix(in oklab, var(--surface-2) 52%, transparent);
+  padding: 8px var(--sidebar-pad) 10px;
+  background: color-mix(in oklab, var(--surface) 62%, var(--bg));
+}
+
+.side-brand {
+  height: 52px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 6px 0 8px;
+  overflow: hidden;
+  user-select: none;
+}
+
+.side-brand .mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--accent);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.side-brand .mark svg {
+  width: 16px;
+  height: 16px;
+  color: var(--accent-on);
+}
+
+.side-brand .wordmark {
+  font-weight: 400;
+  font-size: 23px;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  line-height: 1;
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-box: trim-both cap alphabetic;
+  padding-block: 8px;
+  margin-block: -8px;
+  transition: opacity 0.18s var(--ease) 0.1s;
+}
+
+.side-brand .dotnet {
+  color: color-mix(in oklab, var(--accent) 52%, transparent);
+  font-weight: 400;
+  font-style: italic;
 }
 
 .side-section-label {
@@ -56,11 +106,13 @@
   border-radius: var(--r-md);
   color: var(--text-muted);
   position: relative;
+  overflow: hidden;
   cursor: pointer;
   user-select: none;
   transition:
     background 0.14s,
-    color 0.14s;
+    color 0.14s,
+    padding 0.26s var(--ease);
 }
 
 .lib-row:hover {
@@ -69,6 +121,7 @@
 
 .lib-row .lib-name {
   flex: 1;
+  min-width: 0;
   font-size: 15px;
   color: var(--text);
   white-space: nowrap;
@@ -193,49 +246,62 @@
   height: 13px;
 }
 
-.side-toggle {
-  display: flex;
-  justify-content: flex-end;
-  padding-bottom: 6px;
+.lib-name,
+.lib-edit,
+.side-section-label span {
+  transition: opacity 0.18s var(--ease) 0.1s;
 }
 
-.side-toggle .iconbtn {
-  width: 30px;
-  height: 30px;
+@media (min-width: 761px) {
+  :root[data-sidebar="rail"] .lib-name,
+  :root[data-sidebar="rail"] .side-brand .wordmark {
+    flex: 0 0 0;
+    width: 0;
+    min-width: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.1s linear;
+  }
+
+  :root[data-sidebar="rail"] .lib-edit,
+  :root[data-sidebar="rail"] .side-section-label span,
+  :root[data-sidebar="rail"] .lib-ghost {
+    display: none;
+  }
+
+  :root[data-sidebar="rail"] .side-brand {
+    justify-content: center;
+    padding: 0;
+    gap: 0;
+  }
+
+  :root[data-sidebar="rail"] .lib-row {
+    justify-content: center;
+    padding: 8px 0;
+    gap: 0;
+  }
+
+  :root[data-sidebar="rail"] .lib-dot {
+    margin: 0;
+  }
+
+  :root[data-sidebar="rail"] .side-section-label {
+    order: 2;
+    justify-content: center;
+    padding: 6px 0 0;
+  }
+
+  :root[data-sidebar="rail"] .side-section-label button {
+    color: var(--text-muted);
+  }
 }
 
-.side-toggle .iconbtn svg {
-  width: 16px;
-  height: 16px;
-}
-
-:root[data-sidebar="rail"] .side-toggle {
-  justify-content: center;
-}
-
-:root[data-sidebar="rail"] .lib-name,
-:root[data-sidebar="rail"] .lib-edit,
-:root[data-sidebar="rail"] .side-section-label span,
-:root[data-sidebar="rail"] .lib-ghost {
-  display: none;
-}
-
-:root[data-sidebar="rail"] .lib-row {
-  justify-content: center;
-  padding: 8px 0;
-  gap: 0;
-}
-
-:root[data-sidebar="rail"] .lib-dot {
-  margin: 0;
-}
-
-:root[data-sidebar="rail"] .side-section-label {
-  order: 2;
-  justify-content: center;
-  padding: 6px 0 0;
-}
-
-:root[data-sidebar="rail"] .side-section-label button {
-  color: var(--text-muted);
+@media (prefers-reduced-motion: reduce) {
+  .lib-row,
+  .lib-name,
+  .lib-edit,
+  .side-section-label span,
+  .side-brand .wordmark {
+    transition: none;
+  }
 }

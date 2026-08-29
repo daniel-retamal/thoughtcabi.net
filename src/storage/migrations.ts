@@ -1,5 +1,6 @@
 import {
   DEFAULT_SIDEBAR_MODE,
+  DEFAULT_SIDEBAR_WIDTH,
   DEFAULT_VIEW_MODE,
   type Cabinet,
   type Preferences,
@@ -39,6 +40,7 @@ export function migratePreferences(): Preferences | null {
     color: appearance?.color ?? DEFAULT_APPEARANCE.color,
     cards: appearance?.cards ?? DEFAULT_APPEARANCE.cards,
     sidebar: DEFAULT_SIDEBAR_MODE,
+    sidebarWidth: DEFAULT_SIDEBAR_WIDTH,
     onboarded: false,
   };
 

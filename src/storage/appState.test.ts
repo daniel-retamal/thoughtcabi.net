@@ -98,6 +98,7 @@ describe("migrating from the four original keys", () => {
       color: "midnight",
       cards: "color",
       sidebar: "wide",
+      sidebarWidth: 268,
       onboarded: false,
     });
     expect(localStorage.getItem(LEGACY_KEYS.view)).toBeNull();
@@ -129,6 +130,7 @@ describe("preferences", () => {
       color: "forest",
       cards: "color",
       sidebar: "rail",
+      sidebarWidth: 312,
       onboarded: true,
     } as const;
     expect(savePreferences(preferences)).toBe("ok");
@@ -150,6 +152,7 @@ describe("preferences", () => {
       color: DEFAULT_PREFERENCES.color,
       cards: "color",
       sidebar: DEFAULT_PREFERENCES.sidebar,
+      sidebarWidth: DEFAULT_PREFERENCES.sidebarWidth,
       onboarded: false,
     });
   });

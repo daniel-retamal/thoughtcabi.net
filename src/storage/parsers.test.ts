@@ -184,6 +184,7 @@ describe("parsePreferences", () => {
       color: "emerald",
       cards: "color",
       sidebar: "rail",
+      sidebarWidth: 268,
       onboarded: true,
     });
   });
@@ -194,6 +195,7 @@ describe("parsePreferences", () => {
       color: "navy",
       cards: "color",
       sidebar: "wide",
+      sidebarWidth: 268,
       onboarded: false,
     });
     expect(parsePreferences({ palette: "bento" })?.color).toBe("ultramarine");
@@ -207,6 +209,7 @@ describe("parsePreferences", () => {
       color: "ultramarine",
       cards: "cream",
       sidebar: "wide",
+      sidebarWidth: 268,
       onboarded: false,
     });
     expect(
@@ -216,8 +219,16 @@ describe("parsePreferences", () => {
       color: "ultramarine",
       cards: "cream",
       sidebar: "wide",
+      sidebarWidth: 268,
       onboarded: false,
     });
+  });
+
+  it("clamps a dragged width back into the range the shell can render", () => {
+    expect(parsePreferences({ sidebarWidth: 900 })?.sidebarWidth).toBe(380);
+    expect(parsePreferences({ sidebarWidth: 40 })?.sidebarWidth).toBe(242);
+    expect(parsePreferences({ sidebarWidth: "wide" })?.sidebarWidth).toBe(268);
+    expect(parsePreferences({ sidebarWidth: 310 })?.sidebarWidth).toBe(310);
   });
 
   it("rejects anything that is not a record", () => {

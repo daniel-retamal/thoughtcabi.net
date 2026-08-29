@@ -50,7 +50,7 @@ svg {
 }
 
 .sidebar,
-.body,
+.pane-body,
 .modal-body,
 .modal-scroll {
   scrollbar-width: thin;

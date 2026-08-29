@@ -1,7 +1,8 @@
-import type { ReactNode } from "react";
+import type { ReactNode, RefObject } from "react";
 import type { Shelf, SidebarMode, Tag } from "@/domain/model";
 import { Icon } from "@/components/primitives/Icon";
 import { ShelfRow } from "./ShelfRow";
+import { SideBrand } from "./SideBrand";
 import { SidebarSection } from "./SidebarSection";
 import { TagRow } from "./TagRow";
 
@@ -12,8 +13,8 @@ export interface SidebarProps {
   atShelfRoot: boolean;
   activeTag: string | null;
   mode: SidebarMode;
+  brandRef: RefObject<HTMLDivElement>;
   footer: ReactNode;
-  onToggleMode: () => void;
   onOpenShelf: (shelf: Shelf) => void;
   onNewShelf: () => void;
   onEditShelf: (shelf: Shelf) => void;
@@ -29,8 +30,8 @@ export function Sidebar({
   atShelfRoot,
   activeTag,
   mode,
+  brandRef,
   footer,
-  onToggleMode,
   onOpenShelf,
   onNewShelf,
   onEditShelf,
@@ -39,22 +40,10 @@ export function Sidebar({
   onEditTag,
 }: SidebarProps) {
   const wide = mode === "wide";
-  const toggleLabel = wide ? "Narrow sidebar" : "Widen sidebar";
 
   return (
-    <aside className="sidebar">
-      <div className="side-toggle">
-        <button
-          type="button"
-          className="iconbtn"
-          title={toggleLabel}
-          aria-label={toggleLabel}
-          aria-pressed={!wide}
-          onClick={onToggleMode}
-        >
-          <Icon name="panel-left" />
-        </button>
-      </div>
+    <aside className="sidebar" id="cabinet-sidebar">
+      <SideBrand brandRef={brandRef} />
 
       <SidebarSection title="Library" addLabel="New shelf" onAdd={onNewShelf}>
         {shelves.map((shelf) => (

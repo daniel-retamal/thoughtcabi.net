@@ -12,6 +12,10 @@ function sidebar(): HTMLElement {
   return document.querySelector("aside.sidebar") as HTMLElement;
 }
 
+function paneBar(): HTMLElement {
+  return document.querySelector(".pane-bar") as HTMLElement;
+}
+
 function content(): HTMLElement {
   return document.querySelector(".body-inner") as HTMLElement;
 }
@@ -177,7 +181,7 @@ describe("App", () => {
       expect(screen.getByText("Zettelkasten")).toBeInTheDocument();
     });
 
-    it("keeps search in the header and moves the other controls into the drawer", () => {
+    it("keeps search in the pane bar and moves the other controls into the drawer", () => {
       withSaves();
       render(<App />);
 
@@ -187,26 +191,36 @@ describe("App", () => {
     });
   });
 
+  it("keeps the wordmark in the sidebar and the toggle in the pane bar", () => {
+    withSaves();
+    render(<App />);
+
+    expect(within(sidebar()).getByText("thoughtcabi")).toBeInTheDocument();
+    expect(within(paneBar()).getByLabelText("Narrow sidebar")).toBeInTheDocument();
+    expect(within(paneBar()).getByLabelText("Search your cabinet")).toBeInTheDocument();
+    expect(within(sidebar()).queryByLabelText("Narrow sidebar")).not.toBeInTheDocument();
+  });
+
   it("narrows the sidebar to a rail and remembers it across a remount", async () => {
     withSaves();
     const first = render(<App />);
 
     expect(document.documentElement).toHaveAttribute("data-sidebar", "wide");
-    await userEvent.click(within(sidebar()).getByLabelText("Narrow sidebar"));
+    await userEvent.click(within(paneBar()).getByLabelText("Narrow sidebar"));
     expect(document.documentElement).toHaveAttribute("data-sidebar", "rail");
 
     first.unmount();
     render(<App />);
 
     expect(document.documentElement).toHaveAttribute("data-sidebar", "rail");
-    expect(within(sidebar()).getByLabelText("Widen sidebar")).toBeInTheDocument();
+    expect(within(paneBar()).getByLabelText("Widen sidebar")).toBeInTheDocument();
   });
 
   it("keeps every shelf and tag in the rail, so none of them stops being a drop target", async () => {
     withSaves();
     render(<App />);
 
-    await userEvent.click(within(sidebar()).getByLabelText("Narrow sidebar"));
+    await userEvent.click(within(paneBar()).getByLabelText("Narrow sidebar"));
 
     expect(sidebar().querySelectorAll("[data-shelf-row]")).toHaveLength(2);
     expect(sidebar().querySelectorAll("[data-tag-row]")).toHaveLength(3);

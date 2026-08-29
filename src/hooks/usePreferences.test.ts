@@ -24,6 +24,7 @@ describe("usePreferences", () => {
       color: "ultramarine",
       cards: "cream",
       sidebar: "wide",
+      sidebarWidth: 268,
       onboarded: false,
     });
     expect(document.documentElement).toHaveAttribute("data-color", "ultramarine");
@@ -42,8 +43,19 @@ describe("usePreferences", () => {
       color: "midnight",
       cards: "cream",
       sidebar: "wide",
+      sidebarWidth: 268,
       onboarded: false,
     });
+  });
+
+  it("remembers a dragged width alongside the mode", () => {
+    const { result } = renderHook(() => usePreferences());
+
+    act(() => result.current.setSidebarSize({ mode: "rail", width: 312 }));
+
+    expect(result.current.preferences.sidebar).toBe("rail");
+    expect(result.current.preferences.sidebarWidth).toBe(312);
+    expect(localStorage.getItem(STORAGE_KEYS.preferences)).toContain('"sidebarWidth":312');
   });
 
   it("remembers a narrowed sidebar, and paints it onto the document", () => {
@@ -76,6 +88,7 @@ describe("usePreferences", () => {
       color: "emerald",
       cards: "color",
       sidebar: "wide",
+      sidebarWidth: 268,
       onboarded: false,
     });
   });

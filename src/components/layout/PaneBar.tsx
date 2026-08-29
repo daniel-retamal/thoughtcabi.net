@@ -2,48 +2,55 @@ import type { ReactNode, RefObject } from "react";
 import { Icon } from "@/components/primitives/Icon";
 import { ModKey } from "@/components/primitives/ModKey";
 
-export interface AppHeaderProps {
+export interface PaneBarProps {
   query: string;
   searchRef: RefObject<HTMLInputElement>;
+  crumbs: ReactNode;
   controls: ReactNode;
   compact: boolean;
+  wide: boolean;
+  onToggleSidebar: () => void;
   onQueryChange: (query: string) => void;
-  onOpenDrawer: () => void;
   onCompose: () => void;
 }
 
-export function AppHeader({
+function toggleLabel(compact: boolean, wide: boolean): string {
+  if (compact) return "Shelves and tags";
+  return wide ? "Narrow sidebar" : "Widen sidebar";
+}
+
+export function PaneBar({
   query,
   searchRef,
+  crumbs,
   controls,
   compact,
+  wide,
+  onToggleSidebar,
   onQueryChange,
-  onOpenDrawer,
   onCompose,
-}: AppHeaderProps) {
+}: PaneBarProps) {
+  const label = toggleLabel(compact, wide);
+
   return (
-    <header className="header">
-      <div className="brand">
-        {compact ? (
-          <button
-            type="button"
-            className="iconbtn"
-            title="Shelves and tags"
-            aria-label="Shelves and tags"
-            onClick={onOpenDrawer}
-          >
-            <Icon name="panel-left" />
-          </button>
-        ) : null}
-        <span className="mark">
-          <Icon name="brain-circuit" />
-        </span>
-        <span className="wordmark">
-          thoughtcabi<span className="dotnet">.net</span>
-        </span>
+    <div className="pane-bar">
+      <div className="bar-nav">
+        <button
+          type="button"
+          className="iconbtn sb-toggle"
+          title={label}
+          aria-label={label}
+          aria-controls="cabinet-sidebar"
+          aria-expanded={compact ? undefined : wide}
+          onClick={onToggleSidebar}
+        >
+          <Icon name="panel-left" />
+        </button>
+        <span className="vrule" />
+        {crumbs}
       </div>
 
-      <div className="header-search">
+      <div className="bar-right">
         <div className="search-box">
           <Icon name="search" />
           <input
@@ -69,14 +76,13 @@ export function AppHeader({
             </span>
           )}
         </div>
-      </div>
 
-      <div className="header-actions">
         {controls}
+
         <button type="button" className="btn-paste" onClick={onCompose}>
           <Icon name="plus" /> Save
         </button>
       </div>
-    </header>
+    </div>
   );
 }

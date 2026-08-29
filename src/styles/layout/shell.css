@@ -1,23 +1,70 @@
+@property --sidebar-w {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 268px;
+}
+
+@property --sidebar-pad {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 12px;
+}
+
 #root {
   height: 100%;
 }
 
 .app {
-  display: grid;
-  grid-template-rows: var(--header-h) 1fr;
   height: 100%;
   min-height: 0;
 }
 
-.main {
+.shell {
+  --sidebar-w: var(--sidebar-set, 268px);
+  --sidebar-pad: 12px;
   display: grid;
   grid-template-columns: var(--sidebar-w) 1fr;
+  gap: var(--desk-pad);
+  padding: var(--desk-pad);
+  height: 100%;
   min-height: 0;
+  position: relative;
+  background: color-mix(in oklab, var(--bg) 86%, var(--border));
+  transition:
+    --sidebar-w 0.26s var(--ease),
+    --sidebar-pad 0.26s var(--ease);
 }
 
-.body {
+@media (min-width: 761px) {
+  :root[data-sidebar="rail"] .shell {
+    --sidebar-w: var(--rail-w);
+    --sidebar-pad: 10px;
+  }
+}
+
+.shell[data-resizing] {
+  transition: none;
+}
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  background-color: var(--bg);
+  background-image: var(--grain);
+  background-blend-mode: overlay;
+  background-attachment: fixed;
+}
+
+.pane-body {
   min-height: 0;
   overflow-y: auto;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
 }
@@ -36,4 +83,45 @@
   width: min(100%, calc(var(--plate) + var(--page-pad) * 2));
   margin: 0 auto;
   padding: 22px var(--page-pad) 90px;
+}
+
+.grip {
+  position: absolute;
+  top: var(--desk-pad);
+  bottom: var(--desk-pad);
+  left: calc(var(--desk-pad) + var(--sidebar-w) + var(--desk-pad) / 2);
+  transform: translateX(-50%);
+  width: 18px;
+  z-index: 20;
+  cursor: col-resize;
+  touch-action: none;
+  display: grid;
+  place-items: center;
+}
+
+.grip .knob {
+  width: 5px;
+  height: 38px;
+  border-radius: var(--r-pill);
+  background: var(--border-strong);
+  opacity: 0;
+  transform: scaleY(0.6);
+  transition:
+    opacity 0.16s,
+    transform 0.2s var(--ease-out);
+}
+
+.grip:hover .knob {
+  opacity: 0.85;
+  transform: scaleY(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell {
+    transition: none;
+  }
+
+  .grip .knob {
+    transition: none;
+  }
 }

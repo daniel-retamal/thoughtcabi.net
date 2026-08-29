@@ -1,6 +1,7 @@
 import { withoutPendingNotes } from "@/domain/library/mutations";
 import {
   DEFAULT_SIDEBAR_MODE,
+  DEFAULT_SIDEBAR_WIDTH,
   DEFAULT_VIEW_MODE,
   type Cabinet,
   type Preferences,
@@ -15,6 +16,7 @@ import { parseCabinet, parsePreferences } from "./parsers";
 export const DEFAULT_PREFERENCES: Preferences = {
   view: DEFAULT_VIEW_MODE,
   sidebar: DEFAULT_SIDEBAR_MODE,
+  sidebarWidth: DEFAULT_SIDEBAR_WIDTH,
   onboarded: false,
   ...DEFAULT_APPEARANCE,
 };
