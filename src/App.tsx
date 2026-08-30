@@ -217,18 +217,23 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     if (target.closest("input, textarea, a, .ctx-menu")) return;
     if (!window.getSelection()?.isCollapsed) return;
 
-    const card = target.closest(`[${DND_ATTR.dragKind}="item"][${DND_ATTR.dragId}]`);
-    const noteId = card?.getAttribute(DND_ATTR.dragId);
-    const node = noteId ? findNode(library, noteId) : undefined;
+    const card = target.closest(
+      `[${DND_ATTR.dragKind}="item"][${DND_ATTR.dragId}], [${DND_ATTR.dragKind}="folder"][${DND_ATTR.dragId}]`,
+    );
+    const cardId = card?.getAttribute(DND_ATTR.dragId);
+    const folder = cardId ? viewState.folders.find((entry) => entry.id === cardId) : undefined;
+    const node = cardId && !folder ? findNode(library, cardId) : undefined;
     const note = node && isNote(node) ? node : null;
 
     event.preventDefault();
     setMenu({
       x: event.clientX,
       y: event.clientY,
-      target: note
-        ? { kind: "note", note }
-        : { kind: "background", canCreateFolder: viewState.canReorder },
+      target: folder
+        ? { kind: "folder", folder }
+        : note
+          ? { kind: "note", note }
+          : { kind: "background", canCreateFolder: viewState.canReorder },
     });
   };
 
@@ -443,11 +448,10 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
             onCompose={openCompose}
           />
 
-          <div className="pane-body">
+          <div className="pane-body" onContextMenu={openContextMenu}>
             <div
               className="body-inner"
               {...(viewState.canReorder ? locationDropProps(navigation.location) : {})}
-              onContextMenu={openContextMenu}
             >
               {storageStatus !== "ok" && !noticeDismissed ? (
                 <StorageNotice problem={storageStatus} onDismiss={() => setNoticeDismissed(true)} />
@@ -542,6 +546,9 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
             onPasteLink: pasteLinkFromClipboard,
             onSaveLink: openCompose,
             onNewFolder: () => setDialog({ kind: "new-folder" }),
+            onOpenFolder: folderHandlers.onOpen,
+            onRenameFolder: folderHandlers.onRename,
+            onDeleteFolder: folderHandlers.onDelete,
             onOpen: (note) => setDialog({ kind: "detail", note }),
             onCopyLink: (note) => writeClipboardText(note.url),
             onEdit: (note) => setDialog({ kind: "compose", mode: "edit", note }),

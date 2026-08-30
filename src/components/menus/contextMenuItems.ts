@@ -1,4 +1,4 @@
-import type { Note } from "@/domain/model";
+import type { Folder, Note } from "@/domain/model";
 import type { IconName } from "@/icons/names";
 
 export interface MenuItem {
@@ -9,12 +9,17 @@ export interface MenuItem {
 }
 
 export type ContextTarget =
-  { kind: "background"; canCreateFolder: boolean } | { kind: "note"; note: Note };
+  | { kind: "background"; canCreateFolder: boolean }
+  | { kind: "folder"; folder: Folder }
+  | { kind: "note"; note: Note };
 
 export interface ContextMenuHandlers {
   onPasteLink: () => void;
   onSaveLink: () => void;
   onNewFolder: () => void;
+  onOpenFolder: (folder: Folder) => void;
+  onRenameFolder: (folder: Folder) => void;
+  onDeleteFolder: (folder: Folder) => void;
   onOpen: (note: Note) => void;
   onCopyLink: (note: Note) => void;
   onEdit: (note: Note) => void;
@@ -32,6 +37,20 @@ export function contextMenuFor(target: ContextTarget, handlers: ContextMenuHandl
       items.push({ icon: "folder-plus", label: "New folder", run: handlers.onNewFolder });
     }
     return items;
+  }
+
+  if (target.kind === "folder") {
+    const { folder } = target;
+    return [
+      { icon: "folder", label: "Open", run: () => handlers.onOpenFolder(folder) },
+      { icon: "pencil-line", label: "Rename", run: () => handlers.onRenameFolder(folder) },
+      {
+        icon: "trash-2",
+        label: "Delete",
+        run: () => handlers.onDeleteFolder(folder),
+        danger: true,
+      },
+    ];
   }
 
   const { note } = target;
