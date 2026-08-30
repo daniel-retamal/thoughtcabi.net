@@ -58,7 +58,11 @@ function buildGrid(items: Array<{ id: string; rect: DOMRect }>): {
   return { body, zone };
 }
 
-function reorderAt(point: Point, elementUnderPoint: HTMLElement, dragId = "dragged"): ReorderTarget {
+function reorderAt(
+  point: Point,
+  elementUnderPoint: HTMLElement,
+  dragId = "dragged",
+): ReorderTarget {
   document.elementFromPoint = () => elementUnderPoint;
   const drag: NodeDrag = { kind: "item", id: dragId };
   const target: DropTarget | null = resolveDrop({
@@ -210,8 +214,12 @@ describe("resolvePlacement anchors", () => {
 
     document.elementFromPoint = () => rows[1] as HTMLElement;
     const drag: NodeDrag = { kind: "shelf", id: "b" };
-    const target = resolveDrop({ drag, point: { x: 50, y: 40 }, previous: null, validate: () => true })
-      .target;
+    const target = resolveDrop({
+      drag,
+      point: { x: 50, y: 40 },
+      previous: null,
+      validate: () => true,
+    }).target;
 
     expect(target?.type).toBe("reorder-shelf");
     if (target?.type !== "reorder-shelf") throw new Error("expected reorder-shelf target");
@@ -242,11 +250,7 @@ function buildTagRows(names: readonly string[]): HTMLElement[] {
   });
 }
 
-function tagDropAt(
-  point: Point,
-  elementUnderPoint: HTMLElement,
-  tag: string,
-): DropTarget | null {
+function tagDropAt(point: Point, elementUnderPoint: HTMLElement, tag: string): DropTarget | null {
   document.elementFromPoint = () => elementUnderPoint;
   const drag: DragPayload = { kind: "tag", tag, label: tag, color: "#f00" };
   return resolveDrop({ drag, point, previous: null, validate: () => true }).target;

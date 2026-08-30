@@ -1,5 +1,6 @@
 import type { ReactNode, RefObject } from "react";
 import type { Shelf, SidebarMode, Tag } from "@/domain/model";
+import { useCopy } from "@/i18n/I18nContext";
 import { Icon } from "@/components/primitives/Icon";
 import { ShelfRow } from "./ShelfRow";
 import { SideBrand } from "./SideBrand";
@@ -39,13 +40,18 @@ export function Sidebar({
   onNewTag,
   onEditTag,
 }: SidebarProps) {
+  const copy = useCopy();
   const wide = mode === "wide";
 
   return (
     <aside className="sidebar" id="cabinet-sidebar">
       <SideBrand brandRef={brandRef} />
 
-      <SidebarSection title="Library" addLabel="New shelf" onAdd={onNewShelf}>
+      <SidebarSection
+        title={copy.sidebar.library}
+        addLabel={copy.sidebar.newShelf}
+        onAdd={onNewShelf}
+      >
         {shelves.map((shelf) => (
           <ShelfRow
             key={shelf.id}
@@ -58,13 +64,13 @@ export function Sidebar({
         ))}
       </SidebarSection>
 
-      <SidebarSection title="Tags" addLabel="New tag" onAdd={onNewTag}>
+      <SidebarSection title={copy.sidebar.tags} addLabel={copy.sidebar.newTag} onAdd={onNewTag}>
         {tags.length === 0 ? (
           <button type="button" className="lib-ghost" onClick={onNewTag}>
             <span className="ring">
               <Icon name="plus" />
             </span>
-            Add a tag
+            {copy.sidebar.addATag}
           </button>
         ) : (
           tags.map((tag) => (

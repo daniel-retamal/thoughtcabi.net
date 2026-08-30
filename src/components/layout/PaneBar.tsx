@@ -1,4 +1,6 @@
 import type { ReactNode, RefObject } from "react";
+import { useCopy } from "@/i18n/I18nContext";
+import type { Copy } from "@/i18n/copy";
 import { Icon } from "@/components/primitives/Icon";
 import { ModKey } from "@/components/primitives/ModKey";
 
@@ -14,9 +16,9 @@ export interface PaneBarProps {
   onCompose: () => void;
 }
 
-function toggleLabel(compact: boolean, wide: boolean): string {
-  if (compact) return "Shelves and tags";
-  return wide ? "Narrow sidebar" : "Widen sidebar";
+function toggleLabel(compact: boolean, wide: boolean, copy: Copy): string {
+  if (compact) return copy.paneBar.shelvesAndTags;
+  return wide ? copy.paneBar.narrowSidebar : copy.paneBar.widenSidebar;
 }
 
 export function PaneBar({
@@ -30,7 +32,8 @@ export function PaneBar({
   onQueryChange,
   onCompose,
 }: PaneBarProps) {
-  const label = toggleLabel(compact, wide);
+  const copy = useCopy();
+  const label = toggleLabel(compact, wide, copy);
 
   return (
     <div className="pane-bar">
@@ -56,15 +59,15 @@ export function PaneBar({
           <input
             ref={searchRef}
             value={query}
-            placeholder="Search..."
-            aria-label="Search your cabinet"
+            placeholder={copy.paneBar.searchPlaceholder}
+            aria-label={copy.paneBar.searchLabel}
             onChange={(event) => onQueryChange(event.target.value)}
           />
           {query ? (
             <button
               type="button"
               className="search-clear"
-              aria-label="Clear search"
+              aria-label={copy.actions.clearSearch}
               onClick={() => onQueryChange("")}
             >
               <Icon name="x" />
@@ -80,7 +83,7 @@ export function PaneBar({
         {controls}
 
         <button type="button" className="btn-paste" onClick={onCompose}>
-          <Icon name="plus" /> Save
+          <Icon name="plus" /> {copy.paneBar.compose}
         </button>
       </div>
     </div>

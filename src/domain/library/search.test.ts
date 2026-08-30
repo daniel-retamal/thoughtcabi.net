@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { makeLibrary, makeNote, makeShelf } from "@/test/factories";
-import { noteMatches, notesWithTag, searchLibrary } from "./search";
+import { en } from "@/i18n/en";
+import { es } from "@/i18n/es";
+import type { Library, Note } from "@/domain/model";
+import * as search from "./search";
+import { notesWithTag } from "./search";
+
+const noteMatches = (note: Note, query: string) => search.noteMatches(note, query, en.categories);
+const searchLibrary = (library: Library, query: string) =>
+  search.searchLibrary(library, query, en.categories);
 
 describe("noteMatches", () => {
   const note = makeNote({
@@ -8,6 +16,7 @@ describe("noteMatches", () => {
     description: "On restraint and craft",
     domain: "smashingmagazine.com",
     siteName: "Smashing Magazine",
+    cat: "dev",
     catLabel: "Code",
     tag: "Inspiration",
   });
@@ -66,5 +75,21 @@ describe("notesWithTag", () => {
     expect(notesWithTag(makeLibrary(), "To read").map((n) => n.id)).toEqual(["note-a"]);
     expect(notesWithTag(makeLibrary(), "Reference").map((n) => n.id)).toEqual(["note-c"]);
     expect(notesWithTag(makeLibrary(), "Nothing")).toEqual([]);
+  });
+});
+
+describe("searching in Spanish", () => {
+  const note = makeNote({ title: "Guía de tipografía", cat: "video", catLabel: "Video" });
+
+  it("ignores accents on both sides of the comparison", () => {
+    expect(noteMatches(note, "guia")).toBe(true);
+    expect(noteMatches(note, "tipografia")).toBe(true);
+    expect(search.noteMatches(note, search.foldForSearch("GUÍA"), en.categories)).toBe(true);
+  });
+
+  it("matches the category chip in the language on screen", () => {
+    expect(search.noteMatches(note, "video", es.categories)).toBe(true);
+    expect(search.noteMatches(makeNote({ cat: "forum" }), "discusion", es.categories)).toBe(true);
+    expect(search.noteMatches(makeNote({ cat: "forum" }), "discussion", en.categories)).toBe(true);
   });
 });

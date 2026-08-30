@@ -162,10 +162,7 @@ describe("shelf commands", () => {
     expect(state.library[0]?.name).toBe("Renamed");
 
     const removed = reduce(state, { type: "shelf/remove", id: "new" });
-    expect(removed.library.map((shelf) => shelf.id)).toEqual([
-      "shelf-reading",
-      "shelf-research",
-    ]);
+    expect(removed.library.map((shelf) => shelf.id)).toEqual(["shelf-reading", "shelf-research"]);
   });
 
   it("puts a deleted shelf back where it stood, contents and all", () => {
@@ -175,10 +172,7 @@ describe("shelf commands", () => {
     const removed = reduce(state, { type: "shelf/remove", id: shelf.id });
     const restored = reduce(removed, { type: "shelf/restore", index: 0, shelf });
 
-    expect(restored.library.map((entry) => entry.id)).toEqual([
-      "shelf-reading",
-      "shelf-research",
-    ]);
+    expect(restored.library.map((entry) => entry.id)).toEqual(["shelf-reading", "shelf-research"]);
     expect(noteAt(restored, "note-a")?.title).toBe("On Rereading");
   });
 });
@@ -386,6 +380,67 @@ describe("reducer discipline", () => {
     );
     expect(cabinetReducer(state, { type: "node/moveIntoFolder", id: "x", folderId: "y" })).toBe(
       state,
+    );
+  });
+});
+
+describe("the seed shelf follows the language", () => {
+  function seeded(...names: string[]): Cabinet {
+    return { library: names.map((name) => makeShelf(name)), tags: [] };
+  }
+
+  it("renames the first shelf when it still carries the outgoing seed name", () => {
+    const next = reduce(seeded("Saved"), {
+      type: "shelf/relabelSeed",
+      from: "Saved",
+      to: "Guardados",
+    });
+    expect(next.library[0]?.name).toBe("Guardados");
+  });
+
+  it("goes back again", () => {
+    const spanish = reduce(seeded("Saved"), {
+      type: "shelf/relabelSeed",
+      from: "Saved",
+      to: "Guardados",
+    });
+    const english = reduce(spanish, {
+      type: "shelf/relabelSeed",
+      from: "Guardados",
+      to: "Saved",
+    });
+    expect(english.library[0]?.name).toBe("Saved");
+  });
+
+  it("keeps its id and its contents, so nothing is re-created behind the user", () => {
+    const before = seeded("Saved");
+    const after = reduce(before, { type: "shelf/relabelSeed", from: "Saved", to: "Guardados" });
+    expect(after.library[0]?.id).toBe(before.library[0]?.id);
+    expect(after.library).toHaveLength(1);
+  });
+
+  it("leaves a shelf the user renamed alone", () => {
+    const next = reduce(seeded("Inbox"), {
+      type: "shelf/relabelSeed",
+      from: "Saved",
+      to: "Guardados",
+    });
+    expect(next.library[0]?.name).toBe("Inbox");
+  });
+
+  it("touches only the first shelf, never a later one that shares the name", () => {
+    const next = reduce(seeded("Inbox", "Saved"), {
+      type: "shelf/relabelSeed",
+      from: "Saved",
+      to: "Guardados",
+    });
+    expect(next.library.map((shelf) => shelf.name)).toEqual(["Inbox", "Saved"]);
+  });
+
+  it("returns the same state when there is nothing to rename", () => {
+    const before = seeded("Inbox");
+    expect(reduce(before, { type: "shelf/relabelSeed", from: "Saved", to: "Guardados" })).toBe(
+      before,
     );
   });
 });

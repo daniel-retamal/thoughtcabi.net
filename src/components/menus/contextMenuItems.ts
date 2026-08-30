@@ -1,5 +1,6 @@
 import type { Folder, Note } from "@/domain/model";
 import type { IconName } from "@/icons/names";
+import type { Copy } from "@/i18n/copy";
 
 export interface MenuItem {
   icon: IconName;
@@ -27,14 +28,18 @@ export interface ContextMenuHandlers {
   onDelete: (note: Note) => void;
 }
 
-export function contextMenuFor(target: ContextTarget, handlers: ContextMenuHandlers): MenuItem[] {
+export function contextMenuFor(
+  target: ContextTarget,
+  handlers: ContextMenuHandlers,
+  copy: Copy,
+): MenuItem[] {
   if (target.kind === "background") {
     const items: MenuItem[] = [
-      { icon: "clipboard-paste", label: "Paste link", run: handlers.onPasteLink },
-      { icon: "bookmark-plus", label: "Save link…", run: handlers.onSaveLink },
+      { icon: "clipboard-paste", label: copy.menu.pasteLink, run: handlers.onPasteLink },
+      { icon: "bookmark-plus", label: copy.menu.saveLink, run: handlers.onSaveLink },
     ];
     if (target.canCreateFolder) {
-      items.push({ icon: "folder-plus", label: "New folder", run: handlers.onNewFolder });
+      items.push({ icon: "folder-plus", label: copy.menu.newFolder, run: handlers.onNewFolder });
     }
     return items;
   }
@@ -42,11 +47,11 @@ export function contextMenuFor(target: ContextTarget, handlers: ContextMenuHandl
   if (target.kind === "folder") {
     const { folder } = target;
     return [
-      { icon: "folder", label: "Open", run: () => handlers.onOpenFolder(folder) },
-      { icon: "pencil-line", label: "Rename", run: () => handlers.onRenameFolder(folder) },
+      { icon: "folder", label: copy.menu.open, run: () => handlers.onOpenFolder(folder) },
+      { icon: "pencil-line", label: copy.menu.rename, run: () => handlers.onRenameFolder(folder) },
       {
         icon: "trash-2",
-        label: "Delete",
+        label: copy.menu.delete,
         run: () => handlers.onDeleteFolder(folder),
         danger: true,
       },
@@ -55,27 +60,27 @@ export function contextMenuFor(target: ContextTarget, handlers: ContextMenuHandl
 
   const { note } = target;
   const items: MenuItem[] = [
-    { icon: "file-text", label: "Open", run: () => handlers.onOpen(note) },
+    { icon: "file-text", label: copy.menu.open, run: () => handlers.onOpen(note) },
   ];
 
   if (note.url) {
     items.push({
       icon: "external-link",
-      label: "Open original",
+      label: copy.menu.openOriginal,
       run: () => window.open(note.url, "_blank", "noreferrer"),
     });
-    items.push({ icon: "copy", label: "Copy link", run: () => handlers.onCopyLink(note) });
+    items.push({ icon: "copy", label: copy.menu.copyLink, run: () => handlers.onCopyLink(note) });
   }
 
-  items.push({ icon: "pencil-line", label: "Edit", run: () => handlers.onEdit(note) });
+  items.push({ icon: "pencil-line", label: copy.menu.edit, run: () => handlers.onEdit(note) });
   items.push({
     icon: "image-plus",
-    label: "Paste as thumbnail",
+    label: copy.menu.pasteAsThumbnail,
     run: () => handlers.onPasteThumbnail(note),
   });
   items.push({
     icon: "trash-2",
-    label: "Delete",
+    label: copy.menu.delete,
     run: () => handlers.onDelete(note),
     danger: true,
   });

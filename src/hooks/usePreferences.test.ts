@@ -25,6 +25,7 @@ describe("usePreferences", () => {
       cards: "cream",
       sidebar: "wide",
       sidebarWidth: 268,
+      language: "en",
       onboarded: false,
     });
     expect(document.documentElement).toHaveAttribute("data-color", "ultramarine");
@@ -44,6 +45,7 @@ describe("usePreferences", () => {
       cards: "cream",
       sidebar: "wide",
       sidebarWidth: 268,
+      language: "en",
       onboarded: false,
     });
   });
@@ -89,6 +91,7 @@ describe("usePreferences", () => {
       cards: "color",
       sidebar: "wide",
       sidebarWidth: 268,
+      language: "en",
       onboarded: false,
     });
   });
@@ -100,5 +103,33 @@ describe("usePreferences", () => {
 
     expect(document.documentElement).toHaveAttribute("data-color", "viridian");
     expect(document.documentElement).toHaveAttribute("data-card-surface", "color");
+  });
+  it("starts in English however the browser is configured, because it never guesses", () => {
+    Object.defineProperty(navigator, "language", { value: "es-CL", configurable: true });
+    Object.defineProperty(navigator, "languages", { value: ["es-CL", "es"], configurable: true });
+
+    const { result } = renderHook(() => usePreferences());
+
+    expect(result.current.preferences.language).toBe("en");
+    expect(document.documentElement).toHaveAttribute("lang", "en");
+  });
+
+  it("remembers the language and tells the document what it is", () => {
+    const { result } = renderHook(() => usePreferences());
+
+    act(() => result.current.setLanguage("es"));
+
+    expect(result.current.preferences.language).toBe("es");
+    expect(document.documentElement).toHaveAttribute("lang", "es");
+    expect(localStorage.getItem(STORAGE_KEYS.preferences)).toContain('"language":"es"');
+  });
+
+  it("adopts a language chosen in another tab", () => {
+    const { result } = renderHook(() => usePreferences());
+
+    remoteWrite(JSON.stringify({ view: "grid", color: "emerald", cards: "cream", language: "es" }));
+
+    expect(result.current.preferences.language).toBe("es");
+    expect(document.documentElement).toHaveAttribute("lang", "es");
   });
 });

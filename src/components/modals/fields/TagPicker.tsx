@@ -1,5 +1,6 @@
 import type { Tag } from "@/domain/model";
-import { TAG_SUGGESTIONS } from "@/domain/tags/tagLibrary";
+import { TAG_SUGGESTION_COLORS } from "@/domain/tags/tagLibrary";
+import { useCopy } from "@/i18n/I18nContext";
 import { cssVars } from "@/lib/cssVars";
 
 export interface TagPickerProps {
@@ -10,11 +11,19 @@ export interface TagPickerProps {
 }
 
 export function TagPicker({ tags, value, onChange, onCreate }: TagPickerProps) {
+  const copy = useCopy();
+
   if (tags.length === 0) {
+    const suggestions = [
+      copy.tagPicker.inspiration,
+      copy.tagPicker.readLater,
+      copy.tagPicker.reference,
+    ].map((name, index) => ({ name, color: TAG_SUGGESTION_COLORS[index] ?? "" }));
+
     return (
       <div className="tag-sugg">
-        <span className="lbl">No tags yet. Start with</span>
-        {TAG_SUGGESTIONS.map((suggestion) => (
+        <span className="lbl">{copy.tagPicker.noTagsYet}</span>
+        {suggestions.map((suggestion) => (
           <button
             key={suggestion.name}
             type="button"

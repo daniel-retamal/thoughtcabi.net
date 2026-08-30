@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { en } from "@/i18n/en";
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { makeLibrary, makeNote, makeShelf, makeTag } from "@/test/factories";
@@ -6,7 +7,7 @@ import { TAG_PALETTE } from "@/domain/tags/palette";
 import { serializeCabinet } from "@/storage/cabinetFile";
 import { TransferModal } from "./TransferModal";
 
-const DROP_LABEL = "Drop a cabinet file, or click to choose";
+const DROP_LABEL = en.transfer.drop;
 
 function cabinetFile(name = "cabinet.json"): File {
   const text = serializeCabinet(
@@ -125,7 +126,7 @@ describe("TransferModal", () => {
     setup();
 
     await choose(cabinetFile("backup.json"));
-    await userEvent.click(await screen.findByLabelText("Choose another file"));
+    await userEvent.click(await screen.findByLabelText(en.transfer.chooseAnother));
 
     expect(screen.getByLabelText(DROP_LABEL)).toBeInTheDocument();
     expect(screen.queryByText("backup.json")).not.toBeInTheDocument();

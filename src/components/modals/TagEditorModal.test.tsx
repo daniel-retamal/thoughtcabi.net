@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
+import { en } from "@/i18n/en";
+import { format } from "@/i18n/format";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { makeTag } from "@/test/factories";
@@ -61,9 +63,7 @@ describe("TagEditorModal", () => {
   it("explains and blocks a full palette", () => {
     const tags = TAG_PALETTE.map((color, index) => makeTag(`t${index}`, color));
     renderEditor({ tags });
-    expect(
-      screen.getByText(`All ${MAX_TAGS} colors are in use — delete a tag to add another.`),
-    ).toBeInTheDocument();
+    expect(screen.getByText(format(en.tagEditor.paletteFull, { n: MAX_TAGS }))).toBeInTheDocument();
     expect(screen.getByPlaceholderText("e.g. To read")).toBeDisabled();
     expect(screen.getByRole("button", { name: /create/i })).toBeDisabled();
   });

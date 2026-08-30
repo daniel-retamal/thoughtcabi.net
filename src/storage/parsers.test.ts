@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { parseCabinet, parseLibrary, parsePreferences, parseTags, parseViewMode } from "./parsers";
+import { EN_NAMES } from "@/test/factories";
+import * as parsers from "./parsers";
+import { parsePreferences, parseTags, parseViewMode } from "./parsers";
+
+const parseLibrary = (value: unknown) => parsers.parseLibrary(value, EN_NAMES);
+const parseCabinet = (value: unknown) => parsers.parseCabinet(value, EN_NAMES);
 
 describe("parseLibrary", () => {
   it("accepts a well-formed library", () => {
@@ -185,6 +190,7 @@ describe("parsePreferences", () => {
       cards: "color",
       sidebar: "rail",
       sidebarWidth: 268,
+      language: "en",
       onboarded: true,
     });
   });
@@ -196,6 +202,7 @@ describe("parsePreferences", () => {
       cards: "color",
       sidebar: "wide",
       sidebarWidth: 268,
+      language: "en",
       onboarded: false,
     });
     expect(parsePreferences({ palette: "bento" })?.color).toBe("ultramarine");
@@ -210,6 +217,7 @@ describe("parsePreferences", () => {
       cards: "cream",
       sidebar: "wide",
       sidebarWidth: 268,
+      language: "en",
       onboarded: false,
     });
     expect(
@@ -220,6 +228,7 @@ describe("parsePreferences", () => {
       cards: "cream",
       sidebar: "wide",
       sidebarWidth: 268,
+      language: "en",
       onboarded: false,
     });
   });
@@ -235,5 +244,15 @@ describe("parsePreferences", () => {
     expect(parsePreferences(null)).toBeNull();
     expect(parsePreferences("grid")).toBeNull();
     expect(parsePreferences([])).toBeNull();
+  });
+
+  it("keeps English when the stored language is missing or unusable", () => {
+    expect(parsePreferences({})?.language).toBe("en");
+    expect(parsePreferences({ language: "fr" })?.language).toBe("en");
+    expect(parsePreferences({ language: 7 })?.language).toBe("en");
+  });
+
+  it("takes a language it recognises", () => {
+    expect(parsePreferences({ language: "es" })?.language).toBe("es");
   });
 });

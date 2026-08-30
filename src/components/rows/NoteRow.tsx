@@ -2,6 +2,8 @@ import type { Note, Tag } from "@/domain/model";
 import { findTag } from "@/domain/tags/tagLibrary";
 import { itemDragProps } from "@/dnd/dragProps";
 import { relativeTime } from "@/lib/relativeTime";
+import { chipLabel } from "@/domain/links/category";
+import { useCopy } from "@/i18n/I18nContext";
 import { Monogram } from "@/components/primitives/Monogram";
 import { SiteMark } from "@/components/primitives/SiteMark";
 import { TagBadge } from "@/components/primitives/TagBadge";
@@ -27,6 +29,7 @@ export function NoteRow({
   onEdit,
   onDelete,
 }: NoteRowProps) {
+  const copy = useCopy();
   const tag = findTag(tags, note.tag);
   const hasLink = Boolean(note.domain);
   const named = note.title.trim().length > 0 && !pending;
@@ -55,7 +58,9 @@ export function NoteRow({
       </div>
 
       <div className="row-main">
-        <div className={named ? "row-title" : "row-title muted"}>{note.title || "Untitled"}</div>
+        <div className={named ? "row-title" : "row-title muted"}>
+          {note.title || copy.fallback.untitled}
+        </div>
         {note.description ? <div className="row-desc">{note.description}</div> : null}
       </div>
 
@@ -66,14 +71,14 @@ export function NoteRow({
       ) : null}
 
       <div className="row-kind">
-        {hasLink ? <span className="cat-chip">{note.catLabel}</span> : null}
+        {hasLink ? <span className="cat-chip">{chipLabel(copy.categories, note)}</span> : null}
       </div>
 
       <div className="row-dom">
-        {hasLink ? note.domain : <span className="none">— no link —</span>}
+        {hasLink ? note.domain : <span className="none">{copy.card.noLink}</span>}
       </div>
 
-      <div className="row-time">{relativeTime(note.addedAt)}</div>
+      <div className="row-time">{relativeTime(note.addedAt, copy.time)}</div>
 
       {pending ? null : (
         <NoteActions note={note} className="row-actions" onEdit={onEdit} onDelete={onDelete} />

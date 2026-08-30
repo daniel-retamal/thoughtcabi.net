@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useCopy } from "@/i18n/I18nContext";
 
 const LATE_MS = 4000;
 
 export function PendingFrame() {
+  const copy = useCopy();
   const [late, setLate] = useState(false);
 
   useEffect(() => {
@@ -12,7 +14,7 @@ export function PendingFrame() {
 
   return (
     <div className="cover holding">
-      {late ? <span className="late">still fetching</span> : null}
+      {late ? <span className="late">{copy.card.stillFetching}</span> : null}
     </div>
   );
 }

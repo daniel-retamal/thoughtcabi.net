@@ -33,6 +33,11 @@
   gap: 7px;
   flex: 0 1 auto;
   min-width: 0;
+  position: relative;
+}
+
+.bar-right .pop-wrap {
+  position: static;
 }
 
 .search-box {

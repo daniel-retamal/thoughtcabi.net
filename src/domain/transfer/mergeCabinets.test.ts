@@ -48,11 +48,7 @@ describe("mergeCabinets", () => {
       tags: [],
     });
 
-    expect(merged.library.map((shelf) => shelf.name)).toEqual([
-      "Reading",
-      "Research",
-      "Recipes",
-    ]);
+    expect(merged.library.map((shelf) => shelf.name)).toEqual(["Reading", "Research", "Recipes"]);
   });
 
   it("folds two arriving shelves that share a name into one", () => {

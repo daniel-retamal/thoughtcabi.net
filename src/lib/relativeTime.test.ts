@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { en } from "@/i18n/en";
+import { es } from "@/i18n/es";
 import { relativeTime } from "./relativeTime";
 
 const NOW = 1_700_000_000_000;
@@ -8,7 +10,11 @@ const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
 function ago(offset: number): string {
-  return relativeTime(NOW - offset, NOW);
+  return relativeTime(NOW - offset, en.time, NOW);
+}
+
+function hace(offset: number): string {
+  return relativeTime(NOW - offset, es.time, NOW);
 }
 
 describe("relativeTime", () => {
@@ -32,5 +38,16 @@ describe("relativeTime", () => {
     expect(ago(7 * DAY)).toBe("1w ago");
     expect(ago(30 * DAY)).toBe("4w ago");
     expect(ago(60 * DAY)).toBe("2mo ago");
+  });
+
+  it("puts the marker first in Spanish, and inflects the month", () => {
+    expect(hace(0)).toBe("recién");
+    expect(hace(5 * MINUTE)).toBe("hace 5 min");
+    expect(hace(HOUR)).toBe("hace 1 h");
+    expect(hace(DAY)).toBe("ayer");
+    expect(hace(3 * DAY)).toBe("hace 3 d");
+    expect(hace(7 * DAY)).toBe("hace 1 sem");
+    expect(hace(40 * DAY)).toBe("hace 1 mes");
+    expect(hace(60 * DAY)).toBe("hace 2 meses");
   });
 });

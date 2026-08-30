@@ -1,5 +1,6 @@
 import { withoutPendingNotes } from "@/domain/library/mutations";
 import {
+  DEFAULT_LOCALE,
   DEFAULT_SIDEBAR_MODE,
   DEFAULT_SIDEBAR_WIDTH,
   DEFAULT_VIEW_MODE,
@@ -9,6 +10,7 @@ import {
 import { createStarterCabinet } from "@/domain/seed/starterCabinet";
 import { DEFAULT_APPEARANCE } from "@/theme/colors";
 import { STORAGE_KEYS } from "./keys";
+import type { CabinetNames } from "./names";
 import { parseJson, readRaw, writeJson, writeRaw, type WriteOutcome } from "./localStore";
 import { migrateCabinet, migratePreferences } from "./migrations";
 import { parseCabinet, parsePreferences } from "./parsers";
@@ -17,19 +19,20 @@ export const DEFAULT_PREFERENCES: Preferences = {
   view: DEFAULT_VIEW_MODE,
   sidebar: DEFAULT_SIDEBAR_MODE,
   sidebarWidth: DEFAULT_SIDEBAR_WIDTH,
+  language: DEFAULT_LOCALE,
   onboarded: false,
   ...DEFAULT_APPEARANCE,
 };
 
-export function loadCabinet(): Cabinet {
+export function loadCabinet(names: CabinetNames): Cabinet {
   const raw = readRaw(STORAGE_KEYS.cabinet);
-  if (raw === null) return migrateCabinet() ?? createStarterCabinet();
+  if (raw === null) return migrateCabinet(names) ?? createStarterCabinet(names.seedShelf);
 
-  const cabinet = parseJson(raw, parseCabinet);
+  const cabinet = parseJson(raw, (value) => parseCabinet(value, names));
   if (cabinet) return cabinet;
 
   writeRaw(STORAGE_KEYS.quarantine, raw);
-  return createStarterCabinet();
+  return createStarterCabinet(names.seedShelf);
 }
 
 export function saveCabinet(cabinet: Cabinet): WriteOutcome {

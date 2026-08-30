@@ -1,5 +1,9 @@
 import type { Folder, Library, LibraryNode, Note, PendingNote, Shelf, Tag } from "@/domain/model";
 import type { IconName } from "@/icons/names";
+import { en } from "@/i18n/en";
+import { cabinetNames } from "@/storage/names";
+
+export const EN_NAMES = cabinetNames(en);
 
 let counter = 0;
 

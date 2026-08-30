@@ -58,6 +58,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
+import type { Copy as AppCopy } from "@/i18n/copy";
 import type { IconName } from "./names";
 
 export const ICON_COMPONENTS: Readonly<Record<IconName, LucideIcon>> = {
@@ -120,7 +121,9 @@ export const ICON_COMPONENTS: Readonly<Record<IconName, LucideIcon>> = {
   x: X,
 };
 
-export const SHELF_ICON_CHOICES: readonly IconName[] = [
+export type ShelfIconName = Extract<IconName, keyof AppCopy["icons"]>;
+
+export const SHELF_ICON_CHOICES: readonly ShelfIconName[] = [
   "book-open",
   "play",
   "flask-conical",

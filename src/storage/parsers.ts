@@ -1,11 +1,14 @@
 import {
+  DEFAULT_LOCALE,
   DEFAULT_SIDEBAR_MODE,
   DEFAULT_SIDEBAR_WIDTH,
   DEFAULT_VIEW_MODE,
+  LOCALES,
   type Cabinet,
   type Folder,
   type Library,
   type LibraryNode,
+  type Locale,
   type Note,
   type NoteEntry,
   type Preferences,
@@ -19,6 +22,7 @@ import { toSiteCategory } from "@/domain/links/category";
 import { asNumber, asRecord, asText, type JsonRecord } from "@/lib/json";
 import { toIconName } from "@/icons/names";
 import { toStoredWidth } from "@/lib/sidebarWidth";
+import type { CabinetNames } from "./names";
 import { DEFAULT_APPEARANCE, toCardSurface, toColorId } from "@/theme/colors";
 
 const str = asText;
@@ -69,43 +73,45 @@ function parseNote(value: JsonRecord): NoteEntry | null {
   return withOptional(note, value);
 }
 
-function parseFolder(value: JsonRecord): Folder | null {
+function parseFolder(value: JsonRecord, names: CabinetNames): Folder | null {
   const id = str(value.id);
   if (!id) return null;
   return {
     id,
     type: "folder",
-    name: str(value.name, "Untitled folder"),
-    children: parseNodes(value.children),
+    name: str(value.name, names.untitledFolder),
+    children: parseNodes(value.children, names),
   };
 }
 
-function parseNodes(value: unknown): LibraryNode[] {
+function parseNodes(value: unknown, names: CabinetNames): LibraryNode[] {
   if (!Array.isArray(value)) return [];
   const nodes: LibraryNode[] = [];
   for (const entry of value) {
     if (!isDict(entry)) continue;
-    const node = entry.type === "folder" ? parseFolder(entry) : parseNote(entry);
+    const node = entry.type === "folder" ? parseFolder(entry, names) : parseNote(entry);
     if (node) nodes.push(node);
   }
   return nodes;
 }
 
-function parseShelf(value: unknown): Shelf | null {
+function parseShelf(value: unknown, names: CabinetNames): Shelf | null {
   if (!isDict(value)) return null;
   const id = str(value.id);
   if (!id) return null;
   return {
     id,
-    name: str(value.name, "Untitled shelf"),
+    name: str(value.name, names.untitledShelf),
     icon: toIconName(value.icon),
-    children: parseNodes(value.children),
+    children: parseNodes(value.children, names),
   };
 }
 
-export function parseLibrary(value: unknown): Library | null {
+export function parseLibrary(value: unknown, names: CabinetNames): Library | null {
   if (!Array.isArray(value)) return null;
-  const shelves = value.map(parseShelf).filter((shelf): shelf is Shelf => shelf !== null);
+  const shelves = value
+    .map((entry) => parseShelf(entry, names))
+    .filter((shelf): shelf is Shelf => shelf !== null);
   return shelves.length > 0 ? shelves : null;
 }
 
@@ -125,14 +131,18 @@ export function parseViewMode(value: unknown): ViewMode | null {
   return value === "grid" || value === "list" ? value : null;
 }
 
-export function parseCabinet(value: unknown): Cabinet | null {
+export function parseCabinet(value: unknown, names: CabinetNames): Cabinet | null {
   const record = asRecord(value);
   if (!record) return null;
 
-  const library = parseLibrary(record.library);
+  const library = parseLibrary(record.library, names);
   if (!library) return null;
 
   return { library, tags: parseTags(record.tags) ?? [] };
+}
+
+export function toLocale(value: unknown): Locale | null {
+  return LOCALES.find((locale) => locale === value) ?? null;
 }
 
 export function toSidebarMode(value: unknown): SidebarMode | null {
@@ -154,6 +164,7 @@ export function parsePreferences(value: unknown): Preferences | null {
     sidebarWidth: toSidebarWidth(record.sidebarWidth) ?? DEFAULT_SIDEBAR_WIDTH,
     color: toColorId(record.color ?? record.palette) ?? DEFAULT_APPEARANCE.color,
     cards: toCardSurface(record.cards) ?? DEFAULT_APPEARANCE.cards,
+    language: toLocale(record.language) ?? DEFAULT_LOCALE,
     onboarded: record.onboarded === true,
   };
 }

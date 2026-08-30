@@ -50,6 +50,7 @@ export type CabinetAction =
   | { type: "node/reorder"; id: NodeId; location: LibraryLocation; beforeId: NodeId | null }
   | { type: "shelf/add"; shelf: Shelf }
   | { type: "shelf/update"; id: NodeId; name: string; icon: IconName }
+  | { type: "shelf/relabelSeed"; from: string; to: string }
   | { type: "shelf/remove"; id: NodeId }
   | { type: "shelf/restore"; index: number; shelf: Shelf }
   | { type: "shelf/reorder"; id: NodeId; beforeId: NodeId | null }
@@ -151,6 +152,12 @@ export function cabinetReducer(state: Cabinet, action: CabinetAction): Cabinet {
         state,
         updateShelf(library, action.id, { name: action.name, icon: action.icon }),
       );
+
+    case "shelf/relabelSeed": {
+      const seed = library[0];
+      if (!seed || seed.name !== action.from) return state;
+      return withLibrary(state, [{ ...seed, name: action.to }, ...library.slice(1)]);
+    }
 
     case "shelf/remove":
       return withLibrary(state, removeShelf(library, action.id));

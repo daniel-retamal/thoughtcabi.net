@@ -1,16 +1,19 @@
-import type { SiteCategory } from "@/domain/model";
+import type { Note, SiteCategory } from "@/domain/model";
+import type { CategoryLabels } from "@/i18n/copy";
 
-export const CATEGORY_LABELS: Readonly<Record<SiteCategory, string>> = {
-  video: "Video",
-  music: "Music",
-  article: "Article",
-  forum: "Discussion",
-  dev: "Code",
-  research: "Paper",
-  design: "Design",
-  link: "Link",
-  note: "",
-};
+export const CATEGORY_IDS: ReadonlySet<string> = new Set<SiteCategory>([
+  "video",
+  "music",
+  "article",
+  "forum",
+  "dev",
+  "research",
+  "design",
+  "link",
+  "note",
+]);
+
+export const UNKNOWN_CATEGORY = "—";
 
 const HOST_CATEGORIES: ReadonlyArray<readonly [RegExp, SiteCategory]> = [
   [/^(www\.)?(youtube\.com|youtu\.be|vimeo\.com|twitch\.tv)$/, "video"],
@@ -33,7 +36,7 @@ const RENAMED_CATEGORIES: Readonly<Record<string, SiteCategory>> = { hn: "forum"
 export function toSiteCategory(value: unknown): SiteCategory | null {
   if (typeof value !== "string") return null;
   const id = RENAMED_CATEGORIES[value] ?? value;
-  return id in CATEGORY_LABELS ? (id as SiteCategory) : null;
+  return CATEGORY_IDS.has(id) ? (id as SiteCategory) : null;
 }
 
 export function categoryFromHost(hostname: string): SiteCategory | null {
@@ -56,6 +59,10 @@ export function categoryFor(hostname: string, ogType = ""): SiteCategory {
   return categoryFromHost(hostname) ?? categoryFromOgType(ogType) ?? "link";
 }
 
-export function labelFor(category: SiteCategory): string {
-  return CATEGORY_LABELS[category];
+export function labelFor(labels: CategoryLabels, category: SiteCategory): string {
+  return labels[category];
+}
+
+export function chipLabel(labels: CategoryLabels, note: Pick<Note, "cat" | "catLabel">): string {
+  return note.catLabel === UNKNOWN_CATEGORY ? UNKNOWN_CATEGORY : labels[note.cat];
 }

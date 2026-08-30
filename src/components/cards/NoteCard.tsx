@@ -5,6 +5,8 @@ import { itemDragProps } from "@/dnd/dragProps";
 import { useFittedLines } from "@/hooks/useFittedLines";
 import { cssVars } from "@/lib/cssVars";
 import { relativeTime } from "@/lib/relativeTime";
+import { chipLabel } from "@/domain/links/category";
+import { useCopy } from "@/i18n/I18nContext";
 import { SiteMark } from "@/components/primitives/SiteMark";
 import { TagBadge } from "@/components/primitives/TagBadge";
 import type { NoteHandlers } from "@/components/handlers";
@@ -32,6 +34,7 @@ export function NoteCard({
   onEdit,
   onDelete,
 }: NoteCardProps) {
+  const copy = useCopy();
   const tag = findTag(tags, note.tag);
   const hasLink = Boolean(note.domain);
   const { containerRef, titleRef, descriptionRef, titleLines, descriptionLines } =
@@ -76,13 +79,13 @@ export function NoteCard({
         })}
       >
         <div className="card-cat">
-          {hasLink ? <span className="cat-chip">{note.catLabel}</span> : null}
+          {hasLink ? <span className="cat-chip">{chipLabel(copy.categories, note)}</span> : null}
           {tag ? <TagBadge tag={tag} className="card-tag" /> : null}
-          <span className="card-time">{relativeTime(note.addedAt)}</span>
+          <span className="card-time">{relativeTime(note.addedAt, copy.time)}</span>
         </div>
 
         <div className={pending ? "card-title provisional" : "card-title"} ref={titleRef}>
-          {note.title || "Untitled"}
+          {note.title || copy.fallback.untitled}
         </div>
         {note.description ? (
           <div className="card-desc" ref={descriptionRef}>

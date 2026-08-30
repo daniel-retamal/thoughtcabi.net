@@ -1,16 +1,18 @@
 import type { Toast, ToastActionKind } from "@/hooks/useToasts";
+import { useCopy } from "@/i18n/I18nContext";
 import { Icon } from "@/components/primitives/Icon";
-
-const ACTION_LABEL: Record<ToastActionKind, string> = {
-  view: "View",
-  undo: "Undo",
-};
 
 export interface ToastStackProps {
   toasts: readonly Toast[];
 }
 
 export function ToastStack({ toasts }: ToastStackProps) {
+  const copy = useCopy();
+  const actionLabel: Record<ToastActionKind, string> = {
+    view: copy.toasts.view,
+    undo: copy.toasts.undo,
+  };
+
   return (
     <div className="toast-wrap">
       {toasts.map((toast) => (
@@ -19,10 +21,10 @@ export function ToastStack({ toasts }: ToastStackProps) {
             <Icon name="check" />
           </span>
           <span>
-            {toast.verb} <b>{toast.subject}</b>
+            {copy.toasts[toast.verb]} <b>{toast.subject}</b>
           </span>
           <button type="button" className="tlink" onClick={toast.action.run}>
-            {ACTION_LABEL[toast.action.kind]}
+            {actionLabel[toast.action.kind]}
           </button>
         </div>
       ))}

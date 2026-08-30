@@ -5,6 +5,7 @@ import { draftFromNote, type NoteDraft } from "@/domain/notes/buildNote";
 import type { Cabinet, Library, LibraryLocation, Note, Shelf, Tag } from "@/domain/model";
 import type { LinkReader } from "@/links/readLink";
 import type { Dialog } from "@/state/dialogs";
+import { useCopy } from "@/i18n/I18nContext";
 import { ShelfEditorModal } from "./modals/ShelfEditorModal";
 import { ComposeModal } from "./modals/ComposeModal";
 import { NamePromptModal } from "./modals/NamePromptModal";
@@ -57,6 +58,7 @@ export function DialogHost({
   onExportCabinet,
   onImportCabinet,
 }: DialogHostProps) {
+  const copy = useCopy();
   if (!dialog) return null;
 
   switch (dialog.kind) {
@@ -135,9 +137,9 @@ export function DialogHost({
     case "new-folder":
       return (
         <NamePromptModal
-          kind="New folder"
-          heading="Name your folder"
-          placeholder="e.g. Read later"
+          kind={copy.folderPrompt.newKind}
+          heading={copy.folderPrompt.newHeading}
+          placeholder={copy.folderPrompt.newPlaceholder}
           icon={NEW_NOTE_ICON}
           onConfirm={onCreateFolder}
           onCancel={onClose}
@@ -158,12 +160,12 @@ export function DialogHost({
     case "rename-folder":
       return (
         <NamePromptModal
-          kind="Rename"
-          heading="Rename folder"
-          placeholder="Folder name"
+          kind={copy.folderPrompt.renameKind}
+          heading={copy.folderPrompt.renameHeading}
+          placeholder={copy.folderPrompt.renamePlaceholder}
           icon="pencil-line"
           initialValue={dialog.folder.name}
-          confirmLabel="Save"
+          confirmLabel={copy.actions.save}
           onConfirm={(name) => onRenameFolder(dialog.folder.id, name)}
           onCancel={onClose}
         />

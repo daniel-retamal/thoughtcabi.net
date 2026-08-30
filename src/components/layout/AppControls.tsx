@@ -1,15 +1,25 @@
 import { useRef, useState } from "react";
-import type { Appearance } from "@/domain/model";
+import type { Appearance, Locale } from "@/domain/model";
+import { useCopy } from "@/i18n/I18nContext";
 import { Icon } from "@/components/primitives/Icon";
 import { DisplayPopover } from "@/components/display/DisplayPopover";
 
 export interface AppControlsProps {
   appearance: Appearance;
+  language: Locale;
   onAppearanceChange: (changes: Partial<Appearance>) => void;
+  onLanguageChange: (locale: Locale) => void;
   onTransfer: () => void;
 }
 
-export function AppControls({ appearance, onAppearanceChange, onTransfer }: AppControlsProps) {
+export function AppControls({
+  appearance,
+  language,
+  onAppearanceChange,
+  onLanguageChange,
+  onTransfer,
+}: AppControlsProps) {
+  const copy = useCopy();
   const [displayOpen, setDisplayOpen] = useState(false);
   const displayButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -18,8 +28,8 @@ export function AppControls({ appearance, onAppearanceChange, onTransfer }: AppC
       <button
         type="button"
         className="iconbtn"
-        title="Export & import"
-        aria-label="Export and import"
+        title={copy.toolbar.transfer}
+        aria-label={copy.toolbar.transfer}
         onClick={onTransfer}
       >
         <Icon name="archive" />
@@ -30,8 +40,8 @@ export function AppControls({ appearance, onAppearanceChange, onTransfer }: AppC
           ref={displayButtonRef}
           type="button"
           className={displayOpen ? "iconbtn active" : "iconbtn"}
-          title="Display"
-          aria-label="Display settings"
+          title={copy.toolbar.display}
+          aria-label={copy.toolbar.display}
           onClick={() => setDisplayOpen((open) => !open)}
         >
           <Icon name="sliders-horizontal" />
@@ -39,8 +49,10 @@ export function AppControls({ appearance, onAppearanceChange, onTransfer }: AppC
         {displayOpen ? (
           <DisplayPopover
             appearance={appearance}
+            language={language}
             anchorRef={displayButtonRef}
             onChange={onAppearanceChange}
+            onLanguageChange={onLanguageChange}
             onClose={() => setDisplayOpen(false)}
           />
         ) : null}

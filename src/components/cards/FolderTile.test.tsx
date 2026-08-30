@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { en } from "@/i18n/en";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { makeFolder, makeNote, makePendingNote } from "@/test/factories";
@@ -113,7 +114,7 @@ describe("FolderTile", () => {
       makeFolder("Typography", [makeFolder("Inside", [makeNote(), makeNote()]), makeNote()]),
     );
 
-    await userEvent.click(screen.getByLabelText("Delete folder"));
+    await userEvent.click(screen.getByLabelText(en.nodeActions.deleteFolder));
     expect(handlers.onDelete).not.toHaveBeenCalled();
     expect(screen.getByText("Delete 3 saves?")).toBeInTheDocument();
 
@@ -124,7 +125,7 @@ describe("FolderTile", () => {
   it("does not open the folder it is asking about", async () => {
     const { handlers } = renderTile(makeFolder("Typography", [makeNote()]));
 
-    await userEvent.click(screen.getByLabelText("Delete folder"));
+    await userEvent.click(screen.getByLabelText(en.nodeActions.deleteFolder));
     await userEvent.click(screen.getByText("Delete 1 save?"));
 
     expect(handlers.onOpen).not.toHaveBeenCalled();
@@ -133,11 +134,11 @@ describe("FolderTile", () => {
   it("keeps the folder when asked to, and on a click anywhere else", async () => {
     const { handlers } = renderTile(makeFolder("Typography", [makeNote()]));
 
-    await userEvent.click(screen.getByLabelText("Delete folder"));
+    await userEvent.click(screen.getByLabelText(en.nodeActions.deleteFolder));
     await userEvent.click(screen.getByRole("button", { name: "Keep" }));
     expect(screen.queryByText("Delete 1 save?")).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByLabelText("Delete folder"));
+    await userEvent.click(screen.getByLabelText(en.nodeActions.deleteFolder));
     await userEvent.click(document.body);
     expect(screen.queryByText("Delete 1 save?")).not.toBeInTheDocument();
     expect(handlers.onDelete).not.toHaveBeenCalled();
@@ -146,7 +147,7 @@ describe("FolderTile", () => {
   it("deletes an empty folder on the first click, since nothing is lost", async () => {
     const { handlers } = renderTile(makeFolder("Scratch", []));
 
-    await userEvent.click(screen.getByLabelText("Delete folder"));
+    await userEvent.click(screen.getByLabelText(en.nodeActions.deleteFolder));
     expect(handlers.onDelete).toHaveBeenCalledTimes(1);
   });
 });

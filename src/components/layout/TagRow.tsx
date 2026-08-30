@@ -1,4 +1,5 @@
 import type { Tag } from "@/domain/model";
+import { useCopy } from "@/i18n/I18nContext";
 import { tagDragProps } from "@/dnd/dragProps";
 import { cssVars } from "@/lib/cssVars";
 import { ActionButton } from "@/components/primitives/ActionButton";
@@ -12,6 +13,8 @@ export interface TagRowProps {
 }
 
 export function TagRow({ tag, active, named, onSelect, onEdit }: TagRowProps) {
+  const copy = useCopy();
+
   return (
     <div
       className={active ? "lib-row active" : "lib-row"}
@@ -24,7 +27,7 @@ export function TagRow({ tag, active, named, onSelect, onEdit }: TagRowProps) {
       <ActionButton
         className="lib-edit"
         icon="pencil-line"
-        label="Edit tag"
+        label={copy.sidebar.editTag}
         onClick={() => onEdit(tag)}
       />
     </div>

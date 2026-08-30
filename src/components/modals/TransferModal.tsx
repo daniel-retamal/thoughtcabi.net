@@ -3,11 +3,10 @@ import type { Cabinet, Library, Tag } from "@/domain/model";
 import { summarizeCabinet } from "@/domain/transfer/cabinetSummary";
 import { readTextFile } from "@/lib/files";
 import { relativeTime } from "@/lib/relativeTime";
-import {
-  readCabinetFile,
-  type CabinetFileProblem,
-  type CabinetFileRead,
-} from "@/storage/cabinetFile";
+import { useCopy } from "@/i18n/I18nContext";
+import { format } from "@/i18n/format";
+import { readCabinetFile, type CabinetFileRead } from "@/storage/cabinetFile";
+import { cabinetNames } from "@/storage/names";
 import { Button } from "@/components/primitives/Button";
 import { Icon } from "@/components/primitives/Icon";
 import { CabinetCounts } from "./CabinetCounts";
@@ -15,12 +14,6 @@ import { FormActions, FormModal } from "./FormModal";
 import { Field } from "./fields/Field";
 
 export type ImportMode = "merge" | "replace";
-
-const PROBLEMS: Readonly<Record<CabinetFileProblem, string>> = {
-  unreadable: "This file is not JSON, so there is nothing to read.",
-  newer: "This file comes from a newer version of thoughtcabinet.",
-  empty: "This file has no shelves in it.",
-};
 
 interface StagedFile {
   name: string;
@@ -36,6 +29,7 @@ export interface TransferModalProps {
 }
 
 export function TransferModal({ library, tags, onExport, onImport, onCancel }: TransferModalProps) {
+  const copy = useCopy();
   const [staged, setStaged] = useState<StagedFile | null>(null);
 
   const read = staged?.read ?? null;
@@ -46,38 +40,42 @@ export function TransferModal({ library, tags, onExport, onImport, onCancel }: T
   const take = (file: File | null | undefined): void => {
     if (!file) return;
     readTextFile(file).then(
-      (text) => setStaged({ name: file.name, read: readCabinetFile(text) }),
+      (text) => setStaged({ name: file.name, read: readCabinetFile(text, cabinetNames(copy)) }),
       () => setStaged({ name: file.name, read: { ok: false, problem: "unreadable" } }),
     );
   };
 
   return (
-    <FormModal size="md" heading="Export & import" onClose={onCancel}>
-      <Field label="Export">
+    <FormModal size="md" heading={copy.transfer.heading} onClose={onCancel}>
+      <Field label={copy.transfer.exportLabel}>
         <div className="cab-block">
           <CabinetCounts summary={summarizeCabinet(library, tags)} />
           <div className="modal-actions cab-actions">
             <Button variant="primary" icon="download" onClick={onExport}>
-              Download
+              {copy.actions.download}
             </Button>
           </div>
         </div>
       </Field>
 
-      <Field label="Import">
+      <Field label={copy.transfer.importLabel}>
         {staged ? (
           <div className="cab-block">
             <div className="cab-file">
               <Icon name="file-text" />
               <span className="cab-file-name">{staged.name}</span>
               {exportedAt ? (
-                <span className="cab-file-when">exported {relativeTime(exportedAt)}</span>
+                <span className="cab-file-when">
+                  {format(copy.transfer.exported, {
+                    when: relativeTime(exportedAt, copy.time),
+                  })}
+                </span>
               ) : null}
               <button
                 type="button"
                 className="cab-file-clear"
-                title="Choose another file"
-                aria-label="Choose another file"
+                title={copy.transfer.chooseAnother}
+                aria-label={copy.transfer.chooseAnother}
                 onClick={() => setStaged(null)}
               >
                 <Icon name="x" />
@@ -87,20 +85,17 @@ export function TransferModal({ library, tags, onExport, onImport, onCancel }: T
             {incoming ? (
               <>
                 <CabinetCounts summary={summarizeCabinet(incoming.library, incoming.tags)} />
-                <p className="cab-hint">
-                  Merging keeps what you have, a shelf whose name you already use pours its cards
-                  into yours. Replacing discards this cabinet for that one.
-                </p>
+                <p className="cab-hint">{copy.transfer.hint}</p>
                 <div className="modal-actions cab-actions">
                   <Button
                     variant="primary"
                     icon="check"
                     onClick={() => onImport(incoming, "merge")}
                   >
-                    Merge
+                    {copy.actions.merge}
                   </Button>
                   <Button variant="danger" onClick={() => onImport(incoming, "replace")}>
-                    Replace
+                    {copy.actions.replace}
                   </Button>
                 </div>
               </>
@@ -109,7 +104,7 @@ export function TransferModal({ library, tags, onExport, onImport, onCancel }: T
             {problem ? (
               <p className="cab-problem" role="alert">
                 <Icon name="triangle-alert" />
-                {PROBLEMS[problem]}
+                {copy.transfer[problem]}
               </p>
             ) : null}
           </div>
@@ -123,7 +118,7 @@ export function TransferModal({ library, tags, onExport, onImport, onCancel }: T
             }}
           >
             <Icon name="upload" />
-            <span>Drop a cabinet file, or click to choose</span>
+            <span>{copy.transfer.drop}</span>
             <input
               type="file"
               accept="application/json,.json"
@@ -139,7 +134,7 @@ export function TransferModal({ library, tags, onExport, onImport, onCancel }: T
 
       <FormActions>
         <Button variant="ghost" onClick={onCancel}>
-          Close
+          {copy.actions.close}
         </Button>
       </FormActions>
     </FormModal>

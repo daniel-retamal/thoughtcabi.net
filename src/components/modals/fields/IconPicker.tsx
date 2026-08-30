@@ -1,5 +1,6 @@
 import type { IconName } from "@/icons/names";
 import { SHELF_ICON_CHOICES } from "@/icons/registry";
+import { useCopy } from "@/i18n/I18nContext";
 import { Icon } from "@/components/primitives/Icon";
 
 export interface IconPickerProps {
@@ -8,6 +9,8 @@ export interface IconPickerProps {
 }
 
 export function IconPicker({ value, onChange }: IconPickerProps) {
+  const copy = useCopy();
+
   return (
     <div className="icon-grid">
       {SHELF_ICON_CHOICES.map((icon) => (
@@ -15,8 +18,8 @@ export function IconPicker({ value, onChange }: IconPickerProps) {
           type="button"
           key={icon}
           className={value === icon ? "ig-btn on" : "ig-btn"}
-          title={icon}
-          aria-label={icon}
+          title={copy.icons[icon]}
+          aria-label={copy.icons[icon]}
           onClick={() => onChange(icon)}
         >
           <Icon name={icon} />

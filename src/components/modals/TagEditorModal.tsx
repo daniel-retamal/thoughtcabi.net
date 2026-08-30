@@ -3,6 +3,8 @@ import type { Tag } from "@/domain/model";
 import { MAX_TAGS, TAG_PALETTE } from "@/domain/tags/palette";
 import { isPaletteFull } from "@/domain/tags/tagLibrary";
 import { useAutoFocus } from "@/hooks/useAutoFocus";
+import { useCopy } from "@/i18n/I18nContext";
+import { format } from "@/i18n/format";
 import { Button } from "@/components/primitives/Button";
 import { FormActions, FormModal } from "./FormModal";
 import { Field } from "./fields/Field";
@@ -26,6 +28,7 @@ export function TagEditorModal({
   onDelete,
   onCancel,
 }: TagEditorModalProps) {
+  const copy = useCopy();
   const isEditing = mode === "edit";
   const nameRef = useAutoFocus<HTMLInputElement>();
   const [name, setName] = useState(initialName);
@@ -46,24 +49,22 @@ export function TagEditorModal({
   return (
     <FormModal
       size="xs"
-      kind={isEditing ? "Edit tag" : "New tag"}
-      heading={isEditing ? "Rename & recolor" : "Name your tag"}
+      kind={isEditing ? copy.tagEditor.kindEdit : copy.tagEditor.kindNew}
+      heading={isEditing ? copy.tagEditor.headingEdit : copy.tagEditor.headingNew}
       onClose={onCancel}
     >
       {paletteExhausted ? (
-        <p className="tagmgr-note">
-          All {MAX_TAGS} colors are in use — delete a tag to add another.
-        </p>
+        <p className="tagmgr-note">{format(copy.tagEditor.paletteFull, { n: MAX_TAGS })}</p>
       ) : null}
 
-      <Field label="Name">
+      <Field label={copy.tagEditor.name}>
         <div className="f-url-wrap">
           <span className="tag-dot-pre" style={{ background: color || "var(--text-faint)" }} />
           <input
             ref={nameRef}
             className="f-name"
             value={name}
-            placeholder="e.g. To read"
+            placeholder={copy.tagEditor.namePlaceholder}
             disabled={paletteExhausted}
             onChange={(event) => setName(event.target.value)}
             onKeyDown={onKeyDown}
@@ -71,7 +72,7 @@ export function TagEditorModal({
         </div>
       </Field>
 
-      <Field label="Color" hint="— one name per color">
+      <Field label={copy.tagEditor.color} hint={copy.tagEditor.colorHint}>
         <div className="palette-row">
           {TAG_PALETTE.map((swatch) => {
             const inUse = takenColors.includes(swatch);
@@ -83,7 +84,7 @@ export function TagEditorModal({
                 key={swatch}
                 className={classes}
                 style={{ background: swatch }}
-                title={inUse ? "in use" : "choose color"}
+                title={inUse ? copy.tagEditor.inUse : copy.tagEditor.chooseColor}
                 onClick={() => {
                   if (!inUse) setColor(swatch);
                 }}
@@ -95,14 +96,14 @@ export function TagEditorModal({
 
       <FormActions>
         <Button variant="primary" icon="check" disabled={!canSubmit} onClick={submit}>
-          {isEditing ? "Save" : "Create"}
+          {isEditing ? copy.actions.save : copy.actions.create}
         </Button>
         <Button variant="ghost" onClick={onCancel}>
-          Cancel
+          {copy.actions.cancel}
         </Button>
         {isEditing ? (
           <Button variant="danger" icon="trash-2" onClick={onDelete}>
-            Delete
+            {copy.actions.delete}
           </Button>
         ) : null}
       </FormActions>

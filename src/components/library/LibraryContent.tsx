@@ -8,6 +8,7 @@ import {
 } from "@/domain/model";
 import { provisionalNote } from "@/domain/notes/provisionalNote";
 import { zoneProps } from "@/dnd/dragProps";
+import { useCopy } from "@/i18n/I18nContext";
 import { FolderTile } from "@/components/cards/FolderTile";
 import { NoteCard } from "@/components/cards/NoteCard";
 import { FolderRow } from "@/components/rows/FolderRow";
@@ -36,6 +37,7 @@ export function LibraryContent({
   noteHandlers,
   folderHandlers,
 }: LibraryContentProps) {
+  const copy = useCopy();
   const gridZone = canReorder ? zoneProps("grid") : {};
   const listZone = canReorder ? zoneProps("list") : {};
 
@@ -63,7 +65,7 @@ export function LibraryContent({
     <>
       {folders.length > 0 ? (
         <>
-          <SectionHeading icon="folders" label="Folders" />
+          <SectionHeading icon="folders" label={copy.sections.folders} />
           <div className="folder-grid" {...gridZone}>
             {folders.map((folder) => (
               <FolderTile key={folder.id} folder={folder} {...folderHandlers} />
@@ -74,7 +76,7 @@ export function LibraryContent({
 
       {notes.length > 0 ? (
         <>
-          <SectionHeading icon="bookmark" label="Items" />
+          <SectionHeading icon="bookmark" label={copy.sections.items} />
           <div className="notes-grid" {...gridZone}>
             {notes.map((note) => (
               <NoteCard

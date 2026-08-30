@@ -5,6 +5,7 @@ import type { NoteDraft } from "@/domain/notes/buildNote";
 import type { LinkReader } from "@/links/readLink";
 import { useLinkPreview } from "@/state/useLinkPreview";
 import { useAutoFocus } from "@/hooks/useAutoFocus";
+import { useCopy } from "@/i18n/I18nContext";
 import { Button } from "@/components/primitives/Button";
 import { Icon } from "@/components/primitives/Icon";
 import { FormActions, FormModal } from "./FormModal";
@@ -38,6 +39,7 @@ export function ComposeModal({
   onCreateTag,
   onCancel,
 }: ComposeModalProps) {
+  const copy = useCopy();
   const isEditing = mode === "edit";
   const titleRef = useAutoFocus<HTMLInputElement>();
 
@@ -80,61 +82,64 @@ export function ComposeModal({
   return (
     <FormModal
       size="md"
-      kind={isEditing ? "Edit link" : "Save link"}
-      heading={isEditing ? "Edit this entry" : "Add to your cabinet"}
+      kind={isEditing ? copy.compose.kindEdit : copy.compose.kindNew}
+      heading={isEditing ? copy.compose.headingEdit : copy.compose.headingNew}
       onClose={onCancel}
       onImageDrop={setImage}
     >
-      <Field label="Title">
+      <Field label={copy.compose.title}>
         <input
           ref={titleRef}
           className="f-input f-title"
           value={title}
-          placeholder="What is this?"
+          placeholder={copy.compose.titlePlaceholder}
           onChange={(event) => setTitle(event.target.value)}
           onKeyDown={onSubmitShortcut}
         />
       </Field>
 
-      <Field label="Link" hint={reading ? "— reading…" : "— optional"}>
+      <Field
+        label={copy.compose.link}
+        hint={reading ? copy.compose.reading : copy.compose.optional}
+      >
         <div className="f-url-wrap">
           <Icon name={reading ? "loader-circle" : "link"} className={reading ? "spinning" : ""} />
           <input
             value={url}
-            placeholder="https://…"
+            placeholder={copy.compose.linkPlaceholder}
             onChange={(event) => setUrl(event.target.value)}
             onKeyDown={onSubmitShortcut}
           />
         </div>
       </Field>
 
-      <Field label="Thumbnail" hint="— optional · drop one anywhere in this dialog">
+      <Field label={copy.compose.thumbnail} hint={copy.compose.thumbnailHint}>
         <ThumbnailField value={image} onChange={setImage} />
       </Field>
 
-      <Field label="Tag" hint="— optional">
+      <Field label={copy.compose.tag} hint={copy.compose.optional}>
         <TagPicker tags={tags} value={tag} onChange={setTag} onCreate={onCreateTag} />
       </Field>
 
-      <Field label="Description" hint="— optional">
+      <Field label={copy.compose.description} hint={copy.compose.optional}>
         <textarea
           className="f-area"
           value={description}
-          placeholder="A line about why you're keeping this…"
+          placeholder={copy.compose.descriptionPlaceholder}
           onChange={(event) => setDescription(event.target.value)}
         />
       </Field>
 
-      <Field label="Destination">
+      <Field label={copy.compose.destination}>
         <DestinationPicker library={library} value={destination} onChange={setDestination} />
       </Field>
 
       <FormActions>
         <Button variant="primary" icon="check" disabled={!canSave} onClick={submit}>
-          {isEditing ? "Save changes" : "Save"}
+          {isEditing ? copy.actions.saveChanges : copy.actions.save}
         </Button>
         <Button variant="ghost" onClick={onCancel}>
-          Cancel
+          {copy.actions.cancel}
         </Button>
       </FormActions>
     </FormModal>

@@ -12,9 +12,7 @@ describe("summarizeCabinet", () => {
   });
 
   it("counts a folder nested inside another folder", () => {
-    const library = [
-      makeShelf("Deep", [makeFolder("Outer", [makeFolder("Inner", [makeNote()])])]),
-    ];
+    const library = [makeShelf("Deep", [makeFolder("Outer", [makeFolder("Inner", [makeNote()])])])];
 
     expect(summarizeCabinet(library, [])).toMatchObject({ folders: 2, notes: 1 });
   });

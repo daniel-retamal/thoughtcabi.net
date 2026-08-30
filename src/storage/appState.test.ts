@@ -1,13 +1,15 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { makeLibrary, makeTag } from "@/test/factories";
+import { EN_NAMES, makeLibrary, makeTag } from "@/test/factories";
 import { LEGACY_KEYS, STORAGE_KEYS } from "./keys";
 import {
   DEFAULT_PREFERENCES,
-  loadCabinet,
+  loadCabinet as loadCabinetWith,
   loadPreferences,
   saveCabinet,
   savePreferences,
 } from "./appState";
+
+const loadCabinet = () => loadCabinetWith(EN_NAMES);
 
 describe("the cabinet", () => {
   beforeEach(() => {
@@ -99,6 +101,7 @@ describe("migrating from the four original keys", () => {
       cards: "color",
       sidebar: "wide",
       sidebarWidth: 268,
+      language: "en",
       onboarded: false,
     });
     expect(localStorage.getItem(LEGACY_KEYS.view)).toBeNull();
@@ -131,6 +134,7 @@ describe("preferences", () => {
       cards: "color",
       sidebar: "rail",
       sidebarWidth: 312,
+      language: "es",
       onboarded: true,
     } as const;
     expect(savePreferences(preferences)).toBe("ok");
@@ -153,6 +157,7 @@ describe("preferences", () => {
       cards: "color",
       sidebar: DEFAULT_PREFERENCES.sidebar,
       sidebarWidth: DEFAULT_PREFERENCES.sidebarWidth,
+      language: "en",
       onboarded: false,
     });
   });

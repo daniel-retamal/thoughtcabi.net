@@ -2,6 +2,8 @@ import type { Note, Tag } from "@/domain/model";
 import { hasThumbnail } from "@/domain/notes/buildNote";
 import { findTag } from "@/domain/tags/tagLibrary";
 import { relativeTime } from "@/lib/relativeTime";
+import { chipLabel } from "@/domain/links/category";
+import { useCopy } from "@/i18n/I18nContext";
 import { useCopyLink } from "@/hooks/useCopyLink";
 import { Icon } from "@/components/primitives/Icon";
 import { Button } from "@/components/primitives/Button";
@@ -28,12 +30,18 @@ export function NoteDetailModal({
   onDelete,
   onClose,
 }: NoteDetailModalProps) {
+  const text = useCopy();
   const { copied, copy } = useCopyLink();
   const tag = findTag(tags, note.tag);
 
   return (
     <Modal onClose={onClose}>
-      <button type="button" className="modal-close" aria-label="Close" onClick={onClose}>
+      <button
+        type="button"
+        className="modal-close"
+        aria-label={text.actions.close}
+        onClick={onClose}
+      >
         <Icon name="x" />
       </button>
 
@@ -42,29 +50,31 @@ export function NoteDetailModal({
 
         <div className="modal-body">
           <div className="m-cat">
-            {note.url ? <span className="cat-chip">{note.catLabel}</span> : null}
+            {note.url ? <span className="cat-chip">{chipLabel(text.categories, note)}</span> : null}
             {tag ? <TagBadge tag={tag} className="row-tag" /> : null}
-            <span className="card-time">Saved {relativeTime(note.addedAt)}</span>
+            <span className="card-time">
+              {text.detail.savedPrefix} {relativeTime(note.addedAt, text.time)}
+            </span>
           </div>
 
-          <h2>{note.title || "Untitled"}</h2>
+          <h2>{note.title || text.fallback.untitled}</h2>
           {note.description ? <p className="m-desc">{note.description}</p> : null}
 
           <div className="modal-meta">
             {note.url ? (
               <>
                 <div className="mm">
-                  <span className="k">Source</span>
+                  <span className="k">{text.detail.source}</span>
                   <span className="v">{note.siteName || note.domain}</span>
                 </div>
                 <div className="mm">
-                  <span className="k">URL</span>
+                  <span className="k">{text.detail.url}</span>
                   <span className="v">{note.url}</span>
                 </div>
               </>
             ) : null}
             <div className="mm">
-              <span className="k">In folder</span>
+              <span className="k">{text.detail.inFolder}</span>
               <span className="v v-serif">{location}</span>
             </div>
           </div>
@@ -76,43 +86,43 @@ export function NoteDetailModal({
           {note.url ? (
             <>
               <a className="primary" href={note.url} target="_blank" rel="noreferrer">
-                <Icon name="external-link" /> Open original
+                <Icon name="external-link" /> {text.actions.openOriginal}
               </a>
               <Button
                 variant="ghost"
                 icon={copied ? "check" : "copy"}
                 onClick={() => copy(note.url)}
               >
-                {copied ? "Copied" : "Copy link"}
+                {copied ? text.actions.copied : text.actions.copyLink}
               </Button>
               <Button
                 variant="ghost"
                 className="icon-only"
                 icon="pencil-line"
-                title="Edit"
+                title={text.actions.edit}
                 onClick={() => onEdit(note)}
               />
               <Button
                 variant="danger"
                 className="icon-only"
                 icon="trash-2"
-                title="Delete"
+                title={text.actions.delete}
                 onClick={() => onDelete(note)}
               />
             </>
           ) : (
             <>
               <Button variant="primary" icon="pencil-line" onClick={() => onEdit(note)}>
-                Edit
+                {text.actions.edit}
               </Button>
               <Button variant="ghost" onClick={onClose}>
-                Done
+                {text.actions.done}
               </Button>
               <Button
                 variant="danger"
                 className="icon-only"
                 icon="trash-2"
-                title="Delete"
+                title={text.actions.delete}
                 onClick={() => onDelete(note)}
               />
             </>

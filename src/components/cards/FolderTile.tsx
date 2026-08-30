@@ -4,6 +4,7 @@ import { collectNotes, directCounts } from "@/domain/library/tree";
 import { folderDragProps } from "@/dnd/dragProps";
 import { useArmed } from "@/hooks/useArmed";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+import { useCopy } from "@/i18n/I18nContext";
 import { Icon } from "@/components/primitives/Icon";
 import type { FolderHandlers } from "@/components/handlers";
 import { DeleteFace } from "./DeleteFace";
@@ -42,6 +43,7 @@ function fillsMosaicHeight(index: number, slots: number): boolean {
 }
 
 export function FolderTile({ folder, onOpen, onRename, onDelete }: FolderTileProps) {
+  const copy = useCopy();
   const previews = previewNodes(folder);
   const tileRef = useRef<HTMLDivElement>(null);
   const confirm = useArmed();
@@ -92,7 +94,7 @@ export function FolderTile({ folder, onOpen, onRename, onDelete }: FolderTilePro
         </span>
         <div className="folder-text">
           <div className="folder-name">{folder.name}</div>
-          <div className="folder-sub">{folderTileSummary(directCounts(folder))}</div>
+          <div className="folder-sub">{folderTileSummary(directCounts(folder), copy)}</div>
         </div>
       </div>
     </div>
