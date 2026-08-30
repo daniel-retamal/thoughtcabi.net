@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { en } from "@/i18n/en";
 import { act, render, screen } from "@testing-library/react";
 import { PendingFrame } from "./PendingFrame";
 
@@ -24,11 +25,11 @@ describe("PendingFrame", () => {
     act(() => {
       vi.advanceTimersByTime(3900);
     });
-    expect(screen.queryByText("still fetching")).not.toBeInTheDocument();
+    expect(screen.queryByText(en.card.stillFetching)).not.toBeInTheDocument();
 
     act(() => {
       vi.advanceTimersByTime(200);
     });
-    expect(screen.getByText("still fetching")).toBeInTheDocument();
+    expect(screen.getByText(en.card.stillFetching)).toBeInTheDocument();
   });
 });

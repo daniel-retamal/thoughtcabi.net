@@ -81,7 +81,7 @@ describe("NoteRow", () => {
   });
 
   it("gives the kind and the tag a column each, because they are different facts", () => {
-    const { container } = renderRow(makeNote({ catLabel: "Article", tag: "To read" }), [
+    const { container } = renderRow(makeNote({ cat: "article", tag: "To read" }), [
       makeTag("To read", "#ffc93c"),
     ]);
 
@@ -90,7 +90,7 @@ describe("NoteRow", () => {
   });
 
   it("puts the tag ahead of the kind, since the tag is the one the reader chose", () => {
-    const { container } = renderRow(makeNote({ catLabel: "Article", tag: "To read" }), [
+    const { container } = renderRow(makeNote({ cat: "article", tag: "To read" }), [
       makeTag("To read", "#ffc93c"),
     ]);
     const tagSlot = container.querySelector(".row-tag-slot") as HTMLElement;
@@ -100,7 +100,7 @@ describe("NoteRow", () => {
   });
 
   it("gives the untagged note's column back to its title instead of reserving it", () => {
-    const { container } = renderRow(makeNote({ catLabel: "Article", tag: "" }));
+    const { container } = renderRow(makeNote({ cat: "article", tag: "" }));
 
     expect(container.querySelector(".row-tag-slot")).toBeNull();
     expect(container.querySelector(".row-kind")).toHaveTextContent("Article");

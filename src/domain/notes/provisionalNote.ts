@@ -1,9 +1,8 @@
+import { UNKNOWN_CATEGORY } from "@/domain/links/category";
 import { previewFromUrl } from "@/domain/links/fromUrl";
 import { emptyPreview, previewToNote } from "@/domain/links/linkPreview";
 import { canonicalUrl, wordsFromPath } from "@/domain/links/url";
 import type { Note, PendingNote } from "@/domain/model";
-
-const UNKNOWN_CATEGORY = "—";
 
 export function provisionalNote(pending: PendingNote): Note {
   const canonical = canonicalUrl(pending.url);

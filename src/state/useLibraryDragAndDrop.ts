@@ -4,7 +4,7 @@ import { isFolder, sameLocation, type Library, type LibraryLocation } from "@/do
 import { folderContains } from "@/domain/library/tree";
 import type { DragCallbacks, DragPayload, DropTarget } from "@/dnd/types";
 import { useDragAndDrop } from "@/hooks/useDragAndDrop";
-import type { ToastInput } from "@/hooks/useToasts";
+import type { ToastInput, ToastVerb } from "@/hooks/useToasts";
 import type { CabinetAction } from "./cabinetReducer";
 import type { Navigation, NavigationState } from "./useNavigation";
 
@@ -15,8 +15,8 @@ export interface LibraryDragAndDropOptions {
   pushToast: (input: ToastInput) => void;
 }
 
-function movedVerb(drag: DragPayload): string {
-  return drag.kind === "folder" ? "Moved folder to" : "Moved to";
+function movedVerb(drag: DragPayload): ToastVerb {
+  return drag.kind === "folder" ? "movedFolderTo" : "movedTo";
 }
 
 export function useLibraryDragAndDrop({

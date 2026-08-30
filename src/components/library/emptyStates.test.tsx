@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { emptyStateFor, type EmptyStateContext, type EmptyStateCopy } from "./emptyStates";
+import { en } from "@/i18n/en";
+import * as empty from "./emptyStates";
+import type { EmptyStateContext, EmptyStateCopy } from "./emptyStates";
+
+const emptyStateFor = (context: EmptyStateContext) => empty.emptyStateFor(context, en);
 
 const BROWSING: EmptyStateContext = {
   mode: "browsing",
@@ -26,7 +30,7 @@ describe("emptyStateFor", () => {
     const copy = resolve({ cabinetEmpty: true, onboarded: false });
 
     expect(copy.kind).toBe("plate");
-    expect(copy.title).toBe("Your cabinet is empty.");
+    expect(copy.title).toBe(en.empty.firstLoadTitle);
     if (copy.kind !== "plate") throw new Error("expected the plate");
     expect(copy.primer?.map((fact) => fact.term)).toEqual(["Shelves", "Folders", "Tags"]);
     expect(copy.primer?.[0]?.text).toContain("Field notes");
@@ -50,7 +54,7 @@ describe("emptyStateFor", () => {
   });
 
   it("says where you are standing inside a folder", () => {
-    expect(resolve({ inFolder: true }).title).toBe("This folder is empty.");
+    expect(resolve({ inFolder: true }).title).toBe(en.empty.inFolderTitle);
   });
 
   it("quotes the query, and offers to drop it", () => {

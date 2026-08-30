@@ -2,14 +2,13 @@ import { useState, type KeyboardEvent } from "react";
 import type { IconName } from "@/icons/names";
 import { useArmed } from "@/hooks/useArmed";
 import { useAutoFocus } from "@/hooks/useAutoFocus";
-import { pluralize } from "@/lib/text";
+import { useCopy } from "@/i18n/I18nContext";
+import { countedTemplate } from "@/i18n/format";
 import { Button } from "@/components/primitives/Button";
 import { Icon } from "@/components/primitives/Icon";
 import { FormActions, FormModal } from "./FormModal";
 import { Field } from "./fields/Field";
 import { IconPicker } from "./fields/IconPicker";
-
-const LAST_SHELF_REASON = "Your cabinet keeps at least one shelf. Rename this one instead.";
 
 export interface ShelfEditorModalProps {
   mode: "new" | "edit";
@@ -32,6 +31,7 @@ export function ShelfEditorModal({
   onDelete,
   onCancel,
 }: ShelfEditorModalProps) {
+  const copy = useCopy();
   const isEditing = mode === "edit";
   const nameRef = useAutoFocus<HTMLInputElement>();
   const [name, setName] = useState(initialName);
@@ -46,23 +46,26 @@ export function ShelfEditorModal({
     if (event.key === "Enter") submit();
   };
 
-  const armedLabel = saveCount > 0 ? `Delete ${pluralize(saveCount, "save")}?` : "Delete shelf?";
+  const armedLabel =
+    saveCount > 0
+      ? countedTemplate(copy.shelfEditor.deleteArmed, saveCount)
+      : copy.shelfEditor.deleteEmpty;
 
   return (
     <FormModal
       size="sm"
-      kind={isEditing ? "Edit shelf" : "New shelf"}
-      heading={isEditing ? "Rename & restyle" : "Name your shelf"}
+      kind={isEditing ? copy.shelfEditor.kindEdit : copy.shelfEditor.kindNew}
+      heading={isEditing ? copy.shelfEditor.headingEdit : copy.shelfEditor.headingNew}
       onClose={confirm.armed ? confirm.disarm : onCancel}
     >
-      <Field label="Name">
+      <Field label={copy.shelfEditor.name}>
         <div className="f-url-wrap">
           <Icon name={icon} />
           <input
             ref={nameRef}
             className="f-name"
             value={name}
-            placeholder="e.g. Inspiration"
+            placeholder={copy.shelfEditor.namePlaceholder}
             onChange={(event) => {
               confirm.disarm();
               setName(event.target.value);
@@ -72,7 +75,7 @@ export function ShelfEditorModal({
         </div>
       </Field>
 
-      <Field label="Icon">
+      <Field label={copy.shelfEditor.icon}>
         <IconPicker
           value={icon}
           onChange={(next) => {
@@ -84,7 +87,7 @@ export function ShelfEditorModal({
 
       <FormActions>
         <Button variant="primary" icon="check" disabled={!name.trim()} onClick={submit}>
-          {isEditing ? "Save" : "Create"}
+          {isEditing ? copy.actions.save : copy.actions.create}
         </Button>
         <Button
           variant="ghost"
@@ -93,7 +96,7 @@ export function ShelfEditorModal({
             else onCancel();
           }}
         >
-          Cancel
+          {copy.actions.cancel}
         </Button>
         {isEditing ? (
           <Button
@@ -103,12 +106,12 @@ export function ShelfEditorModal({
             disabled={!canDelete}
             onClick={() => (confirm.armed ? onDelete() : confirm.arm())}
           >
-            {confirm.armed ? armedLabel : "Delete"}
+            {confirm.armed ? armedLabel : copy.actions.delete}
           </Button>
         ) : null}
       </FormActions>
 
-      {isEditing && !canDelete ? <p className="action-note">{LAST_SHELF_REASON}</p> : null}
+      {isEditing && !canDelete ? <p className="action-note">{copy.shelfEditor.lastShelf}</p> : null}
     </FormModal>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, type KeyboardEvent } from "react";
 import type { IconName } from "@/icons/names";
 import { useAutoFocus } from "@/hooks/useAutoFocus";
+import { useCopy } from "@/i18n/I18nContext";
 import { Button } from "@/components/primitives/Button";
 import { Icon } from "@/components/primitives/Icon";
 import { FormActions, FormModal } from "./FormModal";
@@ -22,10 +23,11 @@ export function NamePromptModal({
   placeholder,
   icon,
   initialValue = "",
-  confirmLabel = "Create",
+  confirmLabel,
   onConfirm,
   onCancel,
 }: NamePromptModalProps) {
+  const copy = useCopy();
   const inputRef = useAutoFocus<HTMLInputElement>();
   const [value, setValue] = useState(initialValue);
 
@@ -52,10 +54,10 @@ export function NamePromptModal({
 
       <FormActions>
         <Button variant="primary" icon="check" disabled={!value.trim()} onClick={submit}>
-          {confirmLabel}
+          {confirmLabel ?? copy.actions.create}
         </Button>
         <Button variant="ghost" onClick={onCancel}>
-          Cancel
+          {copy.actions.cancel}
         </Button>
       </FormActions>
     </FormModal>

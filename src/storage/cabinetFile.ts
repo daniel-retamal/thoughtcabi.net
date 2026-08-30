@@ -1,6 +1,7 @@
 import { withoutPendingNotes } from "@/domain/library/mutations";
 import type { Cabinet } from "@/domain/model";
 import { asNumber, asRecord } from "@/lib/json";
+import type { CabinetNames } from "./names";
 import { parseCabinet } from "./parsers";
 
 export const CABINET_FILE_VERSION = 1;
@@ -30,7 +31,7 @@ export function cabinetFileName(exportedAt: number): string {
   return `thoughtcabinet-${new Date(exportedAt).toISOString().slice(0, 10)}.json`;
 }
 
-export function readCabinetFile(text: string): CabinetFileRead {
+export function readCabinetFile(text: string, names: CabinetNames): CabinetFileRead {
   let value: unknown;
   try {
     value = JSON.parse(text);
@@ -45,7 +46,7 @@ export function readCabinetFile(text: string): CabinetFileRead {
     return { ok: false, problem: "newer" };
   }
 
-  const cabinet = parseCabinet(asRecord(record.cabinet) ?? record);
+  const cabinet = parseCabinet(asRecord(record.cabinet) ?? record, names);
   if (!cabinet) return { ok: false, problem: "empty" };
 
   const exportedAt = asNumber(record.exportedAt, Number.NaN);

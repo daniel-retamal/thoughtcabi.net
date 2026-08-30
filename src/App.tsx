@@ -21,6 +21,7 @@ import {
   type Folder,
   type LibraryLocation,
   type NodeId,
+  type Locale,
   type Note,
   type Shelf,
   type Tag,
@@ -36,6 +37,9 @@ import { cssVars } from "@/lib/cssVars";
 import { downloadTextFile } from "@/lib/files";
 import { cabinetFileName, serializeCabinet } from "@/storage/cabinetFile";
 import { readLink as readLinkFromWeb, type LinkReader } from "@/links/readLink";
+import { cabinetNames } from "@/storage/names";
+import { I18nProvider } from "@/i18n/I18nProvider";
+import { dictionaryFor } from "@/i18n/locales";
 import { usePreferences } from "@/hooks/usePreferences";
 import { useImageDropTargets } from "@/hooks/useImageDropTargets";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -77,10 +81,18 @@ export interface AppProps {
 }
 
 export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
-  const { cabinet, dispatch, storageStatus } = useCabinet();
+  const {
+    preferences,
+    setView,
+    setSidebar,
+    setSidebarSize,
+    setLanguage,
+    updateAppearance,
+    markOnboarded,
+  } = usePreferences();
+  const copy = dictionaryFor(preferences.language);
+  const { cabinet, dispatch, storageStatus } = useCabinet(cabinetNames(copy));
   const { library, tags } = cabinet;
-  const { preferences, setView, setSidebar, setSidebarSize, updateAppearance, markOnboarded } =
-    usePreferences();
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [noticeDismissed, setNoticeDismissed] = useState(false);
   const [menu, setMenu] = useState<{ x: number; y: number; target: ContextTarget } | null>(null);
@@ -93,7 +105,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
   const brandRef = useRef<HTMLDivElement>(null);
 
   const view = preferences.view;
-  const viewState = useLibraryView(library, navigation.state, view);
+  const viewState = useLibraryView(library, navigation.state, view, copy.categories);
   const cabinetEmpty = isCabinetEmpty(library);
   const closeDialog = (): void => setDialog(null);
   const openCompose = (): void => setDialog({ kind: "compose", mode: "new" });
@@ -148,8 +160,16 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     },
   });
 
+  const changeLanguage = (next: Locale): void => {
+    const to = dictionaryFor(next).seed.shelfName;
+    if (to !== copy.seed.shelfName) {
+      dispatch({ type: "shelf/relabelSeed", from: copy.seed.shelfName, to });
+    }
+    setLanguage(next);
+  };
+
   const announceDeletion = (subject: string, undo: () => void): void => {
-    pushToast({ verb: "Deleted", subject, action: { kind: "undo", run: undo } });
+    pushToast({ verb: "deleted", subject, action: { kind: "undo", run: undo } });
   };
 
   const deleteNode = (node: Folder | Note, subject: string): void => {
@@ -166,8 +186,8 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     const previous = note.image ?? "";
     dispatch({ type: "note/setImage", id: noteId, image });
     pushToast({
-      verb: "Thumbnail set on",
-      subject: note.title || note.domain || "Untitled",
+      verb: "thumbnailSetOn",
+      subject: note.title || note.domain || copy.fallback.untitled,
       action: {
         kind: "undo",
         run: () => dispatch({ type: "note/setImage", id: noteId, image: previous }),
@@ -266,7 +286,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
   };
 
   const deleteNote = (note: Note): void => {
-    deleteNode(note, note.title || note.domain || "Untitled");
+    deleteNode(note, note.title || note.domain || copy.fallback.untitled);
     if (dialog?.kind === "detail" && dialog.note.id === note.id) closeDialog();
   };
 
@@ -339,7 +359,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     closeDialog();
     navigation.openShelf(landing.id);
     pushToast({
-      verb: "Imported into",
+      verb: "importedInto",
       subject: landing.name,
       action: viewAction({ shelfId: landing.id, path: [] }),
     });
@@ -361,21 +381,26 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
   const activeTagColor = tags.find((tag) => tag.name === navigation.state.activeTag)?.color;
 
   const emptyState = isEmpty
-    ? emptyStateFor({
-        mode: viewState.mode,
-        query: navigation.state.query,
-        activeTag: navigation.state.activeTag,
-        shelfName: viewState.shelf.name,
-        inFolder: navigation.state.path.length > 0,
-        cabinetEmpty,
-        onboarded: preferences.onboarded,
-      })
+    ? emptyStateFor(
+        {
+          mode: viewState.mode,
+          query: navigation.state.query,
+          activeTag: navigation.state.activeTag,
+          shelfName: viewState.shelf.name,
+          inFolder: navigation.state.path.length > 0,
+          cabinetEmpty,
+          onboarded: preferences.onboarded,
+        },
+        copy,
+      )
     : null;
 
   const controls = (
     <AppControls
       appearance={preferences}
+      language={preferences.language}
       onAppearanceChange={updateAppearance}
+      onLanguageChange={changeLanguage}
       onTransfer={() => setDialog({ kind: "transfer" })}
     />
   );
@@ -385,7 +410,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
       <div className="crumbs">
         <span className="crumb current">
           <Icon name="search" />
-          <span className="ctxt">Results across all shelves</span>
+          <span className="ctxt">{copy.paneBar.searchResults}</span>
         </span>
       </div>
     ) : viewState.mode === "tagged" ? (
@@ -400,167 +425,180 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     );
 
   return (
-    <div className="app">
-      {drawerOpen ? (
-        <div className="scrim drawer-scrim" onClick={closeDrawer} aria-hidden="true" />
-      ) : null}
+    <I18nProvider copy={copy}>
+      <div className="app">
+        {drawerOpen ? (
+          <div className="scrim drawer-scrim" onClick={closeDrawer} aria-hidden="true" />
+        ) : null}
 
-      <div
-        className="shell"
-        ref={shellRef}
-        style={cssVars({ "--sidebar-set": `${preferences.sidebarWidth}px` })}
-      >
-        <Sidebar
-          shelves={library}
-          tags={tags}
-          activeShelfId={navigation.state.shelfId}
-          atShelfRoot={navigation.state.path.length === 0}
-          activeTag={navigation.state.activeTag}
-          mode={compact ? "wide" : preferences.sidebar}
-          brandRef={brandRef}
-          footer={compact ? controls : null}
-          onOpenShelf={(shelf) => {
-            navigation.openShelf(shelf.id);
-            closeDrawer();
-          }}
-          onNewShelf={() => setDialog({ kind: "shelf", mode: "new" })}
-          onEditShelf={(shelf) => setDialog({ kind: "shelf", mode: "edit", shelf })}
-          onSelectTag={(name) => {
-            navigation.selectTag(name);
-            closeDrawer();
-          }}
-          onNewTag={() =>
-            setDialog({ kind: "tag", mode: "new", color: availableColors(tags)[0] ?? "" })
-          }
-          onEditTag={(tag) => setDialog({ kind: "tag", mode: "edit", tag })}
-        />
-
-        <div className="pane">
-          <PaneBar
-            query={navigation.state.query}
-            searchRef={searchRef}
-            crumbs={crumbs}
-            controls={compact ? null : controls}
-            compact={compact}
-            wide={preferences.sidebar === "wide"}
-            onToggleSidebar={toggleSidebar}
-            onQueryChange={navigation.setQuery}
-            onCompose={openCompose}
+        <div
+          className="shell"
+          ref={shellRef}
+          style={cssVars({ "--sidebar-set": `${preferences.sidebarWidth}px` })}
+        >
+          <Sidebar
+            shelves={library}
+            tags={tags}
+            activeShelfId={navigation.state.shelfId}
+            atShelfRoot={navigation.state.path.length === 0}
+            activeTag={navigation.state.activeTag}
+            mode={compact ? "wide" : preferences.sidebar}
+            brandRef={brandRef}
+            footer={compact ? controls : null}
+            onOpenShelf={(shelf) => {
+              navigation.openShelf(shelf.id);
+              closeDrawer();
+            }}
+            onNewShelf={() => setDialog({ kind: "shelf", mode: "new" })}
+            onEditShelf={(shelf) => setDialog({ kind: "shelf", mode: "edit", shelf })}
+            onSelectTag={(name) => {
+              navigation.selectTag(name);
+              closeDrawer();
+            }}
+            onNewTag={() =>
+              setDialog({ kind: "tag", mode: "new", color: availableColors(tags)[0] ?? "" })
+            }
+            onEditTag={(tag) => setDialog({ kind: "tag", mode: "edit", tag })}
           />
 
-          <div className="pane-body" onContextMenu={openContextMenu}>
-            <div
-              className="body-inner"
-              {...(viewState.canReorder ? locationDropProps(navigation.location) : {})}
-            >
-              {storageStatus !== "ok" && !noticeDismissed ? (
-                <StorageNotice problem={storageStatus} onDismiss={() => setNoticeDismissed(true)} />
-              ) : null}
+          <div className="pane">
+            <PaneBar
+              query={navigation.state.query}
+              searchRef={searchRef}
+              crumbs={crumbs}
+              controls={compact ? null : controls}
+              compact={compact}
+              wide={preferences.sidebar === "wide"}
+              onToggleSidebar={toggleSidebar}
+              onQueryChange={navigation.setQuery}
+              onCompose={openCompose}
+            />
 
-              <ContentToolbar
-                noteCount={viewState.notes.length}
-                folderCount={viewState.folders.length}
-                view={view}
-                showTools={!cabinetEmpty}
-                canCreateFolder={viewState.canReorder}
-                onViewChange={setView}
-                onNewFolder={() => setDialog({ kind: "new-folder" })}
-              />
-
-              {emptyState ? (
-                emptyState.kind === "plate" ? (
-                  <EmptyPlate
-                    title={emptyState.title}
-                    text={emptyState.text}
-                    primer={emptyState.primer}
-                    onSaveLink={openCompose}
+            <div className="pane-body" onContextMenu={openContextMenu}>
+              <div
+                className="body-inner"
+                {...(viewState.canReorder ? locationDropProps(navigation.location) : {})}
+              >
+                {storageStatus !== "ok" && !noticeDismissed ? (
+                  <StorageNotice
+                    problem={storageStatus}
+                    onDismiss={() => setNoticeDismissed(true)}
                   />
+                ) : null}
+
+                <ContentToolbar
+                  noteCount={viewState.notes.length}
+                  folderCount={viewState.folders.length}
+                  view={view}
+                  showTools={!cabinetEmpty}
+                  canCreateFolder={viewState.canReorder}
+                  onViewChange={setView}
+                  onNewFolder={() => setDialog({ kind: "new-folder" })}
+                />
+
+                {emptyState ? (
+                  emptyState.kind === "plate" ? (
+                    <EmptyPlate
+                      title={emptyState.title}
+                      text={emptyState.text}
+                      primer={emptyState.primer}
+                      language={preferences.language}
+                      onSaveLink={openCompose}
+                      onLanguageChange={changeLanguage}
+                    />
+                  ) : (
+                    <EmptyQuiet
+                      title={emptyState.title}
+                      text={emptyState.text}
+                      onClearSearch={
+                        emptyState.clearable ? () => navigation.setQuery("") : undefined
+                      }
+                    />
+                  )
                 ) : (
-                  <EmptyQuiet
-                    title={emptyState.title}
-                    text={emptyState.text}
-                    onClearSearch={emptyState.clearable ? () => navigation.setQuery("") : undefined}
-                  />
-                )
-              ) : (
-                <div className="fade-swap" key={viewState.contentKey}>
-                  <LibraryContent
-                    view={view}
-                    folders={viewState.folders}
-                    notes={viewState.notes}
-                    tags={tags}
-                    isFresh={fresh.has}
-                    canReorder={viewState.canReorder}
-                    noteHandlers={noteHandlers}
-                    folderHandlers={folderHandlers}
-                  />
-                </div>
-              )}
+                  <div className="fade-swap" key={viewState.contentKey}>
+                    <LibraryContent
+                      view={view}
+                      folders={viewState.folders}
+                      notes={viewState.notes}
+                      tags={tags}
+                      isFresh={fresh.has}
+                      canReorder={viewState.canReorder}
+                      noteHandlers={noteHandlers}
+                      folderHandlers={folderHandlers}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+
+          {compact ? null : <SidebarGrip handlers={sidebarResize} />}
         </div>
 
-        {compact ? null : <SidebarGrip handlers={sidebarResize} />}
-      </div>
-
-      <DialogHost
-        dialog={dialog}
-        library={library}
-        tags={tags}
-        currentLocation={navigation.location}
-        readLink={readLink}
-        detailLocationLabel={(note) =>
-          parentContainerName(library, note.id) ?? viewState.shelf.name
-        }
-        onClose={closeDialog}
-        onEditNote={(note) => setDialog({ kind: "compose", mode: "edit", note })}
-        onDeleteNote={deleteNote}
-        onSaveNote={saveNote}
-        onCreateTag={(name, color) => dispatch({ type: "tag/add", name, color })}
-        onSaveShelf={saveShelf}
-        onDeleteShelf={deleteShelf}
-        onSaveTag={saveTag}
-        onDeleteTag={deleteTag}
-        onCreateFolder={(name) => {
-          dispatch({
-            type: "folder/add",
-            location: navigation.location,
-            id: createId("f"),
-            name,
-          });
-          closeDialog();
-        }}
-        onRenameFolder={(folderId, name) => {
-          dispatch({ type: "folder/rename", id: folderId, name });
-          closeDialog();
-        }}
-        onExportCabinet={exportCabinet}
-        onImportCabinet={importCabinet}
-      />
-
-      {menu ? (
-        <ContextMenu
-          x={menu.x}
-          y={menu.y}
-          items={contextMenuFor(menu.target, {
-            onPasteLink: pasteLinkFromClipboard,
-            onSaveLink: openCompose,
-            onNewFolder: () => setDialog({ kind: "new-folder" }),
-            onOpenFolder: folderHandlers.onOpen,
-            onRenameFolder: folderHandlers.onRename,
-            onDeleteFolder: folderHandlers.onDelete,
-            onOpen: (note) => setDialog({ kind: "detail", note }),
-            onCopyLink: (note) => writeClipboardText(note.url),
-            onEdit: (note) => setDialog({ kind: "compose", mode: "edit", note }),
-            onPasteThumbnail: pasteThumbnailOnto,
-            onDelete: deleteNote,
-          })}
-          onClose={() => setMenu(null)}
+        <DialogHost
+          dialog={dialog}
+          library={library}
+          tags={tags}
+          currentLocation={navigation.location}
+          readLink={readLink}
+          detailLocationLabel={(note) =>
+            parentContainerName(library, note.id) ?? viewState.shelf.name
+          }
+          onClose={closeDialog}
+          onEditNote={(note) => setDialog({ kind: "compose", mode: "edit", note })}
+          onDeleteNote={deleteNote}
+          onSaveNote={saveNote}
+          onCreateTag={(name, color) => dispatch({ type: "tag/add", name, color })}
+          onSaveShelf={saveShelf}
+          onDeleteShelf={deleteShelf}
+          onSaveTag={saveTag}
+          onDeleteTag={deleteTag}
+          onCreateFolder={(name) => {
+            dispatch({
+              type: "folder/add",
+              location: navigation.location,
+              id: createId("f"),
+              name,
+            });
+            closeDialog();
+          }}
+          onRenameFolder={(folderId, name) => {
+            dispatch({ type: "folder/rename", id: folderId, name });
+            closeDialog();
+          }}
+          onExportCabinet={exportCabinet}
+          onImportCabinet={importCabinet}
         />
-      ) : null}
 
-      <ToastStack toasts={toasts} />
-    </div>
+        {menu ? (
+          <ContextMenu
+            x={menu.x}
+            y={menu.y}
+            items={contextMenuFor(
+              menu.target,
+              {
+                onPasteLink: pasteLinkFromClipboard,
+                onSaveLink: openCompose,
+                onNewFolder: () => setDialog({ kind: "new-folder" }),
+                onOpenFolder: folderHandlers.onOpen,
+                onRenameFolder: folderHandlers.onRename,
+                onDeleteFolder: folderHandlers.onDelete,
+                onOpen: (note) => setDialog({ kind: "detail", note }),
+                onCopyLink: (note) => writeClipboardText(note.url),
+                onEdit: (note) => setDialog({ kind: "compose", mode: "edit", note }),
+                onPasteThumbnail: pasteThumbnailOnto,
+                onDelete: deleteNote,
+              },
+              copy,
+            )}
+            onClose={() => setMenu(null)}
+          />
+        ) : null}
+
+        <ToastStack toasts={toasts} />
+      </div>
+    </I18nProvider>
   );
 }
 

@@ -1,4 +1,5 @@
 import {
+  DEFAULT_LOCALE,
   DEFAULT_SIDEBAR_MODE,
   DEFAULT_SIDEBAR_WIDTH,
   DEFAULT_VIEW_MODE,
@@ -8,15 +9,16 @@ import {
 import { createStarterCabinet } from "@/domain/seed/starterCabinet";
 import { DEFAULT_APPEARANCE } from "@/theme/colors";
 import { LEGACY_KEYS, STORAGE_KEYS } from "./keys";
+import type { CabinetNames } from "./names";
 import { clearKey, readJson, readRaw, writeJson } from "./localStore";
 import { parseLibrary, parsePreferences, parseTags, parseViewMode } from "./parsers";
 
-export function migrateCabinet(): Cabinet | null {
-  const library = readJson(LEGACY_KEYS.library, parseLibrary);
+export function migrateCabinet(names: CabinetNames): Cabinet | null {
+  const library = readJson(LEGACY_KEYS.library, (value) => parseLibrary(value, names));
   const tags = readJson(LEGACY_KEYS.tags, parseTags);
   if (!library && !tags) return null;
 
-  const starter = createStarterCabinet();
+  const starter = createStarterCabinet(names.seedShelf);
   const cabinet: Cabinet = {
     library: library ?? starter.library,
     tags: tags ?? starter.tags,
@@ -41,6 +43,7 @@ export function migratePreferences(): Preferences | null {
     cards: appearance?.cards ?? DEFAULT_APPEARANCE.cards,
     sidebar: DEFAULT_SIDEBAR_MODE,
     sidebarWidth: DEFAULT_SIDEBAR_WIDTH,
+    language: DEFAULT_LOCALE,
     onboarded: false,
   };
 

@@ -89,6 +89,43 @@
   margin-bottom: 2px;
 }
 
+.es-lang {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  max-width: 620px;
+  margin: 18px auto 0;
+  border-top: 1px solid var(--hairline);
+  padding-top: 14px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+}
+
+.es-lang-label {
+  color: var(--text-faint);
+  margin-inline-end: 11px;
+}
+
+.es-lang-opt {
+  color: var(--text-faint);
+  border-radius: var(--r-pill);
+  padding: 3px 10px;
+  transition:
+    color 0.14s,
+    background 0.14s;
+}
+
+.es-lang-opt:hover {
+  color: var(--text-muted);
+}
+
+.es-lang-opt.on {
+  color: var(--text);
+  font-weight: 500;
+  background: color-mix(in oklab, var(--text) 7%, transparent);
+}
+
 .es-quiet {
   text-align: center;
   max-width: 430px;

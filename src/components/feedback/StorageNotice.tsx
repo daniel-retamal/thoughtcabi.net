@@ -1,12 +1,7 @@
 import { Icon } from "@/components/primitives/Icon";
+import { useCopy } from "@/i18n/I18nContext";
 
 export type StorageProblem = "quota" | "unavailable";
-
-const MESSAGES: Readonly<Record<StorageProblem, string>> = {
-  quota:
-    "This browser's storage is full, so your most recent change was not saved. Export your cabinet to keep a copy, then delete a few items to make room.",
-  unavailable: "This browser is blocking local storage. Nothing you change here will be saved.",
-};
 
 export interface StorageNoticeProps {
   problem: StorageProblem;
@@ -14,17 +9,19 @@ export interface StorageNoticeProps {
 }
 
 export function StorageNotice({ problem, onDismiss }: StorageNoticeProps) {
+  const copy = useCopy();
+
   return (
     <div className="notice" role="alert">
       <span className="notice-mark">
         <Icon name="triangle-alert" />
       </span>
-      <p className="notice-text">{MESSAGES[problem]}</p>
+      <p className="notice-text">{copy.storage[problem]}</p>
       <button
         type="button"
         className="notice-dismiss"
-        title="Dismiss"
-        aria-label="Dismiss"
+        title={copy.actions.dismiss}
+        aria-label={copy.actions.dismiss}
         onClick={onDismiss}
       >
         <Icon name="x" />

@@ -1,4 +1,5 @@
 import type { Note, SiteCategory } from "@/domain/model";
+import { en } from "@/i18n/en";
 import { labelFor } from "./category";
 
 export interface LinkPreview {
@@ -72,7 +73,7 @@ export function previewToNote(preview: LinkPreview, identity: NoteIdentity): Not
     domain: preview.domain,
     siteName: preview.siteName,
     cat: preview.cat,
-    catLabel: labelFor(preview.cat),
+    catLabel: labelFor(en.categories, preview.cat),
   };
 
   return {

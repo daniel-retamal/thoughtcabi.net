@@ -16,6 +16,7 @@ import {
   type ViewMode,
 } from "@/domain/model";
 import type { Crumb } from "@/components/layout/Breadcrumbs";
+import type { CategoryLabels } from "@/i18n/copy";
 import type { NavigationState } from "./useNavigation";
 
 export type BrowseMode = "browsing" | "searching" | "tagged";
@@ -62,6 +63,7 @@ export function useLibraryView(
   library: Library,
   navigation: NavigationState,
   view: ViewMode,
+  categoryLabels: CategoryLabels,
 ): LibraryView {
   return useMemo(() => {
     const shelf = requireShelf(library, navigation.shelfId);
@@ -73,7 +75,7 @@ export function useLibraryView(
 
     const { folders, notes } =
       mode === "searching"
-        ? searchLibrary(library, query)
+        ? searchLibrary(library, query, categoryLabels)
         : mode === "tagged"
           ? { folders: [], notes: notesWithTag(library, navigation.activeTag ?? "") }
           : splitChildren(container);
@@ -91,5 +93,5 @@ export function useLibraryView(
       canReorder: mode === "browsing",
       contentKey: `${scope}${shelf.id}${navigation.path.join("/")}${view}`,
     };
-  }, [library, navigation, view]);
+  }, [library, navigation, view, categoryLabels]);
 }

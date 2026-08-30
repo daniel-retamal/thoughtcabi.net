@@ -46,7 +46,10 @@ describe("redditPage", () => {
   });
 
   it("recognises both spellings of a profile", () => {
-    expect(pageOf("https://www.reddit.com/user/spez")).toMatchObject({ kind: "user", name: "spez" });
+    expect(pageOf("https://www.reddit.com/user/spez")).toMatchObject({
+      kind: "user",
+      name: "spez",
+    });
     expect(pageOf("https://www.reddit.com/u/spez")).toMatchObject({ kind: "user", name: "spez" });
   });
 
@@ -102,8 +105,9 @@ describe("redditGated", () => {
   });
 
   it("leaves a profile alone, which has a description and no og:title of its own", () => {
-    expect(redditGated(content({ title: "overview for spez", tags: { description: "Reddit CEO." } })))
-      .toBe(false);
+    expect(
+      redditGated(content({ title: "overview for spez", tags: { description: "Reddit CEO." } })),
+    ).toBe(false);
   });
 
   it("leaves any page that named itself alone", () => {
@@ -235,7 +239,11 @@ describe("previewFromReddit", () => {
     const preview = previewFromReddit(
       emptyPage(),
       new URL("https://www.reddit.com/r/Spiderman/comments/1vmsx27/jonah_respects_spider_woman/"),
-      { kind: "post", name: "", path: "/r/Spiderman/comments/1vmsx27/jonah_respects_spider_woman/" },
+      {
+        kind: "post",
+        name: "",
+        path: "/r/Spiderman/comments/1vmsx27/jonah_respects_spider_woman/",
+      },
     );
 
     expect(preview.title).toBe("Jonah Respects Spider Woman");

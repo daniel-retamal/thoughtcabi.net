@@ -46,16 +46,16 @@ function luminance(field: string): number {
 
 describe("colorById", () => {
   it("falls back to the first color rather than throwing", () => {
-    expect(colorById("emerald").label).toBe("Emerald");
+    expect(colorById("emerald").id).toBe("emerald");
     expect(colorById("chartreuse").id).toBe("ultramarine");
   });
 });
 
 describe("familyOfColor", () => {
   it("names the family a depth belongs to", () => {
-    expect(familyOfColor("navy").label).toBe("Blue");
-    expect(familyOfColor("pine").label).toBe("Green");
-    expect(familyOfColor("chartreuse").label).toBe("Blue");
+    expect(familyOfColor("navy").id).toBe("blue");
+    expect(familyOfColor("pine").id).toBe("green");
+    expect(familyOfColor("chartreuse").id).toBe("blue");
   });
 });
 

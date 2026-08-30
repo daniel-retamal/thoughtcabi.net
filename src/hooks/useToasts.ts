@@ -3,6 +3,9 @@ import { createId } from "@/domain/ids";
 
 export type ToastActionKind = "view" | "undo";
 
+export type ToastVerb =
+  "savedTo" | "deleted" | "thumbnailSetOn" | "importedInto" | "movedTo" | "movedFolderTo";
+
 export interface ToastAction {
   kind: ToastActionKind;
   run: () => void;
@@ -10,13 +13,13 @@ export interface ToastAction {
 
 export interface Toast {
   id: string;
-  verb: string;
+  verb: ToastVerb;
   subject: string;
   action: ToastAction;
 }
 
 export interface ToastInput {
-  verb?: string;
+  verb?: ToastVerb;
   subject: string;
   action: ToastAction;
 }
@@ -54,7 +57,7 @@ export function useToasts(): {
       const id = createId("t");
       const toast: Toast = {
         id,
-        verb: input.verb ?? "Saved to",
+        verb: input.verb ?? "savedTo",
         subject: input.subject,
         action: {
           kind: input.action.kind,

@@ -1,5 +1,6 @@
 import type { ViewMode } from "@/domain/model";
-import { pluralize } from "@/lib/text";
+import { useCopy } from "@/i18n/I18nContext";
+import { counted, format } from "@/i18n/format";
 import { Icon } from "@/components/primitives/Icon";
 
 export interface ContentToolbarProps {
@@ -21,14 +22,15 @@ export function ContentToolbar({
   onViewChange,
   onNewFolder,
 }: ContentToolbarProps) {
+  const copy = useCopy();
   if (!showTools) return null;
 
   return (
     <div className="toolbar">
       {noteCount + folderCount > 0 ? (
         <span className="count-pill">
-          {pluralize(noteCount, "item")}
-          {folderCount ? ` · ${folderCount} folders` : ""}
+          {counted(copy.counts.items, noteCount)}
+          {folderCount ? ` · ${format(copy.folder.foldersFlat, { n: folderCount })}` : ""}
         </span>
       ) : null}
 
@@ -37,8 +39,8 @@ export function ContentToolbar({
           <button
             type="button"
             className="iconbtn"
-            title="New folder"
-            aria-label="New folder"
+            title={copy.toolbar.newFolder}
+            aria-label={copy.toolbar.newFolder}
             onClick={onNewFolder}
           >
             <Icon name="folder-plus" />
@@ -49,8 +51,8 @@ export function ContentToolbar({
           <button
             type="button"
             className={view === "grid" ? "on" : ""}
-            title="Grid"
-            aria-label="Grid view"
+            title={copy.toolbar.grid}
+            aria-label={copy.toolbar.gridView}
             onClick={() => onViewChange("grid")}
           >
             <Icon name="layout-grid" />
@@ -58,8 +60,8 @@ export function ContentToolbar({
           <button
             type="button"
             className={view === "list" ? "on" : ""}
-            title="Rows"
-            aria-label="Row view"
+            title={copy.toolbar.rows}
+            aria-label={copy.toolbar.rowView}
             onClick={() => onViewChange("list")}
           >
             <Icon name="list" />

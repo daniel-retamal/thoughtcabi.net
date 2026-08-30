@@ -6,6 +6,7 @@ import {
 } from "@/domain/library/destinations";
 import type { Library, LibraryLocation } from "@/domain/model";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+import { useCopy } from "@/i18n/I18nContext";
 import { Icon } from "@/components/primitives/Icon";
 
 const INDENT_BASE_PX = 12;
@@ -18,6 +19,7 @@ export interface DestinationPickerProps {
 }
 
 export function DestinationPicker({ library, value, onChange }: DestinationPickerProps) {
+  const copy = useCopy();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const options = useMemo(() => flattenDestinations(library), [library]);
@@ -36,7 +38,7 @@ export function DestinationPicker({ library, value, onChange }: DestinationPicke
       >
         <Icon name={selected.depth === 0 ? selected.icon : "folder"} />
         <span className="dest-label">
-          Saving to <b>{selected.label}</b>
+          {copy.destination.savingTo} <b>{selected.label}</b>
         </span>
         <Icon name="chevron-down" className="dp-caret" />
       </button>

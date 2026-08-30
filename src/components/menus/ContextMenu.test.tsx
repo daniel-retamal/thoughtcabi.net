@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { en } from "@/i18n/en";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ContextMenu } from "./ContextMenu";
@@ -13,9 +14,9 @@ function renderMenu(items: MenuItem[]) {
 describe("ContextMenu", () => {
   it("runs the item that was chosen and closes behind it", async () => {
     const run = vi.fn();
-    const { onClose } = renderMenu([{ icon: "clipboard-paste", label: "Paste link", run }]);
+    const { onClose } = renderMenu([{ icon: "clipboard-paste", label: en.menu.pasteLink, run }]);
 
-    await userEvent.click(screen.getByRole("menuitem", { name: "Paste link" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: en.menu.pasteLink }));
 
     expect(run).toHaveBeenCalledTimes(1);
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -23,7 +24,7 @@ describe("ContextMenu", () => {
 
   it("closes on Escape and on a click anywhere else", async () => {
     const { onClose } = renderMenu([
-      { icon: "clipboard-paste", label: "Paste link", run: vi.fn() },
+      { icon: "clipboard-paste", label: en.menu.pasteLink, run: vi.fn() },
     ]);
 
     await userEvent.keyboard("{Escape}");
@@ -38,7 +39,7 @@ describe("ContextMenu", () => {
       <ContextMenu
         x={window.innerWidth + 500}
         y={window.innerHeight + 500}
-        items={[{ icon: "clipboard-paste", label: "Paste link", run: vi.fn() }]}
+        items={[{ icon: "clipboard-paste", label: en.menu.pasteLink, run: vi.fn() }]}
         onClose={vi.fn()}
       />,
     );

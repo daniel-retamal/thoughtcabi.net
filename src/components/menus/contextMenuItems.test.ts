@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { makeFolder, makeNote } from "@/test/factories";
-import { contextMenuFor, type ContextMenuHandlers } from "./contextMenuItems";
+import { en } from "@/i18n/en";
+import * as menu from "./contextMenuItems";
+import type { ContextMenuHandlers, ContextTarget } from "./contextMenuItems";
+
+const contextMenuFor = (target: ContextTarget, handlers: ContextMenuHandlers) =>
+  menu.contextMenuFor(target, handlers, en);
 
 function handlers(): ContextMenuHandlers {
   return {
@@ -24,8 +29,8 @@ describe("contextMenuFor", () => {
   it("leads the background menu with paste, which is the thing the mouse cannot otherwise do", () => {
     const items = contextMenuFor({ kind: "background", canCreateFolder: true }, handlers());
 
-    expect(labels(items)[0]).toBe("Paste link");
-    expect(labels(items)).toEqual(["Paste link", "Save link…", "New folder"]);
+    expect(labels(items)[0]).toBe(en.menu.pasteLink);
+    expect(labels(items)).toEqual([en.menu.pasteLink, "Save link…", "New folder"]);
   });
 
   it("offers no new folder where one cannot be made", () => {
@@ -61,7 +66,7 @@ describe("contextMenuFor", () => {
       "Open original",
       "Copy link",
       "Edit",
-      "Paste as thumbnail",
+      en.menu.pasteAsThumbnail,
       "Delete",
     ]);
     expect(items.at(-1)?.danger).toBe(true);
@@ -79,7 +84,7 @@ describe("contextMenuFor", () => {
     const spies = handlers();
     const items = contextMenuFor({ kind: "note", note }, spies);
 
-    items.find((item) => item.label === "Paste as thumbnail")?.run();
+    items.find((item) => item.label === en.menu.pasteAsThumbnail)?.run();
     expect(spies.onPasteThumbnail).toHaveBeenCalledWith(note);
 
     items.find((item) => item.label === "Copy link")?.run();

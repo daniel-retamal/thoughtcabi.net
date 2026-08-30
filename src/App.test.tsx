@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { en } from "@/i18n/en";
+import { es } from "@/i18n/es";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { LinkPreview } from "@/domain/links/linkPreview";
@@ -85,14 +87,14 @@ describe("App", () => {
     render(<App />);
 
     expect(within(sidebar()).getByText("Saved")).toBeInTheDocument();
-    expect(screen.getByText("Your cabinet is empty.")).toBeInTheDocument();
+    expect(screen.getByText(en.empty.firstLoadTitle)).toBeInTheDocument();
     expect(screen.getByText("Shelves")).toBeInTheDocument();
   });
 
   it("acts on nothing with nothing: no count, no view switch, no new folder", () => {
     render(<App />);
 
-    expect(screen.queryByLabelText("Row view")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(en.toolbar.rowView)).not.toBeInTheDocument();
     expect(screen.queryByLabelText("New folder")).not.toBeInTheDocument();
     expect(document.querySelector(".count-pill")).toBeNull();
   });
@@ -103,7 +105,7 @@ describe("App", () => {
 
     await userEvent.click(screen.getByText("Empty", { selector: ".folder-name" }));
 
-    expect(screen.getByLabelText("Row view")).toBeInTheDocument();
+    expect(screen.getByLabelText(en.toolbar.rowView)).toBeInTheDocument();
     expect(document.querySelector(".count-pill")).toBeNull();
   });
 
@@ -118,7 +120,7 @@ describe("App", () => {
     await userEvent.click(screen.getByLabelText("Remove"));
 
     expect(screen.getByText("Nothing saved.")).toBeInTheDocument();
-    expect(screen.queryByText("Your cabinet is empty.")).not.toBeInTheDocument();
+    expect(screen.queryByText(en.empty.firstLoadTitle)).not.toBeInTheDocument();
     expect(screen.queryByText("Shelves")).not.toBeInTheDocument();
   });
 
@@ -172,7 +174,7 @@ describe("App", () => {
 
       expect(document.documentElement).toHaveAttribute("data-drawer", "shut");
 
-      await userEvent.click(screen.getByLabelText("Shelves and tags"));
+      await userEvent.click(screen.getByLabelText(en.paneBar.shelvesAndTags));
       expect(document.documentElement).toHaveAttribute("data-drawer", "open");
 
       await userEvent.click(within(sidebar()).getByText("Research"));
@@ -185,9 +187,9 @@ describe("App", () => {
       withSaves();
       render(<App />);
 
-      expect(screen.getByLabelText("Search your cabinet")).toBeInTheDocument();
-      expect(within(sidebar()).getByLabelText("Export and import")).toBeInTheDocument();
-      expect(within(sidebar()).getByLabelText("Display settings")).toBeInTheDocument();
+      expect(screen.getByLabelText(en.paneBar.searchLabel)).toBeInTheDocument();
+      expect(within(sidebar()).getByLabelText(en.toolbar.transfer)).toBeInTheDocument();
+      expect(within(sidebar()).getByLabelText(en.toolbar.display)).toBeInTheDocument();
     });
   });
 
@@ -196,9 +198,9 @@ describe("App", () => {
     render(<App />);
 
     expect(within(sidebar()).getByText("thoughtcabi")).toBeInTheDocument();
-    expect(within(paneBar()).getByLabelText("Narrow sidebar")).toBeInTheDocument();
-    expect(within(paneBar()).getByLabelText("Search your cabinet")).toBeInTheDocument();
-    expect(within(sidebar()).queryByLabelText("Narrow sidebar")).not.toBeInTheDocument();
+    expect(within(paneBar()).getByLabelText(en.paneBar.narrowSidebar)).toBeInTheDocument();
+    expect(within(paneBar()).getByLabelText(en.paneBar.searchLabel)).toBeInTheDocument();
+    expect(within(sidebar()).queryByLabelText(en.paneBar.narrowSidebar)).not.toBeInTheDocument();
   });
 
   it("narrows the sidebar to a rail and remembers it across a remount", async () => {
@@ -206,21 +208,21 @@ describe("App", () => {
     const first = render(<App />);
 
     expect(document.documentElement).toHaveAttribute("data-sidebar", "wide");
-    await userEvent.click(within(paneBar()).getByLabelText("Narrow sidebar"));
+    await userEvent.click(within(paneBar()).getByLabelText(en.paneBar.narrowSidebar));
     expect(document.documentElement).toHaveAttribute("data-sidebar", "rail");
 
     first.unmount();
     render(<App />);
 
     expect(document.documentElement).toHaveAttribute("data-sidebar", "rail");
-    expect(within(paneBar()).getByLabelText("Widen sidebar")).toBeInTheDocument();
+    expect(within(paneBar()).getByLabelText(en.paneBar.widenSidebar)).toBeInTheDocument();
   });
 
   it("keeps every shelf and tag in the rail, so none of them stops being a drop target", async () => {
     withSaves();
     render(<App />);
 
-    await userEvent.click(within(paneBar()).getByLabelText("Narrow sidebar"));
+    await userEvent.click(within(paneBar()).getByLabelText(en.paneBar.narrowSidebar));
 
     expect(sidebar().querySelectorAll("[data-shelf-row]")).toHaveLength(2);
     expect(sidebar().querySelectorAll("[data-tag-row]")).toHaveLength(3);
@@ -243,7 +245,7 @@ describe("App", () => {
     await userEvent.click(screen.getByRole("button", { name: /create/i }));
 
     expect(screen.getByText("Nothing in Recipes yet.")).toBeInTheDocument();
-    expect(screen.queryByText("Your cabinet is empty.")).not.toBeInTheDocument();
+    expect(screen.queryByText(en.empty.firstLoadTitle)).not.toBeInTheDocument();
   });
 
   it("says which folder is empty from inside it", async () => {
@@ -251,33 +253,33 @@ describe("App", () => {
     render(<App />);
     await userEvent.click(screen.getByText("Empty", { selector: ".folder-name" }));
 
-    expect(screen.getByText("This folder is empty.")).toBeInTheDocument();
+    expect(screen.getByText(en.empty.inFolderTitle)).toBeInTheDocument();
   });
 
   it("searches across every shelf", async () => {
     withSaves();
     render(<App />);
-    await userEvent.type(screen.getByLabelText("Search your cabinet"), "zettelkasten");
+    await userEvent.type(screen.getByLabelText(en.paneBar.searchLabel), "zettelkasten");
 
-    expect(screen.getByText("Results across all shelves")).toBeInTheDocument();
+    expect(screen.getByText(en.paneBar.searchResults)).toBeInTheDocument();
     expect(screen.getByText("Zettelkasten")).toBeInTheDocument();
   });
 
   it("quotes a search that found nothing, and drops it again", async () => {
     withSaves();
     render(<App />);
-    await userEvent.type(screen.getByLabelText("Search your cabinet"), "qqqqzzz");
+    await userEvent.type(screen.getByLabelText(en.paneBar.searchLabel), "qqqqzzz");
     expect(screen.getByText("No matches for “qqqqzzz”.")).toBeInTheDocument();
 
     const quiet = document.querySelector(".es-quiet") as HTMLElement;
-    await userEvent.click(within(quiet).getByRole("button", { name: "Clear search" }));
+    await userEvent.click(within(quiet).getByRole("button", { name: en.actions.clearSearch }));
     expect(screen.getByText("Essays")).toBeInTheDocument();
   });
 
   it("remembers the row view", async () => {
     withSaves();
     render(<App />);
-    await userEvent.click(screen.getByLabelText("Row view"));
+    await userEvent.click(screen.getByLabelText(en.toolbar.rowView));
 
     expect(document.querySelector(".notes-list")).toBeInTheDocument();
     expect(localStorage.getItem(STORAGE_KEYS.preferences)).toContain('"view":"list"');
@@ -288,7 +290,7 @@ describe("App", () => {
     render(<App />);
     const plate = content().className;
 
-    await userEvent.click(screen.getByLabelText("Row view"));
+    await userEvent.click(screen.getByLabelText(en.toolbar.rowView));
 
     expect(document.querySelector(".notes-list")).toBeInTheDocument();
     expect(content().className).toBe(plate);
@@ -318,7 +320,7 @@ describe("App", () => {
   it("offers the action instead of reporting the absence when there are no tags", async () => {
     render(<App />);
 
-    await userEvent.click(within(sidebar()).getByRole("button", { name: "Add a tag" }));
+    await userEvent.click(within(sidebar()).getByRole("button", { name: en.sidebar.addATag }));
     expect(screen.getByPlaceholderText("e.g. To read")).toBeInTheDocument();
   });
 
@@ -508,7 +510,7 @@ describe("App", () => {
       render(<App />);
 
       const tile = screen.getByText("Essays").closest(".folder-tile") as HTMLElement;
-      await userEvent.click(within(tile).getByLabelText("Delete folder"));
+      await userEvent.click(within(tile).getByLabelText(en.nodeActions.deleteFolder));
       await userEvent.click(within(tile).getByRole("button", { name: "Delete" }));
 
       expect(tile).not.toBeInTheDocument();
@@ -636,7 +638,7 @@ describe("App", () => {
     render(<App readLink={readLink} />);
 
     fireEvent.contextMenu(content(), { clientX: 120, clientY: 140 });
-    await userEvent.click(await screen.findByRole("menuitem", { name: "Paste link" }));
+    await userEvent.click(await screen.findByRole("menuitem", { name: en.menu.pasteLink }));
 
     await waitFor(() => {
       expect(document.querySelector(".card.pending")).toBeInTheDocument();
@@ -651,7 +653,7 @@ describe("App", () => {
     fireEvent.contextMenu(card, { clientX: 60, clientY: 60 });
 
     expect(await screen.findByRole("menuitem", { name: "Edit" })).toBeInTheDocument();
-    expect(screen.queryByRole("menuitem", { name: "Paste link" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: en.menu.pasteLink })).not.toBeInTheDocument();
 
     await userEvent.keyboard("{Escape}");
 
@@ -755,11 +757,8 @@ describe("App", () => {
     }
 
     async function openTransfer(): Promise<void> {
-      await userEvent.click(screen.getByLabelText("Export and import"));
-      await userEvent.upload(
-        screen.getByLabelText("Drop a cabinet file, or click to choose"),
-        cabinetFile(),
-      );
+      await userEvent.click(screen.getByLabelText(en.toolbar.transfer));
+      await userEvent.upload(screen.getByLabelText(en.transfer.drop), cabinetFile());
       await screen.findByText("backup.json");
     }
 
@@ -767,7 +766,7 @@ describe("App", () => {
       const { downloads } = stubDownload();
       render(<App />);
 
-      await userEvent.click(screen.getByLabelText("Export and import"));
+      await userEvent.click(screen.getByLabelText(en.toolbar.transfer));
       await userEvent.click(screen.getByRole("button", { name: "Download" }));
 
       expect(downloads).toEqual([
@@ -807,6 +806,84 @@ describe("App", () => {
       await userEvent.click(screen.getByRole("button", { name: "Merge" }));
 
       expect(localStorage.getItem(STORAGE_KEYS.cabinet)).not.toContain("n-file");
+    });
+  });
+  describe("choosing a language", () => {
+    function sidebarRow(name: string): HTMLElement {
+      return within(sidebar()).getByText(name).closest(".lib-row") as HTMLElement;
+    }
+
+    it("starts in English however the browser is set, and offers the switch on the empty plate", () => {
+      Object.defineProperty(navigator, "language", { value: "es-CL", configurable: true });
+      render(<App />);
+
+      expect(screen.getByText(en.empty.firstLoadTitle)).toBeInTheDocument();
+      expect(document.documentElement).toHaveAttribute("lang", "en");
+
+      const row = document.querySelector(".es-lang") as HTMLElement;
+      expect(within(row).getByRole("button", { name: "English" })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+      expect(within(row).getByRole("button", { name: "Español" })).toBeInTheDocument();
+    });
+
+    it("turns the whole cabinet Spanish from the plate, seed shelf and all", async () => {
+      render(<App />);
+
+      await userEvent.click(screen.getByRole("button", { name: "Español" }));
+
+      expect(screen.getByText(es.empty.firstLoadTitle)).toBeInTheDocument();
+      expect(within(sidebar()).getByText("Guardados")).toBeInTheDocument();
+      expect(within(sidebar()).queryByText("Saved")).toBeNull();
+      expect(document.documentElement).toHaveAttribute("lang", "es");
+    });
+
+    it("takes the seed shelf back to Saved when English comes back", async () => {
+      render(<App />);
+
+      await userEvent.click(screen.getByRole("button", { name: "Español" }));
+      await userEvent.click(screen.getByRole("button", { name: "English" }));
+
+      expect(within(sidebar()).getByText("Saved")).toBeInTheDocument();
+      expect(screen.getByText(en.empty.firstLoadTitle)).toBeInTheDocument();
+    });
+
+    it("leaves a shelf the user named alone, whatever the language does", async () => {
+      render(<App />);
+
+      await userEvent.click(within(sidebarRow("Saved")).getByLabelText("Edit shelf"));
+      const name = screen.getByPlaceholderText(en.shelfEditor.namePlaceholder);
+      await userEvent.clear(name);
+      await userEvent.type(name, "Cosas");
+      const editor = document.querySelector(".modal") as HTMLElement;
+      await userEvent.click(within(editor).getByRole("button", { name: "Save" }));
+
+      await userEvent.click(screen.getByRole("button", { name: "Español" }));
+
+      expect(within(sidebar()).getByText("Cosas")).toBeInTheDocument();
+      expect(within(sidebar()).queryByText("Guardados")).toBeNull();
+    });
+
+    it("also switches from the display popover, and remembers the choice", async () => {
+      withSaves();
+      render(<App />);
+
+      await userEvent.click(screen.getByLabelText(en.toolbar.display));
+      await userEvent.click(screen.getByRole("button", { name: "Español" }));
+
+      expect(within(sidebar()).getByText(es.sidebar.library)).toBeInTheDocument();
+      expect(localStorage.getItem(STORAGE_KEYS.preferences)).toContain('"language":"es"');
+    });
+
+    it("seeds a fresh cabinet in Spanish for a browser already set to Spanish", () => {
+      localStorage.setItem(
+        STORAGE_KEYS.preferences,
+        JSON.stringify({ view: "grid", color: "ultramarine", cards: "cream", language: "es" }),
+      );
+      render(<App />);
+
+      expect(within(sidebar()).getByText("Guardados")).toBeInTheDocument();
     });
   });
 });

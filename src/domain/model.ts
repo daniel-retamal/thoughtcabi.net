@@ -65,6 +65,12 @@ export const DEFAULT_VIEW_MODE: ViewMode = "grid";
 
 export type CardSurface = "cream" | "color";
 
+export type Locale = "en" | "es";
+
+export const LOCALES: readonly Locale[] = ["en", "es"];
+
+export const DEFAULT_LOCALE: Locale = "en";
+
 export type SidebarMode = "wide" | "rail";
 
 export const DEFAULT_SIDEBAR_MODE: SidebarMode = "wide";
@@ -80,6 +86,7 @@ export interface Preferences extends Appearance {
   view: ViewMode;
   sidebar: SidebarMode;
   sidebarWidth: number;
+  language: Locale;
   onboarded: boolean;
 }
 

@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import type { BrowseMode } from "@/state/useLibraryView";
+import type { Copy } from "@/i18n/copy";
+import { format } from "@/i18n/format";
 import type { PrimerFact } from "@/components/feedback/EmptyPrimer";
 import { ModKey } from "@/components/primitives/ModKey";
 
@@ -17,38 +19,41 @@ export interface EmptyStateContext {
   onboarded: boolean;
 }
 
-function primerFacts(shelfName: string): PrimerFact[] {
+function primerFacts(shelfName: string, copy: Copy): PrimerFact[] {
   return [
-    { term: "Shelves", text: `Listed in the sidebar. Rename ${shelfName} whenever you like.` },
-    { term: "Folders", text: "Live inside a shelf, made where you are standing." },
-    { term: "Tags", text: "One color each, cutting across every shelf." },
+    {
+      term: copy.empty.primerShelvesTerm,
+      text: format(copy.empty.primerShelvesText, { shelf: shelfName }),
+    },
+    { term: copy.empty.primerFoldersTerm, text: copy.empty.primerFoldersText },
+    { term: copy.empty.primerTagsTerm, text: copy.empty.primerTagsText },
   ];
 }
 
-function firstLoad(shelfName: string): EmptyStateCopy {
+function firstLoad(shelfName: string, copy: Copy): EmptyStateCopy {
   return {
     kind: "plate",
-    title: "Your cabinet is empty.",
-    text: "Copy a link, then paste it anywhere on this page. It arrives as a card with the site's title and thumbnail.",
-    primer: primerFacts(shelfName),
+    title: copy.empty.firstLoadTitle,
+    text: copy.empty.firstLoadText,
+    primer: primerFacts(shelfName, copy),
   };
 }
 
-function emptied(shelfName: string): EmptyStateCopy {
+function emptied(shelfName: string, copy: Copy): EmptyStateCopy {
   return {
     kind: "plate",
-    title: "Nothing saved.",
-    text: `Paste a link to start filling ${shelfName} again.`,
+    title: copy.empty.emptiedTitle,
+    text: format(copy.empty.emptiedText, { shelf: shelfName }),
     primer: null,
   };
 }
 
-export function emptyStateFor(context: EmptyStateContext): EmptyStateCopy {
+export function emptyStateFor(context: EmptyStateContext, copy: Copy): EmptyStateCopy {
   if (context.mode === "searching") {
     return {
       kind: "quiet",
-      title: `No matches for “${context.query}”.`,
-      text: "Search covers titles, notes, domains and tags.",
+      title: format(copy.empty.searchingTitle, { query: context.query }),
+      text: copy.empty.searchingText,
       clearable: true,
     };
   }
@@ -56,32 +61,36 @@ export function emptyStateFor(context: EmptyStateContext): EmptyStateCopy {
   if (context.mode === "tagged") {
     return {
       kind: "quiet",
-      title: `Nothing tagged ${context.activeTag ?? ""}.`,
-      text: "Open any save and pick this tag in its editor.",
+      title: format(copy.empty.taggedTitle, { tag: context.activeTag ?? "" }),
+      text: copy.empty.taggedText,
       clearable: false,
     };
   }
 
   if (context.cabinetEmpty) {
-    return context.onboarded ? emptied(context.shelfName) : firstLoad(context.shelfName);
+    return context.onboarded
+      ? emptied(context.shelfName, copy)
+      : firstLoad(context.shelfName, copy);
   }
 
   if (context.inFolder) {
     return {
       kind: "quiet",
-      title: "This folder is empty.",
-      text: "Drag saves into it, or paste a link while you're inside.",
+      title: copy.empty.inFolderTitle,
+      text: copy.empty.inFolderText,
       clearable: false,
     };
   }
 
   return {
     kind: "quiet",
-    title: `Nothing in ${context.shelfName} yet.`,
+    title: format(copy.empty.shelfTitle, { shelf: context.shelfName }),
     text: (
       <>
-        Paste a link with <ModKey />
-        <kbd>V</kbd>, or drag saves in from another shelf.
+        {copy.empty.shelfTextBefore}
+        <ModKey />
+        <kbd>V</kbd>
+        {copy.empty.shelfTextAfter}
       </>
     ),
     clearable: false,

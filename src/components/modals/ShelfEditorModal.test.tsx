@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { en } from "@/i18n/en";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ShelfEditorModal, type ShelfEditorModalProps } from "./ShelfEditorModal";
@@ -69,9 +70,7 @@ describe("ShelfEditorModal", () => {
     renderEditor({ canDelete: false });
 
     expect(deleteButton()).toBeDisabled();
-    expect(
-      screen.getByText("Your cabinet keeps at least one shelf. Rename this one instead."),
-    ).toBeInTheDocument();
+    expect(screen.getByText(en.shelfEditor.lastShelf)).toBeInTheDocument();
   });
 
   it("offers no delete at all while the shelf is being made", () => {

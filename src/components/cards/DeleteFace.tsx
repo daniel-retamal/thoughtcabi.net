@@ -1,5 +1,6 @@
 import { stopPropagation } from "@/lib/events";
-import { pluralize } from "@/lib/text";
+import { useCopy } from "@/i18n/I18nContext";
+import { countedTemplate } from "@/i18n/format";
 
 export interface DeleteFaceProps {
   count: number;
@@ -9,15 +10,17 @@ export interface DeleteFaceProps {
 }
 
 export function DeleteFace({ count, className, onConfirm, onKeep }: DeleteFaceProps) {
+  const copy = useCopy();
+
   return (
     <div className={className} onClick={stopPropagation}>
-      <p>Delete {pluralize(count, "save")}?</p>
+      <p>{countedTemplate(copy.deleteFace.question, count)}</p>
       <div className="face-actions">
         <button type="button" className="face-delete" onClick={onConfirm}>
-          Delete
+          {copy.actions.delete}
         </button>
         <button type="button" className="face-keep" onClick={onKeep}>
-          Keep
+          {copy.actions.keep}
         </button>
       </div>
     </div>

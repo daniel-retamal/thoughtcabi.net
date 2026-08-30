@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Appearance, Preferences, SidebarMode, ViewMode } from "@/domain/model";
+import type { Appearance, Locale, Preferences, SidebarMode, ViewMode } from "@/domain/model";
 import { loadPreferences, savePreferences } from "@/storage/appState";
 import { STORAGE_KEYS } from "@/storage/keys";
 import { isSelfWrite, parseJson } from "@/storage/localStore";
@@ -13,6 +13,7 @@ export interface PreferencesStore {
   setView: (view: ViewMode) => void;
   setSidebar: (sidebar: SidebarMode) => void;
   setSidebarSize: (size: SidebarSize) => void;
+  setLanguage: (language: Locale) => void;
   updateAppearance: (changes: Partial<Appearance>) => void;
   markOnboarded: () => void;
 }
@@ -23,6 +24,7 @@ export function usePreferences(): PreferencesStore {
   useEffect(() => {
     applyAppearance(preferences, document.documentElement);
     document.documentElement.setAttribute("data-sidebar", preferences.sidebar);
+    document.documentElement.setAttribute("lang", preferences.language);
     savePreferences(preferences);
   }, [preferences]);
 
@@ -52,9 +54,21 @@ export function usePreferences(): PreferencesStore {
     setPreferences((current) => ({ ...current, ...changes }));
   }, []);
 
+  const setLanguage = useCallback((language: Locale) => {
+    setPreferences((current) => ({ ...current, language }));
+  }, []);
+
   const markOnboarded = useCallback(() => {
     setPreferences((current) => ({ ...current, onboarded: true }));
   }, []);
 
-  return { preferences, setView, setSidebar, setSidebarSize, updateAppearance, markOnboarded };
+  return {
+    preferences,
+    setView,
+    setSidebar,
+    setSidebarSize,
+    setLanguage,
+    updateAppearance,
+    markOnboarded,
+  };
 }

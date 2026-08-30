@@ -4,6 +4,7 @@ import { collectNotes, directCounts } from "@/domain/library/tree";
 import { folderDragProps } from "@/dnd/dragProps";
 import { useArmed } from "@/hooks/useArmed";
 import { useOnClickOutside } from "@/hooks/useOnClickOutside";
+import { useCopy } from "@/i18n/I18nContext";
 import { Icon } from "@/components/primitives/Icon";
 import { DeleteFace } from "@/components/cards/DeleteFace";
 import { FolderActions } from "@/components/cards/NodeActions";
@@ -15,6 +16,7 @@ export interface FolderRowProps extends FolderHandlers {
 }
 
 export function FolderRow({ folder, onOpen, onRename, onDelete }: FolderRowProps) {
+  const copy = useCopy();
   const rowRef = useRef<HTMLDivElement>(null);
   const confirm = useArmed();
   const saves = collectNotes(folder).length;
@@ -36,7 +38,7 @@ export function FolderRow({ folder, onOpen, onRename, onDelete }: FolderRowProps
 
       <div className="row-main">
         <div className="row-title">{folder.name}</div>
-        <div className="row-desc">{folderRowSummary(directCounts(folder))}</div>
+        <div className="row-desc">{folderRowSummary(directCounts(folder), copy)}</div>
       </div>
 
       <FolderActions

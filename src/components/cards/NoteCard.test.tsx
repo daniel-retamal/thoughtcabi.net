@@ -14,7 +14,7 @@ function renderCard(note = makeNote(), tags = [makeTag("To read", TAG_PALETTE[0]
 
 describe("NoteCard", () => {
   it("shows the title, source chip and domain", () => {
-    renderCard(makeNote({ title: "On Rereading", catLabel: "Article", domain: "newyorker.com" }));
+    renderCard(makeNote({ title: "On Rereading", cat: "article", domain: "newyorker.com" }));
     expect(screen.getByText("On Rereading")).toBeInTheDocument();
     expect(screen.getByText("Article")).toBeInTheDocument();
     expect(screen.getByText("newyorker.com")).toBeInTheDocument();

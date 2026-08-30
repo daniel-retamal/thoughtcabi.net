@@ -1,6 +1,7 @@
 import { useRef, type ClipboardEvent, type DragEvent } from "react";
 import { downscaleImage } from "@/lib/downscaleImage";
 import { hasImagePayload, readDroppedImage } from "@/lib/imageDrop";
+import { useCopy } from "@/i18n/I18nContext";
 import { Icon } from "@/components/primitives/Icon";
 
 function readImageFile(file: File | null | undefined, onLoaded: (dataUrl: string) => void): void {
@@ -21,6 +22,7 @@ export interface ThumbnailFieldProps {
 }
 
 export function ThumbnailField({ value, onChange }: ThumbnailFieldProps) {
+  const copy = useCopy();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const take = (transfer: DataTransfer): boolean => {
@@ -59,8 +61,8 @@ export function ThumbnailField({ value, onChange }: ThumbnailFieldProps) {
         <button
           type="button"
           className="img-remove"
-          title="Remove image"
-          aria-label="Remove image"
+          title={copy.thumbnailField.removeImage}
+          aria-label={copy.thumbnailField.removeImage}
           onClick={() => onChange("")}
         >
           <Icon name="x" />
@@ -79,7 +81,7 @@ export function ThumbnailField({ value, onChange }: ThumbnailFieldProps) {
       onClick={() => fileInputRef.current?.click()}
     >
       <Icon name="image-plus" />
-      <span>Paste, drop, or click to add a thumbnail</span>
+      <span>{copy.thumbnailField.prompt}</span>
       <input
         ref={fileInputRef}
         type="file"

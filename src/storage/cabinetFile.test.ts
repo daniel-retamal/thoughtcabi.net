@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { makeLibrary, makeNote, makeShelf, makeTag } from "@/test/factories";
+import { EN_NAMES, makeLibrary, makeNote, makeShelf, makeTag } from "@/test/factories";
 import type { Cabinet, PendingNote } from "@/domain/model";
 import { TAG_PALETTE } from "@/domain/tags/palette";
 import {
   CABINET_FILE_VERSION,
   cabinetFileName,
-  readCabinetFile,
+  readCabinetFile as readCabinetFileWith,
   serializeCabinet,
 } from "./cabinetFile";
+
+const readCabinetFile = (text: string) => readCabinetFileWith(text, EN_NAMES);
 
 const EXPORTED_AT = Date.UTC(2026, 7, 8, 14, 30);
 

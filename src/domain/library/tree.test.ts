@@ -194,9 +194,9 @@ describe("counting and collecting", () => {
   it("calls a cabinet empty only when no shelf holds anything", () => {
     expect(isCabinetEmpty([makeShelf("Saved")])).toBe(true);
     expect(isCabinetEmpty([makeShelf("Saved"), makeShelf("Later")])).toBe(true);
-    expect(
-      isCabinetEmpty([makeShelf("Saved"), makeShelf("Later", [makeFolder("Empty")])]),
-    ).toBe(false);
+    expect(isCabinetEmpty([makeShelf("Saved"), makeShelf("Later", [makeFolder("Empty")])])).toBe(
+      false,
+    );
     expect(isCabinetEmpty(makeLibrary())).toBe(false);
   });
 

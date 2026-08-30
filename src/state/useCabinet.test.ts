@@ -2,7 +2,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 import { makeLibrary, makeNote, makeShelf, makeTag } from "@/test/factories";
 import { STORAGE_KEYS } from "@/storage/keys";
-import { useCabinet } from "./useCabinet";
+import { EN_NAMES } from "@/test/factories";
+import * as store from "./useCabinet";
+
+const useCabinet = () => store.useCabinet(EN_NAMES);
 
 function remoteWrite(value: string | null): void {
   act(() => {

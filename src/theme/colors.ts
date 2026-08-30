@@ -1,8 +1,10 @@
 import type { Appearance, CardSurface } from "@/domain/model";
+import type { Copy } from "@/i18n/copy";
+
+export type ColorLabelId = keyof Copy["colors"];
 
 export interface ThemeColor {
-  id: string;
-  label: string;
+  id: ColorLabelId;
   field: string;
   paper: string;
   plate: string;
@@ -10,45 +12,39 @@ export interface ThemeColor {
 }
 
 export interface ColorFamily {
-  id: string;
-  label: string;
+  id: ColorLabelId;
   colors: readonly [ThemeColor, ...ThemeColor[]];
 }
 
 export const COLOR_FAMILIES: readonly [ColorFamily, ...ColorFamily[]] = [
   {
     id: "blue",
-    label: "Blue",
     colors: [
       {
         id: "ultramarine",
-        label: "Ultramarine",
         field: "#101C86",
         paper: "#F2ECDE",
         plate: "#1D2CA1",
       },
-      { id: "cobalt", label: "Cobalt", field: "#0F1A6B", paper: "#F1EBDC", plate: "#1B2893" },
-      { id: "navy", label: "Navy", field: "#0D2350", paper: "#F3EFE4", plate: "#19366A" },
-      { id: "midnight", label: "Midnight", field: "#0B1026", paper: "#EFEADC", plate: "#171D3F" },
+      { id: "cobalt", field: "#0F1A6B", paper: "#F1EBDC", plate: "#1B2893" },
+      { id: "navy", field: "#0D2350", paper: "#F3EFE4", plate: "#19366A" },
+      { id: "midnight", field: "#0B1026", paper: "#EFEADC", plate: "#171D3F" },
     ],
   },
   {
     id: "green",
-    label: "Green",
     colors: [
-      { id: "emerald", label: "Emerald", field: "#00603A", paper: "#F3EBDD", plate: "#078050" },
-      { id: "viridian", label: "Viridian", field: "#0D4A34", paper: "#F2EADB", plate: "#197050" },
-      { id: "forest", label: "Forest", field: "#0F3B2C", paper: "#F3EEE4", plate: "#1B5340" },
-      { id: "pine", label: "Pine", field: "#0A2018", paper: "#F0E9DB", plate: "#16382C" },
+      { id: "emerald", field: "#00603A", paper: "#F3EBDD", plate: "#078050" },
+      { id: "viridian", field: "#0D4A34", paper: "#F2EADB", plate: "#197050" },
+      { id: "forest", field: "#0F3B2C", paper: "#F3EEE4", plate: "#1B5340" },
+      { id: "pine", field: "#0A2018", paper: "#F0E9DB", plate: "#16382C" },
     ],
   },
   {
     id: "mono",
-    label: "Mono",
     colors: [
       {
         id: "paper",
-        label: "Paper",
         field: "#F7F5F0",
         paper: "#FFFFFF",
         plate: "#1C1B19",
@@ -56,14 +52,13 @@ export const COLOR_FAMILIES: readonly [ColorFamily, ...ColorFamily[]] = [
       },
       {
         id: "linen",
-        label: "Linen",
         field: "#E6E2DA",
         paper: "#FBFAF7",
         plate: "#22211E",
         light: true,
       },
-      { id: "graphite", label: "Graphite", field: "#2A2A2C", paper: "#F2F0EA", plate: "#3A3A3E" },
-      { id: "onyx", label: "Onyx", field: "#0C0C0D", paper: "#F0EEE8", plate: "#1A1A1E" },
+      { id: "graphite", field: "#2A2A2C", paper: "#F2F0EA", plate: "#3A3A3E" },
+      { id: "onyx", field: "#0C0C0D", paper: "#F0EEE8", plate: "#1A1A1E" },
     ],
   },
 ];
