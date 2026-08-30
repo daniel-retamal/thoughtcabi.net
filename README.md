@@ -25,7 +25,7 @@
 
 > **ENCYCLOPEDIA** [Easy: Success] A [_Zettelkasten_](https://en.wikipedia.org/wiki/Zettelkasten). A slip-box. Niklas Luhmann, sociologist, kept ninety thousand index cards in a set of wooden drawers, each card holding one idea and a number pointing at its neighbours. He wrote seventy books out of it and named the box as his collaborator. Nobody has improved on the principle in sixty years. They have only made the drawers electric.
 
-thoughtcabi.net is an open source place to put the websites you want to keep. Bookmark the web. Paste a link and it becomes a card carrying the page's own title, description and picture. Put it on a shelf, drop it in a folder, give it a tag. There is nothing to set up, and the cabinet is kept in your browser's `localStorage`, so it stays on the machine you saved it from.
+`thoughtcabi.net` is an open source place to put the websites you want to keep. Bookmark the web. Paste a link and it becomes a card carrying the page's own title, description and picture. Put it on a shelf, drop it in a folder, give it a tag. There is nothing to set up, and the cabinet is kept in your browser's `localStorage`, so it stays on the machine you saved it from.
 
 ## What it does
 
@@ -39,17 +39,18 @@ thoughtcabi.net is an open source place to put the websites you want to keep. Bo
 
 ## Keyboard and gestures
 
-| Action                | How                                                |
-| --------------------- | -------------------------------------------------- |
-| Save a pasted link    | `Ctrl`/`Cmd` + `V` anywhere outside a text field   |
-| Focus search          | `Ctrl`/`Cmd` + `K`                                 |
-| Undo                  | `Ctrl`/`Cmd` + `Z`, or Undo on the toast           |
-| Close any dialog      | `Esc`, or click the backdrop                       |
-| Move a card or folder | Drag it, and the nearest gap between siblings wins |
-| Move into a folder    | Drop onto the folder tile                          |
-| Open while dragging   | Hover a breadcrumb or shelf for a moment         |
-| Assign a tag          | Drag the tag from the sidebar onto a card          |
-| Cancel a drag         | `Esc`, right-click, or drop on nothing             |
+| Action                         | How                                                |
+| ------------------------------ | -------------------------------------------------- |
+| Save a pasted link             | `Ctrl`/`Cmd` + `V` anywhere outside a text field   |
+| Focus search                   | `Ctrl`/`Cmd` + `K`                                 |
+| Undo                           | `Ctrl`/`Cmd` + `Z`, or Undo on the toast           |
+| Collapse or expand the sidebar | `Ctrl`/`Cmd` + `B`                                 |
+| Close any dialog               | `Esc`, or click the backdrop                       |
+| Move a card or folder          | Drag it, and the nearest gap between siblings wins |
+| Move into a folder             | Drop onto the folder tile                          |
+| Open while dragging            | Hover a breadcrumb or shelf for a moment           |
+| Assign a tag                   | Drag the tag from the sidebar onto a card          |
+| Cancel a drag                  | `Esc`, right-click, or drop on nothing             |
 
 ## Running it
 

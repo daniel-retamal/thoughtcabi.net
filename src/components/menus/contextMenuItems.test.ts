@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { makeNote } from "@/test/factories";
+import { makeFolder, makeNote } from "@/test/factories";
 import { contextMenuFor, type ContextMenuHandlers } from "./contextMenuItems";
 
 function handlers(): ContextMenuHandlers {
@@ -7,6 +7,9 @@ function handlers(): ContextMenuHandlers {
     onPasteLink: vi.fn(),
     onSaveLink: vi.fn(),
     onNewFolder: vi.fn(),
+    onOpenFolder: vi.fn(),
+    onRenameFolder: vi.fn(),
+    onDeleteFolder: vi.fn(),
     onOpen: vi.fn(),
     onCopyLink: vi.fn(),
     onEdit: vi.fn(),
@@ -29,6 +32,25 @@ describe("contextMenuFor", () => {
     const items = contextMenuFor({ kind: "background", canCreateFolder: false }, handlers());
 
     expect(labels(items)).not.toContain("New folder");
+  });
+
+  it("gives a folder its own actions, with delete last and marked", () => {
+    const items = contextMenuFor({ kind: "folder", folder: makeFolder("Reading") }, handlers());
+
+    expect(labels(items)).toEqual(["Open", "Rename", "Delete"]);
+    expect(items.at(-1)?.danger).toBe(true);
+  });
+
+  it("hands each folder action the folder it was opened on", () => {
+    const folder = makeFolder("Reading");
+    const spies = handlers();
+    const items = contextMenuFor({ kind: "folder", folder }, spies);
+
+    items.find((item) => item.label === "Rename")?.run();
+    expect(spies.onRenameFolder).toHaveBeenCalledWith(folder);
+
+    items.find((item) => item.label === "Open")?.run();
+    expect(spies.onOpenFolder).toHaveBeenCalledWith(folder);
   });
 
   it("gives a card its own actions, with delete last and marked", () => {
