@@ -1,12 +1,15 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { EN_NAMES, makeLibrary, makeTag } from "@/test/factories";
+import { EN_NAMES, makeDestination, makeLibrary, makeTag } from "@/test/factories";
 import { LEGACY_KEYS, STORAGE_KEYS } from "./keys";
 import {
   DEFAULT_PREFERENCES,
+  clearRemoteState,
   loadCabinet as loadCabinetWith,
   loadPreferences,
+  loadRemoteState,
   saveCabinet,
   savePreferences,
+  saveRemoteState,
 } from "./appState";
 
 const loadCabinet = () => loadCabinetWith(EN_NAMES);
@@ -160,5 +163,43 @@ describe("preferences", () => {
       language: "en",
       onboarded: false,
     });
+  });
+});
+
+describe("the destinations", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("round-trips what this browser is connected to", () => {
+    const state = {
+      destinations: [
+        makeDestination({ id: "d1", provider: "drive", direction: "two-way", secret: "token" }),
+        makeDestination({ id: "d2", provider: "github" }),
+      ],
+    };
+    expect(saveRemoteState(state)).toBe("ok");
+    expect(loadRemoteState()).toEqual(state);
+  });
+
+  it("starts with nothing connected", () => {
+    expect(loadRemoteState()).toEqual({ destinations: [] });
+  });
+
+  it("falls back to nothing connected rather than throwing on a broken value", () => {
+    localStorage.setItem(STORAGE_KEYS.remote, "not json");
+    expect(loadRemoteState()).toEqual({ destinations: [] });
+  });
+
+  it("forgets the connections without touching the cabinet or the preferences", () => {
+    saveCabinet({ library: makeLibrary(), tags: [] });
+    savePreferences(DEFAULT_PREFERENCES);
+    saveRemoteState({ destinations: [makeDestination({ id: "d1" })] });
+
+    clearRemoteState();
+
+    expect(localStorage.getItem(STORAGE_KEYS.remote)).toBeNull();
+    expect(localStorage.getItem(STORAGE_KEYS.cabinet)).not.toBeNull();
+    expect(localStorage.getItem(STORAGE_KEYS.preferences)).not.toBeNull();
   });
 });

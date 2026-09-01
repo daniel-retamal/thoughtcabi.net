@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { EN_NAMES } from "@/test/factories";
 import * as parsers from "./parsers";
-import { parsePreferences, parseTags, parseViewMode } from "./parsers";
+import { parsePreferences, parseRemoteState, parseTags, parseViewMode } from "./parsers";
 
 const parseLibrary = (value: unknown) => parsers.parseLibrary(value, EN_NAMES);
 const parseCabinet = (value: unknown) => parsers.parseCabinet(value, EN_NAMES);
@@ -254,5 +254,110 @@ describe("parsePreferences", () => {
 
   it("takes a language it recognises", () => {
     expect(parsePreferences({ language: "es" })?.language).toBe("es");
+  });
+});
+
+describe("parseRemoteState", () => {
+  it("accepts a well-formed connection", () => {
+    const state = parseRemoteState({
+      destinations: [
+        {
+          id: "d1",
+          provider: "github",
+          locator: { owner: "danielr", repo: "cabinet", path: "cabinet.json" },
+          label: "danielr/cabinet",
+          direction: "two-way",
+          cadence: "hourly",
+          adopted: true,
+          baseRevision: "sha-1",
+          baseDigest: "digest-1",
+          lastSyncedAt: 1_700_000_000_000,
+          lastProblem: "auth",
+          secret: "github_pat_x",
+        },
+      ],
+    });
+
+    expect(state?.destinations[0]).toEqual({
+      id: "d1",
+      provider: "github",
+      locator: { owner: "danielr", repo: "cabinet", path: "cabinet.json" },
+      label: "danielr/cabinet",
+      direction: "two-way",
+      cadence: "hourly",
+      adopted: true,
+      baseRevision: "sha-1",
+      baseDigest: "digest-1",
+      lastSyncedAt: 1_700_000_000_000,
+      lastProblem: "auth",
+      secret: "github_pat_x",
+    });
+  });
+
+  it("rejects anything that is not a record holding an array", () => {
+    expect(parseRemoteState(null)).toBeNull();
+    expect(parseRemoteState([])).toBeNull();
+    expect(parseRemoteState({})).toBeNull();
+  });
+
+  it("drops a destination with nothing to address it by", () => {
+    const state = parseRemoteState({
+      destinations: [{ provider: "folder" }, { id: "d1" }, { id: "d2", provider: "folder" }],
+    });
+    expect(state?.destinations.map((entry) => entry.id)).toEqual(["d2"]);
+  });
+
+  it("keeps a destination this build does not recognise rather than losing its credential", () => {
+    const state = parseRemoteState({
+      destinations: [{ id: "d1", provider: "dropbox", label: "Dropbox", secret: "token" }],
+    });
+    expect(state?.destinations[0]).toMatchObject({
+      provider: "dropbox",
+      label: "Dropbox",
+      secret: "token",
+    });
+  });
+
+  it("repairs each field on its own rather than discarding the connection", () => {
+    const state = parseRemoteState({
+      destinations: [
+        { id: "d1", provider: "folder", direction: "sideways", cadence: "often", locator: 7 },
+      ],
+    });
+    expect(state?.destinations[0]).toMatchObject({
+      direction: "mirror",
+      cadence: "manual",
+      adopted: false,
+      locator: {},
+      baseRevision: null,
+      lastProblem: null,
+    });
+  });
+
+  it("keeps only the string entries of a locator", () => {
+    const state = parseRemoteState({
+      destinations: [{ id: "d1", provider: "webdav", locator: { url: "https://x/", depth: 1 } }],
+    });
+    expect(state?.destinations[0]?.locator).toEqual({ url: "https://x/" });
+  });
+
+  it("repairs a stored value carrying two homes by demoting the second", () => {
+    const state = parseRemoteState({
+      destinations: [
+        { id: "d1", provider: "drive", direction: "two-way" },
+        { id: "d2", provider: "folder", direction: "two-way" },
+      ],
+    });
+    expect(state?.destinations.map((entry) => entry.direction)).toEqual(["two-way", "mirror"]);
+  });
+
+  it("keeps the first of two destinations sharing an id", () => {
+    const state = parseRemoteState({
+      destinations: [
+        { id: "d1", provider: "folder", label: "First" },
+        { id: "d1", provider: "folder", label: "Second" },
+      ],
+    });
+    expect(state?.destinations.map((entry) => entry.label)).toEqual(["First"]);
   });
 });

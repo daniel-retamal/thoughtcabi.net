@@ -1,6 +1,7 @@
 export const STORAGE_KEYS = {
   cabinet: "thoughtcabinet.cabinet.v1",
   preferences: "thoughtcabinet.prefs.v1",
+  remote: "thoughtcabinet.remote.v1",
   quarantine: "thoughtcabinet.cabinet.corrupt.v1",
 } as const;
 
@@ -12,5 +13,4 @@ export const LEGACY_KEYS = {
 } as const;
 
 export type StorageKey =
-  | (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]
-  | (typeof LEGACY_KEYS)[keyof typeof LEGACY_KEYS];
+  (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS] | (typeof LEGACY_KEYS)[keyof typeof LEGACY_KEYS];
