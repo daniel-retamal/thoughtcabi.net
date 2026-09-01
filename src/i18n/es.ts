@@ -53,7 +53,7 @@ export const es: Copy = {
     gridView: "Vista de cuadrícula",
     rows: "Filas",
     rowView: "Vista de filas",
-    transfer: "Exportar e importar",
+    transfer: "Tu gabinete",
     display: "Ajustes de apariencia",
   },
 
@@ -117,11 +117,14 @@ export const es: Copy = {
     importedInto: "Importado en",
     movedTo: "Movido a",
     movedFolderTo: "Carpeta movida a",
+    keptTwoVersions: "Se guardaron dos versiones en",
+    savedACopy: "Se guardó una copia como",
     view: "Ver",
     undo: "Deshacer",
   },
 
   empty: {
+    bringItHere: "¿Ya tienes un gabinete? Tráelo aquí.",
     firstLoadTitle: "Tu gabinete está vacío.",
     firstLoadText:
       "Copia un enlace y pégalo en cualquier parte de esta página. Llega como una tarjeta con el título y la miniatura del sitio.",
@@ -255,6 +258,117 @@ export const es: Copy = {
     unreadable: "Este archivo no es JSON, así que no hay nada que leer.",
     newer: "Este archivo viene de una versión más nueva de thoughtcabinet.",
     empty: "Este archivo no tiene estantes.",
+  },
+
+  sync: {
+    heading: "Tu gabinete",
+    places: "Dónde vive",
+    placesEmpty: "En este navegador, y en ningún otro lugar todavía.",
+    addPlace: "Agregar un lugar",
+
+    download: {
+      label: "Este equipo",
+      detail: "un archivo que descargas",
+      when: "cuando lo pidas",
+    },
+
+    roles: {
+      home: "Principal",
+      mirror: "Copia",
+      follow: "Sólo lectura",
+    },
+
+    cadences: {
+      live: "En vivo",
+      hourly: "Cada hora",
+      manual: "Cuando lo pidas",
+    },
+
+    connect: {
+      heading: "¿Dónde debería vivir tu gabinete?",
+      folder: "Una carpeta en este equipo",
+      folderSub: "iCloud Drive, Dropbox, Syncthing, una unidad de red",
+      github: "GitHub",
+      githubSub: "Un repositorio privado, con historial",
+      drive: "Google Drive",
+      onedrive: "OneDrive",
+      webdav: "Tu propio servidor",
+      webdavSub: "WebDAV: Nextcloud, Synology, rclone",
+      file: "Este equipo",
+      fileSub: "Un archivo que descargas y conservas",
+      unavailable: "Aquí no",
+      needsChromium:
+        "La carpeta necesita Chrome, Edge, Brave o Arc. Safari y Firefox no traen selector de carpetas.",
+      soon: "Todavía no está conectado en esta versión.",
+    },
+
+    actions: {
+      syncNow: "Sincronizar ahora",
+      restore: "Restaurar",
+      disconnect: "Desconectar",
+      disconnectArmed: "Desconectar de verdad",
+      resume: "Continuar",
+      makeHome: "Hacerlo el principal",
+    },
+
+    states: {
+      synced: "Sincronizado con {name}",
+      working: "Sincronizando con {name}",
+      pending: "Esperando alcanzar {name}",
+      paused: "Esperando permiso para alcanzar {name}",
+      conflict: "{name} tiene una pregunta para ti",
+      blocked: "{name} necesita una mano",
+    },
+
+    lastSynced: "sincronizado {when}",
+    never: "todavía no",
+    thisBrowser: "Este navegador",
+    conflictsFolder: "Conflictos",
+
+    adopt: {
+      heading: "Aquí ya hay un gabinete",
+      question:
+        "{name} tiene un gabinete propio. El tuyo puede tomar su lugar, o quedarse al lado con un nombre de este equipo.",
+      keepMine: "Reemplazarlo por el mío",
+      keepBoth: "Conservar ambos",
+      labelPrompt: "¿Cómo se debería llamar este equipo?",
+    },
+
+    reconcile: {
+      heading: "Dos gabinetes",
+      question:
+        "{name} tiene un gabinete y este navegador tiene otro. Elijas lo que elijas, el otro se guarda al lado primero.",
+      keepBoth: "Conservar ambos",
+      keepMine: "Conservar el mío",
+      keepTheirs: "Conservar el suyo",
+    },
+
+    conflict: {
+      heading: "Dos versiones",
+      question:
+        "Ambos lados cambiaron desde la última vez que coincidieron, y no hay una copia anterior desde donde retroceder. Elijas lo que elijas, el otro se guarda al lado primero.",
+      keepBoth: "Conservar ambos",
+      keepMine: "Conservar el mío",
+      keepTheirs: "Conservar el suyo",
+    },
+
+    problems: {
+      newer:
+        "Una versión más nueva de thoughtcabinet escribió esto. Actualiza este navegador y sigue sola.",
+      unreadable:
+        "Lo que hay ahí no es un archivo de gabinete, así que no se escribió nada encima.",
+      empty: "Lo que hay ahí no tiene estantes, así que no se escribió nada encima.",
+      auth: "Esto necesita que inicies sesión de nuevo.",
+      permission: "Esto espera un permiso que no se ha dado.",
+      denied: "Este lugar rechazó el cambio.",
+      offline: "Sin red. Todo sigue guardado aquí.",
+      cors: "Tu servidor no permitió que este navegador lo alcanzara.",
+      mixedContent: "Esa dirección no es HTTPS, así que el navegador no la abrirá.",
+      tooLarge: "Ya no queda espacio ahí para el gabinete.",
+      readonly: "Este lugar se puede leer pero no escribir.",
+      gone: "Este lugar ya no está.",
+      failed: "Eso no llegó. Lo volverá a intentar.",
+    },
   },
 
   storage: {

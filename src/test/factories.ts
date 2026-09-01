@@ -1,5 +1,6 @@
 import type { Folder, Library, LibraryNode, Note, PendingNote, Shelf, Tag } from "@/domain/model";
 import type { Destination } from "@/domain/sync/types";
+import type { SyncSurface } from "@/components/sync/surface";
 import type { IconName } from "@/icons/names";
 import { en } from "@/i18n/en";
 import { cabinetNames } from "@/storage/names";
@@ -102,6 +103,22 @@ export function makeDestination(overrides: Partial<Destination> = {}): Destinati
     lastSyncedAt: null,
     lastProblem: null,
     secret: null,
+    ...overrides,
+  };
+}
+
+export function makeSyncSurface(overrides: Partial<SyncSurface> = {}): SyncSurface {
+  return {
+    providers: [],
+    destinations: [],
+    staged: null,
+    onAddPlace: () => {},
+    onConnect: () => {},
+    onResume: () => {},
+    onRestore: () => {},
+    onMakeHome: () => {},
+    onCadence: () => {},
+    onDisconnect: () => {},
     ...overrides,
   };
 }

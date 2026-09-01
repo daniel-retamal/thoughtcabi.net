@@ -51,7 +51,7 @@ export const en = {
     gridView: "Grid view",
     rows: "Rows",
     rowView: "Row view",
-    transfer: "Export and import",
+    transfer: "Your cabinet",
     display: "Display settings",
   },
 
@@ -115,11 +115,14 @@ export const en = {
     importedInto: "Imported into",
     movedTo: "Moved to",
     movedFolderTo: "Moved folder to",
+    keptTwoVersions: "Kept two versions in",
+    savedACopy: "Saved a copy as",
     view: "View",
     undo: "Undo",
   },
 
   empty: {
+    bringItHere: "Already have a cabinet? Bring it here.",
     firstLoadTitle: "Your cabinet is empty.",
     firstLoadText:
       "Copy a link, then paste it anywhere on this page. It arrives as a card with the site's title and thumbnail.",
@@ -253,6 +256,115 @@ export const en = {
     unreadable: "This file is not JSON, so there is nothing to read.",
     newer: "This file comes from a newer version of thoughtcabinet.",
     empty: "This file has no shelves in it.",
+  },
+
+  sync: {
+    heading: "Your cabinet",
+    places: "Where it lives",
+    placesEmpty: "In this browser, and nowhere else yet.",
+    addPlace: "Add a place",
+
+    download: {
+      label: "This computer",
+      detail: "a file you download",
+      when: "when you ask",
+    },
+
+    roles: {
+      home: "Home",
+      mirror: "Copy",
+      follow: "Read only",
+    },
+
+    cadences: {
+      live: "Live",
+      hourly: "Hourly",
+      manual: "When you ask",
+    },
+
+    connect: {
+      heading: "Where should your cabinet live?",
+      folder: "A folder on this computer",
+      folderSub: "iCloud Drive, Dropbox, Syncthing, a network drive",
+      github: "GitHub",
+      githubSub: "A private repository, with a history",
+      drive: "Google Drive",
+      onedrive: "OneDrive",
+      webdav: "Your own server",
+      webdavSub: "WebDAV: Nextcloud, Synology, rclone",
+      file: "This computer",
+      fileSub: "A file you download and keep",
+      unavailable: "Not here",
+      needsChromium:
+        "The folder needs Chrome, Edge, Brave or Arc. Safari and Firefox ship no folder picker.",
+      soon: "Not wired up in this version yet.",
+    },
+
+    actions: {
+      syncNow: "Sync now",
+      restore: "Restore",
+      disconnect: "Disconnect",
+      disconnectArmed: "Disconnect for real",
+      resume: "Continue",
+      makeHome: "Make this the home",
+    },
+
+    states: {
+      synced: "Synced with {name}",
+      working: "Syncing with {name}",
+      pending: "Waiting to reach {name}",
+      paused: "Waiting for permission to reach {name}",
+      conflict: "{name} is holding a question for you",
+      blocked: "{name} needs a hand",
+    },
+
+    lastSynced: "synced {when}",
+    never: "not yet",
+    thisBrowser: "This browser",
+    conflictsFolder: "Conflicts",
+
+    adopt: {
+      heading: "There is already a cabinet here",
+      question:
+        "{name} holds a cabinet of its own. Yours can take its place, or sit beside it under a name of this machine.",
+      keepMine: "Replace it with mine",
+      keepBoth: "Keep both",
+      labelPrompt: "What should this machine be called?",
+    },
+
+    reconcile: {
+      heading: "Two cabinets",
+      question:
+        "{name} holds one cabinet and this browser holds another. Whichever you pick, the other is saved beside it first.",
+      keepBoth: "Keep both",
+      keepMine: "Keep mine",
+      keepTheirs: "Keep theirs",
+    },
+
+    conflict: {
+      heading: "Two versions",
+      question:
+        "Both sides moved since they last agreed, and there is no earlier copy to work back from. Whichever you pick, the other is saved beside it first.",
+      keepBoth: "Keep both",
+      keepMine: "Keep mine",
+      keepTheirs: "Keep theirs",
+    },
+
+    problems: {
+      newer: "A newer version of thoughtcabinet wrote this. Update this browser and it carries on.",
+      unreadable: "What is there is not a cabinet file, so nothing has been written over it.",
+      empty: "What is there has no shelves in it, so nothing has been written over it.",
+      auth: "This needs you to sign in again.",
+      permission: "This is waiting on permission that has not been given.",
+      denied: "This place refused the change.",
+      offline: "No network. Everything is still saved here.",
+      cors: "Your server did not allow this browser to reach it.",
+      mixedContent: "That address is not HTTPS, so the browser will not open it.",
+      tooLarge: "There is no room left there for the cabinet.",
+      readonly: "This place can be read but not written to.",
+      gone: "This place is not there any more.",
+      failed: "That did not go through. It will try again.",
+    },
   },
 
   storage: {

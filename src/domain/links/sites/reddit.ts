@@ -52,8 +52,7 @@ export function redditReadableUrl({ path }: RedditPage): string {
 export function redditGated(page: PageContent): boolean {
   if (page.tags["og:title"]) return false;
   return (
-    GATE_TITLE.test(page.title.trim()) ||
-    GATE_DESCRIPTION.test(page.tags.description?.trim() ?? "")
+    GATE_TITLE.test(page.title.trim()) || GATE_DESCRIPTION.test(page.tags.description?.trim() ?? "")
   );
 }
 

@@ -186,6 +186,12 @@ describe("the destinations", () => {
     expect(loadRemoteState()).toEqual({ destinations: [] });
   });
 
+  it("keeps no key at all once the last place is disconnected", () => {
+    saveRemoteState({ destinations: [makeDestination({ id: "d1" })] });
+    expect(saveRemoteState({ destinations: [] })).toBe("ok");
+    expect(localStorage.getItem(STORAGE_KEYS.remote)).toBeNull();
+  });
+
   it("falls back to nothing connected rather than throwing on a broken value", () => {
     localStorage.setItem(STORAGE_KEYS.remote, "not json");
     expect(loadRemoteState()).toEqual({ destinations: [] });

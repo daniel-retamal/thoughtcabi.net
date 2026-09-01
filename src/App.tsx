@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { createId } from "@/domain/ids";
 import { imageUrlFrom } from "@/domain/links/imageUrl";
 import type { LinkPreview } from "@/domain/links/linkPreview";
@@ -8,6 +8,7 @@ import {
   containerAt,
   findNode,
   firstShelf,
+  locateNode,
   isCabinetEmpty,
   parentContainerName,
   pathToFolder,
@@ -26,6 +27,7 @@ import {
   type Shelf,
   type Tag,
 } from "@/domain/model";
+import type { Cadence, ProviderId } from "@/domain/sync/types";
 import { sameName } from "@/domain/transfer/mergeCabinets";
 import { withFreshIds } from "@/domain/transfer/reidentify";
 import { DND_ATTR } from "@/dnd/attributes";
@@ -47,17 +49,24 @@ import { useOnEscape } from "@/hooks/useOnEscape";
 import { useSearchShortcut } from "@/hooks/useSearchShortcut";
 import { useSidebarResize } from "@/hooks/useSidebarResize";
 import { useSidebarShortcut } from "@/hooks/useSidebarShortcut";
+import { useLatest } from "@/hooks/useLatest";
 import { useToasts, type ToastAction } from "@/hooks/useToasts";
 import { useTransientIds } from "@/hooks/useTransientIds";
 import { useUndoShortcut } from "@/hooks/useUndoShortcut";
+import { browserBaseStore, type BaseStore } from "@/sync/baseStore";
+import type { RemoteProvider } from "@/sync/types";
 import { useCabinet } from "@/state/useCabinet";
+import { useRemoteSync } from "@/state/useRemoteSync";
 import { useLibraryDragAndDrop } from "@/state/useLibraryDragAndDrop";
 import { useLibraryView, type FolderEntry } from "@/state/useLibraryView";
 import { useNavigation } from "@/state/useNavigation";
 import { usePasteToSave } from "@/state/usePasteToSave";
 import type { Dialog } from "@/state/dialogs";
 import { DialogHost } from "@/components/DialogHost";
+import { SyncAnswerModal } from "@/components/modals/SyncAnswerModal";
 import type { ImportMode } from "@/components/modals/TransferModal";
+import { SyncPill } from "@/components/sync/SyncPill";
+import type { StagedCabinet, SyncSurface } from "@/components/sync/surface";
 import { AppControls } from "@/components/layout/AppControls";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { ContentToolbar } from "@/components/layout/ContentToolbar";
@@ -76,11 +85,19 @@ import { contextMenuFor, type ContextTarget } from "@/components/menus/contextMe
 
 const FRESH_HIGHLIGHT_MS = 1500;
 
+const NO_PROVIDERS: readonly RemoteProvider[] = [];
+
 export interface AppProps {
   readLink?: LinkReader;
+  providers?: readonly RemoteProvider[];
+  baseStore?: BaseStore;
 }
 
-export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
+export function App({
+  readLink = readLinkFromWeb,
+  providers = NO_PROVIDERS,
+  baseStore,
+}: AppProps = {}) {
   const {
     preferences,
     setView,
@@ -96,11 +113,14 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [noticeDismissed, setNoticeDismissed] = useState(false);
   const [menu, setMenu] = useState<{ x: number; y: number; target: ContextTarget } | null>(null);
+  const [staged, setStaged] = useState<StagedCabinet | null>(null);
 
   const navigation = useNavigation(requireShelf(library, "").id);
   const { toasts, push: pushToast, undoable } = useToasts();
   const fresh = useTransientIds(FRESH_HIGHLIGHT_MS);
   const searchRef = useRef<HTMLInputElement>(null);
+  const latestLibrary = useLatest(library);
+  const fallbackBaseStore = useMemo(browserBaseStore, []);
   const shellRef = useRef<HTMLDivElement>(null);
   const brandRef = useRef<HTMLDivElement>(null);
 
@@ -365,6 +385,65 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
     });
   };
 
+  const remote = useRemoteSync({
+    cabinet,
+    dispatch,
+    names: cabinetNames(copy),
+    conflictsFolder: copy.sync.conflictsFolder,
+    providers,
+    baseStore: baseStore ?? fallbackBaseStore,
+    onArrived: (ids) => ids.forEach(fresh.mark),
+    onParked: (ids) => {
+      const parked = ids[0];
+      pushToast({
+        verb: "keptTwoVersions",
+        subject: copy.sync.conflictsFolder,
+        action: parked
+          ? {
+              kind: "view",
+              run: () => {
+                const at = locateNode(latestLibrary.current, parked);
+                if (at) navigation.goTo(at);
+              },
+            }
+          : undefined,
+      });
+    },
+    onSavedAside: (name) => pushToast({ verb: "savedACopy", subject: name }),
+  });
+
+  const openTransfer = (): void => {
+    setStaged(null);
+    setDialog({ kind: "transfer" });
+  };
+
+  const syncSurface: SyncSurface = {
+    providers,
+    destinations: remote.destinations,
+    staged,
+    onAddPlace: () => setDialog({ kind: "sync-connect" }),
+    onConnect: (provider: ProviderId) => {
+      closeDialog();
+      void remote.connect(provider, {});
+    },
+    onResume: remote.resume,
+    onRestore: (id) => {
+      const view = remote.destinations.find((entry) => entry.destination.id === id);
+      void remote.restore(id).then((read) => {
+        if (!read) return;
+        setStaged({ name: view?.destination.locator.name ?? id, read });
+        setDialog({ kind: "transfer" });
+      });
+    },
+    onMakeHome: remote.makeHome,
+    onCadence: (id, cadence: Cadence) => remote.setCadence(id, cadence),
+    onDisconnect: remote.disconnect,
+  };
+
+  const pillFor =
+    remote.destinations.find((view) => view.destination.direction === "two-way") ??
+    remote.destinations[0];
+
   const noteHandlers = {
     onOpen: (note: Note) => setDialog({ kind: "detail", note }),
     onEdit: (note: Note) => setDialog({ kind: "compose", mode: "edit", note }),
@@ -401,7 +480,22 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
       language={preferences.language}
       onAppearanceChange={updateAppearance}
       onLanguageChange={changeLanguage}
-      onTransfer={() => setDialog({ kind: "transfer" })}
+      onTransfer={openTransfer}
+      pill={
+        pillFor ? (
+          <SyncPill
+            state={remote.pill}
+            provider={pillFor.destination.provider}
+            label={pillFor.destination.label}
+            lastSyncedAt={pillFor.destination.lastSyncedAt}
+            onClick={() =>
+              pillFor.status.kind === "paused"
+                ? remote.resume(pillFor.destination.id)
+                : openTransfer()
+            }
+          />
+        ) : null
+      }
     />
   );
 
@@ -504,6 +598,11 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
                       primer={emptyState.primer}
                       language={preferences.language}
                       onSaveLink={openCompose}
+                      onBringCabinet={
+                        remote.destinations.length === 0
+                          ? () => setDialog({ kind: "sync-connect" })
+                          : null
+                      }
                       onLanguageChange={changeLanguage}
                     />
                   ) : (
@@ -542,6 +641,7 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
           tags={tags}
           currentLocation={navigation.location}
           readLink={readLink}
+          sync={syncSurface}
           detailLocationLabel={(note) =>
             parentContainerName(library, note.id) ?? viewState.shelf.name
           }
@@ -570,6 +670,16 @@ export function App({ readLink = readLinkFromWeb }: AppProps = {}) {
           onExportCabinet={exportCabinet}
           onImportCabinet={importCabinet}
         />
+
+        {remote.question ? (
+          <SyncAnswerModal
+            question={remote.question}
+            library={library}
+            tags={tags}
+            onAnswer={remote.answer}
+            onCancel={remote.dismissQuestion}
+          />
+        ) : null}
 
         {menu ? (
           <ContextMenu

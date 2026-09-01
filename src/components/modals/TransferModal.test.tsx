@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { en } from "@/i18n/en";
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { makeLibrary, makeNote, makeShelf, makeTag } from "@/test/factories";
+import { makeLibrary, makeNote, makeShelf, makeSyncSurface, makeTag } from "@/test/factories";
 import { TAG_PALETTE } from "@/domain/tags/palette";
 import { serializeCabinet } from "@/storage/cabinetFile";
 import { TransferModal } from "./TransferModal";
@@ -24,6 +24,7 @@ function setup() {
     <TransferModal
       library={makeLibrary()}
       tags={[makeTag("To read", TAG_PALETTE[0]), makeTag("Reference", TAG_PALETTE[1])]}
+      sync={makeSyncSurface()}
       onExport={onExport}
       onImport={onImport}
       onCancel={vi.fn()}

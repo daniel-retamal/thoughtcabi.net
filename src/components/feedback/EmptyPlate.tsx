@@ -11,6 +11,7 @@ export interface EmptyPlateProps {
   primer: readonly PrimerFact[] | null;
   language: Locale;
   onSaveLink: () => void;
+  onBringCabinet: (() => void) | null;
   onLanguageChange: (locale: Locale) => void;
 }
 
@@ -20,6 +21,7 @@ export function EmptyPlate({
   primer,
   language,
   onSaveLink,
+  onBringCabinet,
   onLanguageChange,
 }: EmptyPlateProps) {
   const copy = useCopy();
@@ -36,6 +38,11 @@ export function EmptyPlate({
         <button type="button" className="btn-paste" onClick={onSaveLink}>
           <Icon name="plus" /> {copy.actions.saveALink}
         </button>
+        {onBringCabinet ? (
+          <button type="button" className="es-bring" onClick={onBringCabinet}>
+            {copy.empty.bringItHere}
+          </button>
+        ) : null}
       </div>
       {primer ? (
         <>

@@ -57,6 +57,10 @@ export function loadRemoteState(): RemoteState {
 }
 
 export function saveRemoteState(state: RemoteState): WriteOutcome {
+  if (state.destinations.length === 0) {
+    clearRemoteState();
+    return "ok";
+  }
   return writeJson(STORAGE_KEYS.remote, state);
 }
 

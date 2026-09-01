@@ -4,7 +4,14 @@ import { createId } from "@/domain/ids";
 export type ToastActionKind = "view" | "undo";
 
 export type ToastVerb =
-  "savedTo" | "deleted" | "thumbnailSetOn" | "importedInto" | "movedTo" | "movedFolderTo";
+  | "savedTo"
+  | "deleted"
+  | "thumbnailSetOn"
+  | "importedInto"
+  | "movedTo"
+  | "movedFolderTo"
+  | "keptTwoVersions"
+  | "savedACopy";
 
 export interface ToastAction {
   kind: ToastActionKind;
@@ -15,13 +22,13 @@ export interface Toast {
   id: string;
   verb: ToastVerb;
   subject: string;
-  action: ToastAction;
+  action: ToastAction | null;
 }
 
 export interface ToastInput {
   verb?: ToastVerb;
   subject: string;
-  action: ToastAction;
+  action?: ToastAction;
 }
 
 const LIFETIME_MS: Record<ToastActionKind, number> = {
@@ -32,7 +39,7 @@ const LIFETIME_MS: Record<ToastActionKind, number> = {
 function lastUndo(toasts: readonly Toast[]): (() => void) | null {
   for (let index = toasts.length - 1; index >= 0; index -= 1) {
     const toast = toasts[index];
-    if (toast?.action.kind === "undo") return toast.action.run;
+    if (toast?.action?.kind === "undo") return toast.action.run;
   }
   return null;
 }
@@ -55,23 +62,26 @@ export function useToasts(): {
   const push = useCallback(
     (input: ToastInput) => {
       const id = createId("t");
+      const asked = input.action;
       const toast: Toast = {
         id,
         verb: input.verb ?? "savedTo",
         subject: input.subject,
-        action: {
-          kind: input.action.kind,
-          run: () => {
-            dismiss(id);
-            input.action.run();
-          },
-        },
+        action: asked
+          ? {
+              kind: asked.kind,
+              run: () => {
+                dismiss(id);
+                asked.run();
+              },
+            }
+          : null,
       };
 
       setToasts((current) => [...current, toast]);
       timers.current.set(
         id,
-        setTimeout(() => dismiss(id), LIFETIME_MS[toast.action.kind]),
+        setTimeout(() => dismiss(id), LIFETIME_MS[asked?.kind ?? "view"]),
       );
     },
     [dismiss],

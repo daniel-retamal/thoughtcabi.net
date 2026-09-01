@@ -26,7 +26,7 @@ export function FormModal({ size, kind, heading, onClose, onImageDrop, children 
     : {};
 
   return (
-    <Modal size={size} onClose={onClose}>
+    <Modal size={size} label={heading} onClose={onClose}>
       <div className="modal-body form" {...dropProps}>
         {kind ? (
           <div className="m-cat">

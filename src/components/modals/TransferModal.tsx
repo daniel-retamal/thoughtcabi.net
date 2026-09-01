@@ -5,32 +5,38 @@ import { readTextFile } from "@/lib/files";
 import { relativeTime } from "@/lib/relativeTime";
 import { useCopy } from "@/i18n/I18nContext";
 import { format } from "@/i18n/format";
-import { readCabinetFile, type CabinetFileRead } from "@/storage/cabinetFile";
+import { readCabinetFile } from "@/storage/cabinetFile";
 import { cabinetNames } from "@/storage/names";
 import { Button } from "@/components/primitives/Button";
 import { Icon } from "@/components/primitives/Icon";
+import { DestinationRow } from "@/components/sync/DestinationRow";
+import type { StagedCabinet, SyncSurface } from "@/components/sync/surface";
 import { CabinetCounts } from "./CabinetCounts";
 import { FormActions, FormModal } from "./FormModal";
 import { Field } from "./fields/Field";
 
 export type ImportMode = "merge" | "replace";
 
-interface StagedFile {
-  name: string;
-  read: CabinetFileRead;
-}
-
 export interface TransferModalProps {
   library: Library;
   tags: readonly Tag[];
+  sync: SyncSurface;
   onExport: () => void;
   onImport: (cabinet: Cabinet, mode: ImportMode) => void;
   onCancel: () => void;
 }
 
-export function TransferModal({ library, tags, onExport, onImport, onCancel }: TransferModalProps) {
+export function TransferModal({
+  library,
+  tags,
+  sync,
+  onExport,
+  onImport,
+  onCancel,
+}: TransferModalProps) {
   const copy = useCopy();
-  const [staged, setStaged] = useState<StagedFile | null>(null);
+  const [chosen, setChosen] = useState<StagedCabinet | null>(null);
+  const staged = chosen ?? sync.staged;
 
   const read = staged?.read ?? null;
   const incoming = read?.ok ? read.cabinet : null;
@@ -40,21 +46,52 @@ export function TransferModal({ library, tags, onExport, onImport, onCancel }: T
   const take = (file: File | null | undefined): void => {
     if (!file) return;
     readTextFile(file).then(
-      (text) => setStaged({ name: file.name, read: readCabinetFile(text, cabinetNames(copy)) }),
-      () => setStaged({ name: file.name, read: { ok: false, problem: "unreadable" } }),
+      (text) => setChosen({ name: file.name, read: readCabinetFile(text, cabinetNames(copy)) }),
+      () => setChosen({ name: file.name, read: { ok: false, problem: "unreadable" } }),
     );
   };
 
   return (
-    <FormModal size="md" heading={copy.transfer.heading} onClose={onCancel}>
-      <Field label={copy.transfer.exportLabel}>
-        <div className="cab-block">
-          <CabinetCounts summary={summarizeCabinet(library, tags)} />
-          <div className="modal-actions cab-actions">
-            <Button variant="primary" icon="download" onClick={onExport}>
-              {copy.actions.download}
-            </Button>
+    <FormModal size="md" heading={copy.sync.heading} onClose={onCancel}>
+      <div className="cab-block">
+        <CabinetCounts summary={summarizeCabinet(library, tags)} />
+      </div>
+
+      <Field label={copy.sync.places}>
+        <div className="places">
+          {sync.destinations.map((view) => (
+            <DestinationRow
+              key={view.destination.id}
+              view={view}
+              onResume={() => sync.onResume(view.destination.id)}
+              onRestore={() => sync.onRestore(view.destination.id)}
+              onMakeHome={() => sync.onMakeHome(view.destination.id)}
+              onCadence={(cadence) => sync.onCadence(view.destination.id, cadence)}
+              onDisconnect={() => sync.onDisconnect(view.destination.id)}
+            />
+          ))}
+
+          <div className="place place-static">
+            <div className="place-head">
+              <span className="place-mark">
+                <Icon name="hard-drive" />
+              </span>
+              <span className="place-name">{copy.sync.download.label}</span>
+              <span className="place-role">{copy.sync.roles.mirror}</span>
+              <span className="place-file">{copy.sync.download.detail}</span>
+              <span className="place-when">{copy.sync.download.when}</span>
+              <button type="button" className="place-verb" onClick={onExport}>
+                <Icon name="download" />
+                {copy.actions.download}
+              </button>
+            </div>
           </div>
+        </div>
+
+        <div className="modal-actions cab-actions">
+          <Button variant="ghost" icon="plus" onClick={sync.onAddPlace}>
+            {copy.sync.addPlace}
+          </Button>
         </div>
       </Field>
 
@@ -76,7 +113,7 @@ export function TransferModal({ library, tags, onExport, onImport, onCancel }: T
                 className="cab-file-clear"
                 title={copy.transfer.chooseAnother}
                 aria-label={copy.transfer.chooseAnother}
-                onClick={() => setStaged(null)}
+                onClick={() => setChosen(null)}
               >
                 <Icon name="x" />
               </button>
