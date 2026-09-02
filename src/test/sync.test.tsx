@@ -2,12 +2,15 @@ import { describe, expect, it } from "vitest";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { en } from "@/i18n/en";
+import { format } from "@/i18n/format";
 import type { Cabinet } from "@/domain/model";
 import type { Rhythm } from "@/domain/sync/rhythm";
 import { serializeCabinet } from "@/storage/cabinetFile";
 import { STORAGE_KEYS } from "@/storage/keys";
 import { memoryBaseStore } from "@/sync/baseStore";
 import { MemoryRemote, memoryProvider } from "@/sync/memoryStore";
+import { githubProvider } from "@/sync/providers/github";
+import { FakeGithub } from "@/test/fakeGithub";
 import { makeNote, makeShelf, makeTag } from "@/test/factories";
 import { TAG_PALETTE } from "@/domain/tags/palette";
 import { App } from "@/App";
@@ -293,6 +296,72 @@ describe("a copy another sync app left behind", () => {
     await waitFor(() => expect(localStorage.getItem(STORAGE_KEYS.remote)).toContain("conflicted"));
     expect(cards()).toEqual(["One", "Two"]);
     expect(screen.queryByText(en.sync.stray.heading)).not.toBeInTheDocument();
+  });
+});
+
+describe("connecting to a repository", () => {
+  function mountWith(remote: FakeGithub): void {
+    render(
+      <App
+        providers={[githubProvider({ fetcher: remote.fetcher, api: "https://api.github.com" })]}
+        baseStore={memoryBaseStore()}
+      />,
+    );
+  }
+
+  async function openTheForm(): Promise<void> {
+    await userEvent.click(screen.getByLabelText(en.toolbar.transfer));
+    await userEvent.click(screen.getByRole("button", { name: en.sync.addPlace }));
+    await userEvent.click(screen.getByRole("button", { name: /GitHub/ }));
+  }
+
+  async function fill(remote: FakeGithub, token = remote.token): Promise<void> {
+    await userEvent.type(places().getByLabelText(en.sync.fields.owner), remote.owner);
+    await userEvent.type(places().getByLabelText(en.sync.fields.repo), remote.repo);
+    await userEvent.type(places().getByLabelText(en.sync.fields.token), token);
+    await userEvent.click(places().getByRole("button", { name: en.sync.fields.connect }));
+  }
+
+  it("takes the owner, the repository and a token, and writes the cabinet there", async () => {
+    withLocal(cabinetOf(["One"]));
+    const remote = new FakeGithub();
+    mountWith(remote);
+
+    await openTheForm();
+    await fill(remote);
+
+    await waitFor(() => expect(remote.textOf("thoughtcabinet.json")).toContain("One"));
+    expect(remote.messages).toEqual(["Cabinet: 1 shelf, 0 folders, 1 card"]);
+  });
+
+  it("says so and stays put when GitHub will not take the token", async () => {
+    withLocal(cabinetOf(["One"]));
+    const remote = new FakeGithub();
+    mountWith(remote);
+
+    await openTheForm();
+    await fill(remote, "github_pat_wrong");
+
+    expect(await screen.findByText(en.sync.refused.auth)).toBeInTheDocument();
+    expect(remote.textOf("thoughtcabinet.json")).toBeNull();
+  });
+
+  it("refuses a public repository until its name is typed out", async () => {
+    withLocal(cabinetOf(["One"]));
+    const remote = new FakeGithub({ private: false });
+    mountWith(remote);
+
+    await openTheForm();
+    await fill(remote);
+
+    const typeIt = format(en.sync.publicRepo.typeName, { name: remote.repo });
+    expect(await screen.findByLabelText(typeIt)).toBeInTheDocument();
+    expect(remote.textOf("thoughtcabinet.json")).toBeNull();
+
+    await userEvent.type(places().getByLabelText(typeIt), remote.repo);
+    await userEvent.click(places().getByRole("button", { name: en.sync.publicRepo.confirm }));
+
+    await waitFor(() => expect(remote.textOf("thoughtcabinet.json")).toContain("One"));
   });
 });
 

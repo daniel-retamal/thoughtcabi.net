@@ -6,14 +6,16 @@ import { conflictedCopies } from "@/domain/sync/conflictedCopy";
 import { cabinetDigest } from "@/domain/sync/digest";
 import { mergeThree } from "@/domain/sync/mergeThree";
 import { planFollow, planMirror, planSync } from "@/domain/sync/planSync";
+import { writeMessage } from "@/domain/sync/writeMessage";
 import type { DestinationPatch } from "@/domain/sync/topology";
-import type { Destination, LocalSyncState, SyncProblem } from "@/domain/sync/types";
+import type { Destination, LocalSyncState, RemoteHead, SyncProblem } from "@/domain/sync/types";
+import { summarizeCabinet } from "@/domain/transfer/cabinetSummary";
 import { mergeCabinets } from "@/domain/transfer/mergeCabinets";
 import { withFreshIds, type IdFactory } from "@/domain/transfer/reidentify";
 import { readCabinetFile, serializeCabinet, type CabinetFileRead } from "@/storage/cabinetFile";
 import type { CabinetNames } from "@/storage/names";
 import type { BaseStore } from "./baseStore";
-import type { PushFailure, RemoteSnapshot, RemoteStore } from "./types";
+import { problemOf, type PushFailure, type RemoteSnapshot, type RemoteStore } from "./types";
 
 export type SyncStateKind = "synced" | "working" | "pending" | "paused" | "conflict" | "blocked";
 
@@ -122,15 +124,18 @@ function textOf(cabinet: Cabinet, context: EngineContext): string {
   return serializeCabinet(cabinet, context.now());
 }
 
-async function readRemote(
-  store: RemoteStore,
-  context: EngineContext,
-): Promise<{ snapshot: RemoteSnapshot; read: CabinetFileRead } | null> {
+type RemoteRead = { snapshot: RemoteSnapshot; read: CabinetFileRead } | { problem: SyncProblem };
+
+function unread(value: RemoteRead): value is { problem: SyncProblem } {
+  return "problem" in value;
+}
+
+async function readRemote(store: RemoteStore, context: EngineContext): Promise<RemoteRead> {
   try {
     const snapshot = await store.pull();
     return { snapshot, read: readCabinetFile(snapshot.text, context.names) };
-  } catch {
-    return null;
+  } catch (error) {
+    return { problem: problemOf(error) };
   }
 }
 
@@ -142,7 +147,8 @@ async function writeTo(
   expected: string | null,
 ): Promise<SyncOutcome> {
   const digest = cabinetDigest(cabinet);
-  const outcome = await store.push(textOf(cabinet, context), expected);
+  const message = writeMessage(summarizeCabinet(cabinet.library, cabinet.tags));
+  const outcome = await store.push(textOf(cabinet, context), expected, message);
   if (!outcome.ok) return stalled(PROBLEM_FOR_PUSH[outcome.reason]);
 
   await context.baseStore.write(destination.id, {
@@ -206,7 +212,7 @@ async function pullInto(
   context: EngineContext,
 ): Promise<SyncOutcome> {
   const remote = await readRemote(store, context);
-  if (!remote) return stalled("failed");
+  if (unread(remote)) return stalled(remote.problem);
   if (!remote.read.ok) return stalled(remote.read.problem);
 
   const incoming = remote.read.cabinet;
@@ -225,7 +231,7 @@ async function reconcileWith(
   kind: QuestionKind,
 ): Promise<SyncOutcome> {
   const remote = await readRemote(store, context);
-  if (!remote) return stalled("failed");
+  if (unread(remote)) return stalled(remote.problem);
   if (!remote.read.ok) return stalled(remote.read.problem);
 
   context.ask({
@@ -245,7 +251,7 @@ async function mergeWith(
   context: EngineContext,
 ): Promise<SyncOutcome> {
   const remote = await readRemote(store, context);
-  if (!remote) return stalled("failed");
+  if (unread(remote)) return stalled(remote.problem);
   if (!remote.read.ok) return stalled(remote.read.problem);
 
   const copy = await context.baseStore.read(destination.id);
@@ -284,7 +290,8 @@ async function mirrorWrite(
 ): Promise<SyncOutcome> {
   if (head !== null && head !== destination.baseRevision) {
     const remote = await readRemote(store, context);
-    if (remote && !remote.read.ok && remote.read.problem === "newer") return stalled("newer");
+    if (!unread(remote) && !remote.read.ok && remote.read.problem === "newer")
+      return stalled("newer");
   }
   return writeTo(destination, store, context, context.cabinet, head);
 }
@@ -294,8 +301,12 @@ export async function settleDestination(
   store: RemoteStore,
   context: EngineContext,
 ): Promise<SyncOutcome> {
-  const head = await store.head().catch(() => undefined);
-  if (head === undefined) return stalled("failed");
+  let head: RemoteHead | null;
+  try {
+    head = await store.head();
+  } catch (error) {
+    return stalled(problemOf(error));
+  }
 
   const local = localStateOf(destination, context);
 

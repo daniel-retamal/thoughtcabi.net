@@ -40,6 +40,7 @@ import {
 import {
   directionFor,
   providerById,
+  type ConnectResult,
   type RemoteProvider,
   type RemoteStore,
   type ReopenMode,
@@ -61,7 +62,7 @@ export interface RemoteSync {
   destinations: readonly DestinationView[];
   pill: PillState;
   question: SyncQuestion | null;
-  connect: (provider: ProviderId, fields: Record<string, string>) => Promise<boolean>;
+  connect: (provider: ProviderId, fields: Record<string, string>) => Promise<ConnectResult>;
   answer: (input: AnswerInput) => void;
   dismissQuestion: () => void;
   disconnect: (id: string) => void;
@@ -315,19 +316,26 @@ export function useRemoteSync(options: RemoteSyncOptions): RemoteSync {
   }, [settleAll]);
 
   const connect = useCallback(
-    async (id: ProviderId, fields: Record<string, string>): Promise<boolean> => {
+    async (id: ProviderId, fields: Record<string, string>): Promise<ConnectResult> => {
       const provider = providerById(latest.current.providers, id);
-      if (!provider) return false;
+      if (!provider) return { ok: false, reason: "failed" };
 
-      const connection = await provider.connect({ fields }).catch(() => null);
-      if (!connection) return false;
+      const result = await provider
+        .connect({ fields })
+        .catch((): ConnectResult => ({ ok: false, reason: "failed" }));
+      if (!result.ok) return result;
+
+      const { connection } = result;
+      const writable = (await connection.store.writable?.()) ?? true;
 
       const destination: Destination = {
         id: createId("d"),
         provider: id,
         locator: connection.locator,
         label: connection.label,
-        direction: directionFor(provider.defaults, Boolean(homeOf(latest.current.state))),
+        direction: writable
+          ? directionFor(provider.defaults, Boolean(homeOf(latest.current.state)))
+          : "follow",
         cadence: provider.defaults.cadence,
         adopted: false,
         baseRevision: null,
@@ -341,7 +349,7 @@ export function useRemoteSync(options: RemoteSyncOptions): RemoteSync {
       runtimeFor(destination.id).store = connection.store;
       setState((current) => addDestination(current, destination));
       void settle(destination);
-      return true;
+      return result;
     },
     [latest, runtimeFor, settle],
   );

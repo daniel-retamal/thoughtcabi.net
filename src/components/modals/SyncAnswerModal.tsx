@@ -63,6 +63,7 @@ export function SyncAnswerModal({
         <Field label={copy.sync.adopt.labelPrompt}>
           <input
             type="text"
+            className="f-input"
             aria-label={copy.sync.adopt.labelPrompt}
             value={label}
             placeholder={copy.sync.download.label}

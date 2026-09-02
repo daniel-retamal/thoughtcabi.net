@@ -1,15 +1,18 @@
+import { useState } from "react";
 import type { ProviderId } from "@/domain/sync/types";
 import { useCopy } from "@/i18n/I18nContext";
-import type { RemoteProvider } from "@/sync/types";
+import type { ConnectResult, RemoteProvider } from "@/sync/types";
 import { providerById } from "@/sync/types";
 import { Button } from "@/components/primitives/Button";
 import { Icon } from "@/components/primitives/Icon";
+import { ConnectForm } from "@/components/sync/ConnectForm";
+import { connectFieldsFor } from "@/components/sync/connectFields";
 import { CONNECT_TILES, providerFace } from "@/components/sync/providerFace";
 import { FormActions, FormModal } from "./FormModal";
 
 export interface SyncConnectModalProps {
   providers: readonly RemoteProvider[];
-  onConnect: (provider: ProviderId) => void;
+  onConnect: (provider: ProviderId, fields: Record<string, string>) => Promise<ConnectResult>;
   onDownload: () => void;
   onCancel: () => void;
 }
@@ -26,6 +29,7 @@ export function SyncConnectModal({
   onCancel,
 }: SyncConnectModalProps) {
   const copy = useCopy();
+  const [asking, setAsking] = useState<ProviderId | null>(null);
 
   const tiles: Tile[] = CONNECT_TILES.map((id) => {
     const provider = providerById(providers, id);
@@ -34,6 +38,26 @@ export function SyncConnectModal({
     if (availability.ok) return { id, reason: null };
     return { id, reason: copy.sync.connect.needsChromium };
   });
+
+  const pick = (id: ProviderId): void => {
+    if (connectFieldsFor(id, copy).length > 0) {
+      setAsking(id);
+      return;
+    }
+    void onConnect(id, {});
+  };
+
+  if (asking) {
+    return (
+      <FormModal size="md" heading={providerFace(asking, copy).label} onClose={onCancel}>
+        <ConnectForm
+          provider={asking}
+          onConnect={(fields) => onConnect(asking, fields)}
+          onBack={() => setAsking(null)}
+        />
+      </FormModal>
+    );
+  }
 
   return (
     <FormModal size="md" heading={copy.sync.connect.heading} onClose={onCancel}>
@@ -46,7 +70,7 @@ export function SyncConnectModal({
               type="button"
               className="tile"
               disabled={tile.reason !== null}
-              onClick={() => onConnect(tile.id)}
+              onClick={() => pick(tile.id)}
             >
               <span className="tile-mark">
                 <Icon name={face.icon} />

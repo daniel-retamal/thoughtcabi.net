@@ -83,6 +83,7 @@ describe("the two dictionaries", () => {
       "sync.connect.drive",
       "sync.connect.onedrive",
       "sync.connect.webdavSub",
+      "sync.fields.token",
       "display.color",
       "colors.mono",
       "icons.terminal",

@@ -25,6 +25,7 @@ export const es: Copy = {
     clearSearch: "Limpiar búsqueda",
     saveALink: "Guardar un enlace",
     dismiss: "Descartar",
+    back: "Atrás",
   },
 
   sidebar: {
@@ -300,6 +301,34 @@ export const es: Copy = {
       needsChromium:
         "La carpeta necesita Chrome, Edge, Brave o Arc. Safari y Firefox no traen selector de carpetas.",
       soon: "Todavía no está conectado en esta versión.",
+    },
+
+    fields: {
+      owner: "Dueño",
+      ownerHint: "O pega la dirección del repositorio",
+      repo: "Repositorio",
+      token: "Token",
+      tokenHint: "Un token de alcance fino con Contents: Read and write, solo en este repositorio.",
+      tokenLink: "Crea uno en github.com",
+      path: "Archivo",
+      pathHint:
+        "Dónde queda dentro del repositorio. Si lo dejas así, thoughtcabinet.json en la raíz.",
+      connect: "Conectar",
+      connecting: "Conectando…",
+    },
+
+    refused: {
+      invalid: "Ahí no hay un repositorio al que llegar. Revisa el dueño y el nombre.",
+      auth: "GitHub no aceptó ese token. Revísalo, o crea uno nuevo.",
+      gone: "No existe un repositorio con ese nombre, o el token no lo ve.",
+      failed: "No se pudo. No quedó nada conectado.",
+    },
+
+    publicRepo: {
+      warning:
+        "{name} es público. Un archivador es un historial de lectura, y lo que se escriba ahí queda en internet apenas llega.",
+      typeName: "Escribe {name} para conectar de todas formas",
+      confirm: "Conectar al repositorio público",
     },
 
     actions: {

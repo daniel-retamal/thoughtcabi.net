@@ -230,6 +230,20 @@
   margin-bottom: 14px;
 }
 
+.field-link {
+  display: inline-block;
+  margin-top: 7px;
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
+}
+
+.field-link:hover {
+  border-bottom-color: var(--accent);
+}
+
 .tiles {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -5,7 +5,21 @@ import type {
   ProviderId,
   RemoteHead,
   RemoteLocator,
+  SyncProblem,
 } from "@/domain/sync/types";
+
+export type Fetcher = (input: string, init?: RequestInit) => Promise<Response>;
+
+export class RemoteError extends Error {
+  constructor(readonly problem: SyncProblem) {
+    super(problem);
+    this.name = "RemoteError";
+  }
+}
+
+export function problemOf(error: unknown): SyncProblem {
+  return error instanceof RemoteError ? error.problem : "failed";
+}
 
 export interface RemoteSnapshot {
   text: string;
@@ -29,12 +43,17 @@ export interface RemoteStore {
   readonly provider: ProviderId;
   head(): Promise<RemoteHead | null>;
   pull(): Promise<RemoteSnapshot>;
-  push(text: string, expected: string | null): Promise<PushOutcome>;
+  push(text: string, expected: string | null, message: string): Promise<PushOutcome>;
   sibling(name: string, text: string): Promise<string | null>;
   siblings?(): Promise<readonly string[]>;
   pullFrom?(name: string): Promise<RemoteSnapshot>;
   writable?(): Promise<boolean>;
 }
+
+export type ConnectProblem = "cancelled" | "invalid" | "auth" | "gone" | "public" | "failed";
+
+export type ConnectResult =
+  { ok: true; connection: RemoteConnection } | { ok: false; reason: ConnectProblem };
 
 export interface RemoteConnection {
   locator: RemoteLocator;
@@ -72,7 +91,7 @@ export interface RemoteProvider {
   readonly id: ProviderId;
   readonly defaults: ProviderDefaults;
   available(): ProviderAvailability;
-  connect(options: ConnectOptions): Promise<RemoteConnection | null>;
+  connect(options: ConnectOptions): Promise<ConnectResult>;
   reopen(locator: RemoteLocator, secret: string | null, mode: ReopenMode): Promise<ReopenResult>;
   disconnect(locator: RemoteLocator, secret: string | null): Promise<void>;
 }

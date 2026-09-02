@@ -23,6 +23,7 @@ export const en = {
     clearSearch: "Clear search",
     saveALink: "Save a link",
     dismiss: "Dismiss",
+    back: "Back",
   },
 
   sidebar: {
@@ -298,6 +299,33 @@ export const en = {
       needsChromium:
         "The folder needs Chrome, Edge, Brave or Arc. Safari and Firefox ship no folder picker.",
       soon: "Not wired up in this version yet.",
+    },
+
+    fields: {
+      owner: "Owner",
+      ownerHint: "Or paste the repository's address",
+      repo: "Repository",
+      token: "Token",
+      tokenHint: "A fine grained token with Contents: Read and write, on this repository alone.",
+      tokenLink: "Make one on github.com",
+      path: "File",
+      pathHint: "Where in the repository it goes. Left alone, thoughtcabinet.json at the root.",
+      connect: "Connect",
+      connecting: "Connecting…",
+    },
+
+    refused: {
+      invalid: "That is not a repository this can reach. Check the owner and the name.",
+      auth: "GitHub would not take that token. Check it, or make a new one.",
+      gone: "No repository by that name, or the token cannot see it.",
+      failed: "That did not go through. Nothing has been connected.",
+    },
+
+    publicRepo: {
+      warning:
+        "{name} is public. A cabinet is a browsing history, and anything written there is on the internet the moment it lands.",
+      typeName: "Type {name} to connect anyway",
+      confirm: "Connect to the public repository",
     },
 
     actions: {

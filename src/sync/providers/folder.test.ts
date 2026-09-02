@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { memoryHandleStore, type HandleStore } from "@/sync/handleStore";
 import { FakeDirectory } from "@/test/fakeDirectory";
+import { describeStoreSuite } from "@/test/storeSuite";
 import type { RemoteStore } from "../types";
 import { folderProvider, folderStore } from "./folder";
 import type { DirectoryPicker } from "./fileSystem";
 
 const FILE = "thoughtcabinet.json";
+const MESSAGE = "Cabinet: 1 shelf, 0 folders, 2 cards";
 
 function pickerFor(directory: FakeDirectory): DirectoryPicker {
   return () => Promise.resolve(directory);
@@ -15,14 +17,27 @@ function storeOn(directory: FakeDirectory): RemoteStore {
   return folderStore(directory, FILE);
 }
 
+describeStoreSuite("folder", () => {
+  const directory = new FakeDirectory();
+  return Promise.resolve({
+    store: storeOn(directory),
+    seed: (text: string) => Promise.resolve(directory.put(FILE, text)),
+    textOf: (name: string) => Promise.resolve(directory.textOf(name)),
+    names: () => Promise.resolve(directory.names()),
+    cutOff: () => {
+      directory.unreachable = true;
+    },
+  });
+});
+
 async function connected(
   directory: FakeDirectory,
   handles: HandleStore = memoryHandleStore(),
 ): Promise<{ handles: HandleStore; locator: Record<string, string> }> {
   const provider = folderProvider({ picker: pickerFor(directory), handles });
   const connection = await provider.connect({ fields: {} });
-  if (!connection) throw new Error("the picker refused");
-  return { handles, locator: { ...connection.locator } };
+  if (!connection.ok) throw new Error("the picker refused");
+  return { handles, locator: { ...connection.connection.locator } };
 }
 
 describe("the folder store", () => {
@@ -39,53 +54,11 @@ describe("the folder store", () => {
     expect(second?.revision).not.toBe(first?.revision);
   });
 
-  it("answers null for a file that is simply not in the folder", async () => {
-    expect(await storeOn(new FakeDirectory()).head()).toBeNull();
-  });
-
-  it("fails rather than reporting an absence when the folder cannot be read", async () => {
-    const directory = new FakeDirectory();
-    directory.put(FILE, "one");
-    directory.unreachable = true;
-
-    await expect(storeOn(directory).head()).rejects.toThrow();
-  });
-
-  it("pulls the bytes and the revision they came from together", async () => {
-    const directory = new FakeDirectory();
-    directory.put(FILE, "the cabinet");
-    const store = storeOn(directory);
-
-    const snapshot = await store.pull();
-
-    expect(snapshot.text).toBe("the cabinet");
-    expect(snapshot.revision).toBe((await store.head())?.revision);
-  });
-
-  it("creates the file when nothing is there yet", async () => {
-    const directory = new FakeDirectory();
-
-    const outcome = await storeOn(directory).push("fresh", null);
-
-    expect(outcome).toMatchObject({ ok: true });
-    expect(directory.textOf(FILE)).toBe("fresh");
-  });
-
-  it("refuses to write over a revision it was not expecting", async () => {
-    const directory = new FakeDirectory();
-    directory.put(FILE, "theirs");
-
-    const outcome = await storeOn(directory).push("mine", "stale");
-
-    expect(outcome).toEqual({ ok: false, reason: "conflict" });
-    expect(directory.textOf(FILE)).toBe("theirs");
-  });
-
   it("reports a refused write as a permission problem, not a failure", async () => {
     const directory = new FakeDirectory();
     directory.refuse = "NotAllowedError";
 
-    expect(await storeOn(directory).push("mine", null)).toEqual({
+    expect(await storeOn(directory).push("mine", null, MESSAGE)).toEqual({
       ok: false,
       reason: "permission",
     });
@@ -148,7 +121,9 @@ describe("the folder provider", () => {
       handles: memoryHandleStore(),
     });
 
-    expect((await provider.connect({ fields: {} }))?.label).toBe("Syncthing");
+    const result = await provider.connect({ fields: {} });
+
+    expect(result).toMatchObject({ ok: true, connection: { label: "Syncthing" } });
   });
 
   it("asks for permission only inside the gesture, and waits without one", async () => {
@@ -195,6 +170,6 @@ describe("the folder provider", () => {
       handles: memoryHandleStore(),
     });
 
-    expect(await provider.connect({ fields: {} })).toBeNull();
+    expect(await provider.connect({ fields: {} })).toEqual({ ok: false, reason: "cancelled" });
   });
 });

@@ -5,10 +5,10 @@ import type { RemoteHead, RemoteLocator } from "@/domain/sync/types";
 import { browserHandleStore, type HandleStore } from "../handleStore";
 import type {
   ConnectOptions,
+  ConnectResult,
   ProviderAvailability,
   PushFailure,
   PushOutcome,
-  RemoteConnection,
   RemoteProvider,
   RemoteSnapshot,
   RemoteStore,
@@ -154,21 +154,24 @@ export function folderProvider(options: FolderProviderOptions = {}): RemoteProvi
     available: (): ProviderAvailability =>
       pickerNow() ? { ok: true, reason: null } : { ok: false, reason: "chromium-only" },
 
-    async connect(_options: ConnectOptions): Promise<RemoteConnection | null> {
+    async connect(_options: ConnectOptions): Promise<ConnectResult> {
       const picker = pickerNow();
-      if (!picker) return null;
+      if (!picker) return { ok: false, reason: "failed" };
 
       const directory = await picker(PICKER).catch(() => null);
-      if (!directory) return null;
+      if (!directory) return { ok: false, reason: "cancelled" };
 
       const key = createId("h");
       await handles.write(key, directory);
 
       return {
-        locator: { key, name: REMOTE_FILE_NAME, folder: directory.name },
-        label: directory.name,
-        secret: null,
-        store: folderStore(directory, REMOTE_FILE_NAME),
+        ok: true,
+        connection: {
+          locator: { key, name: REMOTE_FILE_NAME, folder: directory.name },
+          label: directory.name,
+          secret: null,
+          store: folderStore(directory, REMOTE_FILE_NAME),
+        },
       };
     },
 

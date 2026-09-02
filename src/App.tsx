@@ -422,9 +422,10 @@ export function App({
     destinations: remote.destinations,
     staged,
     onAddPlace: () => setDialog({ kind: "sync-connect" }),
-    onConnect: (provider: ProviderId) => {
-      closeDialog();
-      void remote.connect(provider, {});
+    onConnect: async (provider: ProviderId, fields: Record<string, string>) => {
+      const result = await remote.connect(provider, fields);
+      if (result.ok) closeDialog();
+      return result;
     },
     onResume: remote.resume,
     onRestore: (id) => {

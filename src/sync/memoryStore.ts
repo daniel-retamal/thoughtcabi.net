@@ -5,7 +5,7 @@ import type {
   ProviderAvailability,
   PushFailure,
   PushOutcome,
-  RemoteConnection,
+  ConnectResult,
   RemoteProvider,
   RemoteSnapshot,
   RemoteStore,
@@ -139,8 +139,11 @@ export function memoryProvider(
       rhythm: options.rhythm ?? FOLDER_RHYTHM,
     },
     available: () => options.availability ?? { ok: true, reason: null },
-    connect: (_options: ConnectOptions): Promise<RemoteConnection | null> =>
-      Promise.resolve({ locator: { name: remote.name }, label, secret: null, store }),
+    connect: (_options: ConnectOptions): Promise<ConnectResult> =>
+      Promise.resolve({
+        ok: true,
+        connection: { locator: { name: remote.name }, label, secret: null, store },
+      }),
     reopen: (
       _locator: RemoteLocator,
       _secret: string | null,
