@@ -60,6 +60,7 @@ export interface Destination {
   baseDigest: string | null;
   lastSyncedAt: number | null;
   lastProblem: SyncProblem | null;
+  strays: readonly string[];
   secret: string | null;
 }
 

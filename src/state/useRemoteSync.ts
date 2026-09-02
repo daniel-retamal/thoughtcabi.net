@@ -37,7 +37,13 @@ import {
   type SyncQuestion,
   type SyncStateKind,
 } from "@/sync/engine";
-import { directionFor, providerById, type RemoteProvider, type RemoteStore } from "@/sync/types";
+import {
+  directionFor,
+  providerById,
+  type RemoteProvider,
+  type RemoteStore,
+  type ReopenMode,
+} from "@/sync/types";
 import type { CabinetAction } from "./cabinetReducer";
 
 const TICK = 1000;
@@ -152,7 +158,7 @@ export function useRemoteSync(options: RemoteSyncOptions): RemoteSync {
   }, [latest]);
 
   const openStore = useCallback(
-    async (destination: Destination): Promise<RemoteStore | null> => {
+    async (destination: Destination, mode: ReopenMode = "quiet"): Promise<RemoteStore | null> => {
       const runtime = runtimeFor(destination.id);
       if (runtime.store) return runtime.store;
 
@@ -162,7 +168,7 @@ export function useRemoteSync(options: RemoteSyncOptions): RemoteSync {
         return null;
       }
 
-      const opened = await provider.reopen(destination.locator, destination.secret);
+      const opened = await provider.reopen(destination.locator, destination.secret, mode);
       if (opened.ok) {
         runtime.store = opened.store;
         return opened.store;
@@ -212,14 +218,14 @@ export function useRemoteSync(options: RemoteSyncOptions): RemoteSync {
   );
 
   const settle = useCallback(
-    async (destination: Destination): Promise<void> => {
+    async (destination: Destination, mode: ReopenMode = "quiet"): Promise<void> => {
       const runtime = runtimeFor(destination.id);
       if (runtime.busy) return;
       runtime.busy = true;
       publish(destination.id, { kind: "working", problem: null });
 
       try {
-        const store = await openStore(destination);
+        const store = await openStore(destination, mode);
         if (!store) return;
         apply(destination, await settleDestination(destination, store, contextFor()));
       } finally {
@@ -328,6 +334,7 @@ export function useRemoteSync(options: RemoteSyncOptions): RemoteSync {
         baseDigest: null,
         lastSyncedAt: null,
         lastProblem: null,
+        strays: [],
         secret: connection.secret,
       };
 
@@ -380,7 +387,7 @@ export function useRemoteSync(options: RemoteSyncOptions): RemoteSync {
       const destination = latest.current.state.destinations.find((entry) => entry.id === id);
       if (!destination) return null;
 
-      const store = await openStore(destination);
+      const store = await openStore(destination, "gesture");
       if (!store) return null;
 
       try {
@@ -399,7 +406,7 @@ export function useRemoteSync(options: RemoteSyncOptions): RemoteSync {
       if (!destination) return;
       runtimeFor(id).store = null;
       runtimeFor(id).failures = 0;
-      void settle(destination);
+      void settle(destination, "gesture");
     },
     [latest, runtimeFor, settle],
   );

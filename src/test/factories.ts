@@ -102,6 +102,7 @@ export function makeDestination(overrides: Partial<Destination> = {}): Destinati
     baseDigest: null,
     lastSyncedAt: null,
     lastProblem: null,
+    strays: [],
     secret: null,
     ...overrides,
   };

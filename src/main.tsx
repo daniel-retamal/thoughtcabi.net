@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { loadPreferences } from "./storage/appState";
+import { browserProviders } from "./sync/providers";
 import { applyAppearance } from "./theme/colors";
 import "./styles/index.css";
 
@@ -12,6 +13,6 @@ if (!container) throw new Error("Missing #root element");
 
 createRoot(container).render(
   <StrictMode>
-    <App />
+    <App providers={browserProviders()} />
   </StrictMode>,
 );

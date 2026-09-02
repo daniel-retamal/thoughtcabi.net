@@ -290,8 +290,17 @@ describe("parseRemoteState", () => {
       baseDigest: "digest-1",
       lastSyncedAt: 1_700_000_000_000,
       lastProblem: "auth",
+      strays: [],
       secret: "github_pat_x",
     });
+  });
+
+  it("keeps the strays a destination has already been asked about", () => {
+    const state = parseRemoteState({
+      destinations: [{ id: "d1", provider: "folder", strays: ["thoughtcabinet 2.json", 4, null] }],
+    });
+
+    expect(state?.destinations[0]?.strays).toEqual(["thoughtcabinet 2.json"]);
   });
 
   it("rejects anything that is not a record holding an array", () => {

@@ -9,6 +9,7 @@ import type {
   RemoteProvider,
   RemoteSnapshot,
   RemoteStore,
+  ReopenMode,
   ReopenResult,
 } from "./types";
 
@@ -89,6 +90,13 @@ class MemoryStore implements RemoteStore {
     return Promise.resolve({ ok: true, revision: this.remote.put(text) });
   }
 
+  pullFrom(name: string): Promise<RemoteSnapshot> {
+    const file = this.remote.files.get(name);
+    if (!file) return Promise.reject(new Error("gone"));
+    this.remote.pulls += 1;
+    return Promise.resolve({ text: file.text, revision: file.revision });
+  }
+
   sibling(name: string, text: string): Promise<string | null> {
     this.remote.files.set(name, {
       text,
@@ -133,8 +141,11 @@ export function memoryProvider(
     available: () => options.availability ?? { ok: true, reason: null },
     connect: (_options: ConnectOptions): Promise<RemoteConnection | null> =>
       Promise.resolve({ locator: { name: remote.name }, label, secret: null, store }),
-    reopen: (_locator: RemoteLocator, _secret: string | null): Promise<ReopenResult> =>
-      Promise.resolve({ ok: true, store }),
+    reopen: (
+      _locator: RemoteLocator,
+      _secret: string | null,
+      _mode: ReopenMode,
+    ): Promise<ReopenResult> => Promise.resolve({ ok: true, store }),
     disconnect: () => Promise.resolve(),
   };
 }

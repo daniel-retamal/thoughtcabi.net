@@ -56,7 +56,7 @@ async function harness(cabinet: Cabinet, remote = new MemoryRemote()): Promise<H
   let ordinal = 0;
 
   const provider = memoryProvider(remote);
-  const reopened = await provider.reopen({ name: remote.name }, null);
+  const reopened = await provider.reopen({ name: remote.name }, null, "quiet");
   if (!reopened.ok) throw new Error("the fake provider refused to open");
 
   return {
@@ -524,5 +524,143 @@ describe("the base copy", () => {
     );
 
     expect(harnessed.questions[0]?.kind).toBe("conflict");
+  });
+});
+
+describe("a conflicted copy another program left behind", () => {
+  const STRAY = "thoughtcabinet (Daniel's conflicted copy 2026-09-01).json";
+
+  async function pulled(
+    strayText: string,
+    overrides: Partial<Destination> = {},
+  ): Promise<Harness & { destination: Destination }> {
+    const mine = cabinetOf(["Shared"]);
+    const remote = new MemoryRemote();
+    const synced = remote.put(serializeCabinet(mine, NOW));
+    remote.files.set(STRAY, { text: strayText, revision: "stray-1", modifiedAt: NOW });
+
+    const harnessed = await harness(mine, remote);
+    remote.put(serializeCabinet(cabinetOf(["Shared", "Theirs"]), NOW));
+
+    const destination = home({
+      baseRevision: synced,
+      baseDigest: cabinetDigest(mine),
+      ...overrides,
+    });
+    const outcome = await settleDestination(destination, harnessed.store, harnessed.context);
+    const landed = harnessed.adopted.at(-1);
+    if (landed) harnessed.context.cabinet = landed;
+
+    return {
+      ...harnessed,
+      destination: { ...destination, ...outcome.patch },
+    };
+  }
+
+  it("is offered after a pull, named by the file it was found in", async () => {
+    const { questions } = await pulled(serializeCabinet(cabinetOf(["Stranded"]), NOW));
+
+    expect(questions[0]?.kind).toBe("stray");
+    expect(questions[0]?.label).toBe(STRAY);
+  });
+
+  it("is left alone when it does not read as a cabinet", async () => {
+    const { questions } = await pulled("this is somebody else's file");
+
+    expect(questions).toHaveLength(0);
+  });
+
+  it("is never offered at a mirror, which may not change the local cabinet", async () => {
+    const { questions } = await pulled(serializeCabinet(cabinetOf(["Stranded"]), NOW), {
+      direction: "mirror",
+    });
+
+    expect(questions.filter((question) => question.kind === "stray")).toHaveLength(0);
+  });
+
+  it("merges into the cabinet and pushes the result when it is taken", async () => {
+    const harnessed = await pulled(serializeCabinet(cabinetOf(["Shared", "Stranded"]), NOW));
+    const question = harnessed.questions[0];
+    if (!question) throw new Error("nothing was offered");
+
+    const outcome = await answerQuestion(
+      question,
+      { answer: "keep-both", label: "" },
+      harnessed.destination,
+      harnessed.store,
+      harnessed.context,
+    );
+
+    const titles = collectNotes(harnessed.adopted.at(-1)?.library[0] as never).map((n) => n.title);
+    expect(titles.sort()).toEqual(["Shared", "Stranded", "Theirs"]);
+    expect(harnessed.remote.text()).toContain("Stranded");
+    expect(outcome.patch.strays).toEqual([STRAY]);
+  });
+
+  it("remembers a copy that was left alone, so the offer is not made twice", async () => {
+    const harnessed = await pulled(serializeCabinet(cabinetOf(["Stranded"]), NOW));
+    const question = harnessed.questions[0];
+    if (!question) throw new Error("nothing was offered");
+    const before = harnessed.adopted.length;
+
+    const outcome = await answerQuestion(
+      question,
+      { answer: "keep-mine", label: "" },
+      harnessed.destination,
+      harnessed.store,
+      harnessed.context,
+    );
+
+    expect(outcome.patch.strays).toEqual([STRAY]);
+    expect(harnessed.adopted).toHaveLength(before);
+    expect(harnessed.remote.siblingNames()).toEqual([STRAY]);
+  });
+
+  it("is not offered again once it has been answered", async () => {
+    const { questions } = await pulled(serializeCabinet(cabinetOf(["Stranded"]), NOW), {
+      strays: [STRAY],
+    });
+
+    expect(questions).toHaveLength(0);
+  });
+
+  it("leaves a card that is already here as it is", async () => {
+    const older: Cabinet = {
+      library: [
+        makeShelf("Reading", [makeNote({ id: "n-Shared", title: "An older title" })], "ch1"),
+      ],
+      tags: [makeTag("To read", RED)],
+    };
+    const harnessed = await pulled(serializeCabinet(older, NOW));
+    const question = harnessed.questions[0];
+    if (!question) throw new Error("nothing was offered");
+
+    await answerQuestion(
+      question,
+      { answer: "keep-both", label: "" },
+      harnessed.destination,
+      harnessed.store,
+      harnessed.context,
+    );
+
+    const titles = collectNotes(harnessed.adopted.at(-1)?.library[0] as never).map((n) => n.title);
+    expect(titles).not.toContain("An older title");
+    expect(titles).toContain("Shared");
+  });
+
+  it("never deletes the file it found", async () => {
+    const harnessed = await pulled(serializeCabinet(cabinetOf(["Shared", "Stranded"]), NOW));
+    const question = harnessed.questions[0];
+    if (!question) throw new Error("nothing was offered");
+
+    await answerQuestion(
+      question,
+      { answer: "keep-both", label: "" },
+      harnessed.destination,
+      harnessed.store,
+      harnessed.context,
+    );
+
+    expect(harnessed.remote.files.has(STRAY)).toBe(true);
   });
 });

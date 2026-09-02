@@ -350,6 +350,14 @@ export const en = {
       keepTheirs: "Keep theirs",
     },
 
+    stray: {
+      heading: "Another copy turned up",
+      question:
+        "Your sync app left {name} beside your cabinet, and it reads as a cabinet of its own. Merging brings in whatever it holds that is missing here, and changes nothing that is not.",
+      keepBoth: "Merge it in",
+      keepMine: "Leave it there",
+    },
+
     problems: {
       newer: "A newer version of thoughtcabinet wrote this. Update this browser and it carries on.",
       unreadable: "What is there is not a cabinet file, so nothing has been written over it.",

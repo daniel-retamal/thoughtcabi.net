@@ -20,6 +20,7 @@ export interface SyncAnswerModalProps {
 
 function wordsFor(question: SyncQuestion, copy: Copy) {
   if (question.kind === "adopt") return copy.sync.adopt;
+  if (question.kind === "stray") return copy.sync.stray;
   return question.kind === "conflict" ? copy.sync.conflict : copy.sync.reconcile;
 }
 
@@ -39,11 +40,12 @@ export function SyncAnswerModal({
   const [label, setLabel] = useState("");
 
   const adopting = question.kind === "adopt";
+  const replaceable = question.kind === "reconcile" || question.kind === "conflict";
   const keepBoth = (): void => onAnswer({ answer: "keep-both", label });
 
   return (
     <FormModal size="md" heading={words.heading} onClose={onCancel}>
-      <p className="cab-hint">{format(words.question, { name: question.label })}</p>
+      <p className="cab-hint sync-question">{format(words.question, { name: question.label })}</p>
 
       <Field label={copy.sync.thisBrowser}>
         <div className="cab-block">
@@ -76,11 +78,11 @@ export function SyncAnswerModal({
         <Button variant="ghost" onClick={() => onAnswer({ answer: "keep-mine", label })}>
           {words.keepMine}
         </Button>
-        {adopting ? null : (
+        {replaceable ? (
           <Button variant="danger" onClick={() => onAnswer({ answer: "keep-theirs", label })}>
             {copy.sync.reconcile.keepTheirs}
           </Button>
-        )}
+        ) : null}
       </FormActions>
     </FormModal>
   );

@@ -1,7 +1,8 @@
 import { isCabinetEmpty } from "@/domain/library/tree";
 import type { Cabinet, NodeId } from "@/domain/model";
 import { arrivals, arrivedIds } from "@/domain/sync/arrivals";
-import { conflictFileName, labelledFileName } from "@/domain/sync/conflictName";
+import { conflictFileName, labelledFileName, REMOTE_FILE_NAME } from "@/domain/sync/conflictName";
+import { conflictedCopies } from "@/domain/sync/conflictedCopy";
 import { cabinetDigest } from "@/domain/sync/digest";
 import { mergeThree } from "@/domain/sync/mergeThree";
 import { planFollow, planMirror, planSync } from "@/domain/sync/planSync";
@@ -21,7 +22,7 @@ export interface DestinationStatus {
   problem: SyncProblem | null;
 }
 
-export type QuestionKind = "reconcile" | "adopt" | "conflict";
+export type QuestionKind = "reconcile" | "adopt" | "conflict" | "stray";
 
 export interface SyncQuestion {
   kind: QuestionKind;
@@ -165,6 +166,40 @@ async function siblingOut(
   }
 }
 
+function fileNameOf(destination: Destination): string {
+  return destination.locator.name ?? REMOTE_FILE_NAME;
+}
+
+async function offerStray(
+  destination: Destination,
+  store: RemoteStore,
+  context: EngineContext,
+): Promise<void> {
+  if (destination.direction !== "two-way" || !store.siblings || !store.pullFrom) return;
+
+  const names = await store.siblings().catch(() => []);
+  const found = conflictedCopies([...names], fileNameOf(destination)).filter(
+    (name) => !destination.strays.includes(name),
+  );
+
+  for (const name of found) {
+    const snapshot = await store.pullFrom(name).catch(() => null);
+    if (!snapshot) continue;
+
+    const read = readCabinetFile(snapshot.text, context.names);
+    if (!read.ok) continue;
+
+    context.ask({
+      kind: "stray",
+      destinationId: destination.id,
+      label: name,
+      remote: read.cabinet,
+      snapshot,
+    });
+    return;
+  }
+}
+
 async function pullInto(
   destination: Destination,
   store: RemoteStore,
@@ -179,6 +214,7 @@ async function pullInto(
   context.adopt(incoming);
 
   await context.baseStore.write(destination.id, remote.snapshot);
+  await offerStray(destination, store, context);
   return settledAt(remote.snapshot.revision, cabinetDigest(incoming), context.now());
 }
 
@@ -229,7 +265,15 @@ async function mergeWith(
   context.adopt(merged.cabinet);
   if (merged.report.parked.length > 0) context.parked(merged.report.parked);
 
-  return writeTo(destination, store, context, merged.cabinet, remote.snapshot.revision);
+  const written = await writeTo(
+    destination,
+    store,
+    context,
+    merged.cabinet,
+    remote.snapshot.revision,
+  );
+  await offerStray(destination, store, context);
+  return written;
 }
 
 async function mirrorWrite(
@@ -294,7 +338,7 @@ async function adoptAnswer(
   input: AnswerInput,
 ): Promise<SyncOutcome> {
   if (input.answer === "keep-both") {
-    const name = labelledFileName(destination.locator.name ?? "thoughtcabinet.json", input.label);
+    const name = labelledFileName(fileNameOf(destination), input.label);
     const written = await store.sibling(name, textOf(context.cabinet, context));
     if (!written) return stalled("failed");
     return {
@@ -306,12 +350,7 @@ async function adoptAnswer(
     };
   }
 
-  const savedAs = await siblingOut(
-    store,
-    context,
-    destination.locator.name ?? "thoughtcabinet.json",
-    question.snapshot.text,
-  );
+  const savedAs = await siblingOut(store, context, fileNameOf(destination), question.snapshot.text);
   const written = await writeTo(
     destination,
     store,
@@ -322,6 +361,41 @@ async function adoptAnswer(
   return { ...written, patch: { ...written.patch, adopted: true }, savedAs };
 }
 
+const NO_ANCESTOR: Cabinet = { library: [], tags: [] };
+
+function mergedWithStray(context: EngineContext, stray: Cabinet): Cabinet {
+  return mergeThree(NO_ANCESTOR, stray, context.cabinet, {
+    createId: context.createId,
+    conflictsFolder: context.conflictsFolder,
+  }).cabinet;
+}
+
+async function strayAnswer(
+  destination: Destination,
+  store: RemoteStore,
+  context: EngineContext,
+  question: SyncQuestion,
+  input: AnswerInput,
+): Promise<SyncOutcome> {
+  const remembered: DestinationPatch = { strays: [...destination.strays, question.label] };
+  if (input.answer !== "keep-both") {
+    return { status: { kind: "synced", problem: null }, patch: remembered, savedAs: null };
+  }
+
+  const merged = mergedWithStray(context, question.remote);
+  context.arrived(arrivedIds(arrivals(context.cabinet, merged)));
+  context.adopt(merged);
+
+  const head = await store.head().catch(() => undefined);
+  if (head === undefined) {
+    const failed = stalled("failed");
+    return { ...failed, patch: { ...failed.patch, ...remembered } };
+  }
+
+  const written = await writeTo(destination, store, context, merged, head?.revision ?? null);
+  return { ...written, patch: { ...written.patch, ...remembered } };
+}
+
 export async function answerQuestion(
   question: SyncQuestion,
   input: AnswerInput,
@@ -329,7 +403,11 @@ export async function answerQuestion(
   store: RemoteStore,
   context: EngineContext,
 ): Promise<SyncOutcome> {
-  const name = destination.locator.name ?? "thoughtcabinet.json";
+  const name = fileNameOf(destination);
+
+  if (question.kind === "stray") {
+    return strayAnswer(destination, store, context, question, input);
+  }
 
   if (question.kind === "adopt") {
     return adoptAnswer(destination, store, context, question, input);

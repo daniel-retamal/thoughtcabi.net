@@ -251,6 +251,51 @@ describe("a mirror", () => {
   });
 });
 
+describe("a copy another sync app left behind", () => {
+  const STRAY = "thoughtcabinet (Daniel's conflicted copy 2026-09-01).json";
+
+  async function found(): Promise<MemoryRemote> {
+    withLocal(cabinetOf(["One"]));
+    const remote = new MemoryRemote();
+    mount(remote);
+    await connect();
+    await waitFor(() => expect(remote.text()).not.toBeNull());
+
+    remote.files.set(STRAY, {
+      text: serializeCabinet(cabinetOf(["Stranded"]), NOW),
+      revision: "stray-1",
+      modifiedAt: NOW,
+    });
+    remote.put(serializeCabinet(cabinetOf(["One", "Two"]), NOW));
+    tick();
+
+    await waitFor(() => expect(cards()).toEqual(["One", "Two"]));
+    return remote;
+  }
+
+  it("says so in one question, and merges it in when it is taken", async () => {
+    const remote = await found();
+
+    expect(await screen.findByText(en.sync.stray.heading)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: en.sync.stray.keepBoth }));
+
+    await waitFor(() => expect(cards().sort()).toEqual(["One", "Stranded", "Two"]));
+    expect(remote.text()).toContain("Stranded");
+    expect(remote.files.has(STRAY)).toBe(true);
+  });
+
+  it("remembers the one you left alone, and leaves the cabinet where it was", async () => {
+    await found();
+
+    await screen.findByText(en.sync.stray.heading);
+    await userEvent.click(screen.getByRole("button", { name: en.sync.stray.keepMine }));
+
+    await waitFor(() => expect(localStorage.getItem(STORAGE_KEYS.remote)).toContain("conflicted"));
+    expect(cards()).toEqual(["One", "Two"]);
+    expect(screen.queryByText(en.sync.stray.heading)).not.toBeInTheDocument();
+  });
+});
+
 describe("the empty plate", () => {
   it("offers to bring a cabinet in, on a browser that has none", async () => {
     mount(new MemoryRemote());

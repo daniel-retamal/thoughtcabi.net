@@ -195,6 +195,12 @@ function parseLocator(value: unknown): RemoteLocator {
   return locator;
 }
 
+function parseStrays(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((entry): entry is string => typeof entry === "string")
+    : [];
+}
+
 function nullableText(value: unknown): string | null {
   return typeof value === "string" ? value : null;
 }
@@ -223,6 +229,7 @@ export function parseDestination(value: unknown): Destination | null {
     baseDigest: nullableText(record.baseDigest),
     lastSyncedAt: nullableNumber(record.lastSyncedAt),
     lastProblem: oneOf<SyncProblem>(SYNC_PROBLEMS, record.lastProblem),
+    strays: parseStrays(record.strays),
     secret: nullableText(record.secret),
   };
 }

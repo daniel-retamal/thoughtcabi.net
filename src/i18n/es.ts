@@ -352,6 +352,14 @@ export const es: Copy = {
       keepTheirs: "Conservar el suyo",
     },
 
+    stray: {
+      heading: "Apareció otra copia",
+      question:
+        "Tu app de sincronización dejó {name} junto a tu archivador, y se lee como un archivador propio. Al integrarla se trae lo que falta aquí, sin cambiar nada de lo que ya está.",
+      keepBoth: "Integrarla",
+      keepMine: "Dejarla ahí",
+    },
+
     problems: {
       newer:
         "Una versión más nueva de thoughtcabinet escribió esto. Actualiza este navegador y sigue sola.",

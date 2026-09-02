@@ -32,6 +32,7 @@ export interface RemoteStore {
   push(text: string, expected: string | null): Promise<PushOutcome>;
   sibling(name: string, text: string): Promise<string | null>;
   siblings?(): Promise<readonly string[]>;
+  pullFrom?(name: string): Promise<RemoteSnapshot>;
   writable?(): Promise<boolean>;
 }
 
@@ -41,6 +42,8 @@ export interface RemoteConnection {
   secret: string | null;
   store: RemoteStore;
 }
+
+export type ReopenMode = "quiet" | "gesture";
 
 export type ReopenResult =
   | { ok: true; store: RemoteStore }
@@ -70,7 +73,7 @@ export interface RemoteProvider {
   readonly defaults: ProviderDefaults;
   available(): ProviderAvailability;
   connect(options: ConnectOptions): Promise<RemoteConnection | null>;
-  reopen(locator: RemoteLocator, secret: string | null): Promise<ReopenResult>;
+  reopen(locator: RemoteLocator, secret: string | null, mode: ReopenMode): Promise<ReopenResult>;
   disconnect(locator: RemoteLocator, secret: string | null): Promise<void>;
 }
 
