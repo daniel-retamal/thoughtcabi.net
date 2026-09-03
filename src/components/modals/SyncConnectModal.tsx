@@ -14,6 +14,7 @@ export interface SyncConnectModalProps {
   providers: readonly RemoteProvider[];
   onConnect: (provider: ProviderId, fields: Record<string, string>) => Promise<ConnectResult>;
   onDownload: () => void;
+  onBack: (() => void) | null;
   onCancel: () => void;
 }
 
@@ -26,6 +27,7 @@ export function SyncConnectModal({
   providers,
   onConnect,
   onDownload,
+  onBack,
   onCancel,
 }: SyncConnectModalProps) {
   const copy = useCopy();
@@ -87,7 +89,7 @@ export function SyncConnectModal({
           );
         })}
 
-        <button type="button" className="tile" onClick={onDownload}>
+        <button type="button" className="tile tile-wide" onClick={onDownload}>
           <span className="tile-mark">
             <Icon name="hard-drive" />
           </span>
@@ -97,8 +99,8 @@ export function SyncConnectModal({
       </div>
 
       <FormActions>
-        <Button variant="ghost" onClick={onCancel}>
-          {copy.actions.close}
+        <Button variant="ghost" onClick={onBack ?? onCancel}>
+          {onBack ? copy.actions.back : copy.actions.close}
         </Button>
       </FormActions>
     </FormModal>

@@ -194,6 +194,26 @@ describe("the broker", () => {
     );
   });
 
+  it("passes a refused client through as a refusal, not as an unreachable upstream", async () => {
+    const fetcher = fetcherFor({
+      [GOOGLE]: () => jsonResponse({ error: "invalid_client" }, 401),
+    });
+    const broker = createBroker({ fetchImpl: fetcher, env: ENV });
+
+    expect(await broker({ provider: "google", action: "refresh" }, { refresh_token: "t" })).toEqual(
+      { status: 401, payload: { error: "upstream_refused" } },
+    );
+  });
+
+  it("reports an upstream that answers with a server error as a gateway problem", async () => {
+    const fetcher = fetcherFor({ [GOOGLE]: () => jsonResponse({ error: "boom" }, 500) });
+    const broker = createBroker({ fetchImpl: fetcher, env: ENV });
+
+    expect(
+      await broker({ provider: "google", action: "refresh" }, { refresh_token: "t" }),
+    ).toEqual({ status: 502, payload: { error: "upstream_unreachable" } });
+  });
+
   it("reports an upstream that does not answer as a gateway problem", async () => {
     const broker = createBroker({
       fetchImpl: () => Promise.reject(new Error("ECONNRESET")),

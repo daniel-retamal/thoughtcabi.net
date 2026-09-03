@@ -767,6 +767,7 @@ describe("App", () => {
       render(<App />);
 
       await userEvent.click(screen.getByLabelText(en.toolbar.transfer));
+      await userEvent.click(screen.getByRole("button", { name: /This computer/ }));
       await userEvent.click(screen.getByRole("button", { name: "Download" }));
 
       expect(downloads).toEqual([

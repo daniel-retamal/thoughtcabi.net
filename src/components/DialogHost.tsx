@@ -168,6 +168,7 @@ export function DialogHost({
           providers={sync.providers}
           onConnect={sync.onConnect}
           onDownload={onExportCabinet}
+          onBack={dialog.from === "places" ? sync.onPlaces : null}
           onCancel={onClose}
         />
       );

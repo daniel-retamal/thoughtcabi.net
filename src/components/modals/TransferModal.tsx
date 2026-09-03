@@ -10,6 +10,7 @@ import { cabinetNames } from "@/storage/names";
 import { Button } from "@/components/primitives/Button";
 import { Icon } from "@/components/primitives/Icon";
 import { DestinationRow } from "@/components/sync/DestinationRow";
+import { DownloadRow } from "@/components/sync/DownloadRow";
 import type { StagedCabinet, SyncSurface } from "@/components/sync/surface";
 import { CabinetCounts } from "./CabinetCounts";
 import { FormActions, FormModal } from "./FormModal";
@@ -71,27 +72,12 @@ export function TransferModal({
             />
           ))}
 
-          <div className="place place-static">
-            <div className="place-head">
-              <span className="place-mark">
-                <Icon name="hard-drive" />
-              </span>
-              <span className="place-name">{copy.sync.download.label}</span>
-              <span className="place-role">{copy.sync.roles.mirror}</span>
-              <span className="place-file">{copy.sync.download.detail}</span>
-              <span className="place-when">{copy.sync.download.when}</span>
-              <button type="button" className="place-verb" onClick={onExport}>
-                <Icon name="download" />
-                {copy.actions.download}
-              </button>
-            </div>
-          </div>
-        </div>
+          <DownloadRow onDownload={onExport} />
 
-        <div className="modal-actions cab-actions">
-          <Button variant="ghost" icon="plus" onClick={sync.onAddPlace}>
+          <button type="button" className="place-add" onClick={sync.onAddPlace}>
+            <Icon name="plus" />
             {copy.sync.addPlace}
-          </Button>
+          </button>
         </div>
       </Field>
 

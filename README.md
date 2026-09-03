@@ -66,8 +66,7 @@ React 18, TypeScript, Vite. Nothing to start on the side, though `node relay/ser
 ## Roadmap
 
 - [x] Spanish translation
-- [x] External storage: a folder on this computer, a GitHub repository, or Google Drive
-- [x] The last destination. Your own WebDAV server
+- [x] External storage. Keep one cabinet in a place you own, and open it from any machine
 - [ ] More shades of blue. The four currently in the app are cleared by the Moralintern for civilian use; anything deeper is still before the Commission, and the greens were a concession.
 
 ## Where your cabinet lives

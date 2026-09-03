@@ -241,6 +241,9 @@ describe("the destinations list", () => {
     mount(new MemoryRemote());
 
     await userEvent.click(screen.getByLabelText(en.toolbar.transfer));
+    await userEvent.click(
+      places().getByRole("button", { name: new RegExp(en.sync.download.label) }),
+    );
 
     expect(places().getByRole("button", { name: en.actions.download })).toBeInTheDocument();
   });
@@ -471,21 +474,39 @@ describe("connecting to Google Drive", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("says so rather than nothing when Google will not take the code", async () => {
-    withLocal(cabinetOf(["One"]));
-    const drive = new FakeDrive();
-    mountWith(drive);
+  async function comeBackTo(drive: FakeDrive, spoil: (drive: FakeDrive) => void): Promise<void> {
     await pickDrive();
     await waitFor(() => expect(went).toHaveLength(1));
     cleanup();
 
-    drive.refuses = true;
+    spoil(drive);
     const state = new URL(went[0] ?? "").searchParams.get("state") ?? "";
     mountWith(drive, `?code=the-code&state=${state}`);
+  }
 
-    expect(
-      await screen.findByText(en.toasts.couldNotConnect, { exact: false }),
-    ).toBeInTheDocument();
+  it("says the sign in was refused when Google will not take the code", async () => {
+    withLocal(cabinetOf(["One"]));
+    const drive = new FakeDrive();
+    mountWith(drive);
+
+    await comeBackTo(drive, (it) => {
+      it.refuses = true;
+    });
+
+    expect(await screen.findByText(en.toasts.couldNotSignIn, { exact: false })).toBeInTheDocument();
+    expect(drive.textOf("thoughtcabinet.json")).toBeNull();
+  });
+
+  it("says it could not connect when the broker itself cannot be reached", async () => {
+    withLocal(cabinetOf(["One"]));
+    const drive = new FakeDrive();
+    mountWith(drive);
+
+    await comeBackTo(drive, (it) => {
+      it.unreachable = true;
+    });
+
+    expect(await screen.findByText(en.toasts.couldNotConnect, { exact: false })).toBeInTheDocument();
     expect(drive.textOf("thoughtcabinet.json")).toBeNull();
   });
 });

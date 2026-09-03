@@ -416,8 +416,11 @@ export function App({
 
   useOAuthReturn({
     connect: remote.connect,
-    onRefused: (provider) =>
-      pushToast({ verb: "couldNotConnect", subject: providerFace(provider, copy).label }),
+    onRefused: (provider, problem) =>
+      pushToast({
+        verb: problem === "auth" ? "couldNotSignIn" : "couldNotConnect",
+        subject: providerFace(provider, copy).label,
+      }),
   });
 
   const openTransfer = (): void => {
@@ -429,7 +432,8 @@ export function App({
     providers,
     destinations: remote.destinations,
     staged,
-    onAddPlace: () => setDialog({ kind: "sync-connect" }),
+    onAddPlace: () => setDialog({ kind: "sync-connect", from: "places" }),
+    onPlaces: () => setDialog({ kind: "transfer" }),
     onConnect: async (provider: ProviderId, fields: Record<string, string>) => {
       const result = await remote.connect(provider, fields);
       if (result.ok) closeDialog();
@@ -609,7 +613,7 @@ export function App({
                       onSaveLink={openCompose}
                       onBringCabinet={
                         remote.destinations.length === 0
-                          ? () => setDialog({ kind: "sync-connect" })
+                          ? () => setDialog({ kind: "sync-connect", from: "empty" })
                           : null
                       }
                       onLanguageChange={changeLanguage}
