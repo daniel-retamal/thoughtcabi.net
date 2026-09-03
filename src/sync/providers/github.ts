@@ -44,8 +44,7 @@ const PUSH_PROBLEM: Readonly<Record<number, PushFailure>> = {
 
 const FREE_NAME_TRIES = 20;
 
-interface RepoFacts {
-  private: boolean;
+interface RepoAccess {
   writable: boolean;
 }
 
@@ -70,11 +69,10 @@ function namesIn(listing: unknown): string[] {
     .filter((name): name is string => typeof name === "string");
 }
 
-function repoFactsFrom(value: unknown): RepoFacts | null {
+function repoAccessFrom(value: unknown): RepoAccess | null {
   if (typeof value !== "object" || value === null) return null;
-  const record = value as { private?: unknown; permissions?: { push?: unknown } };
-  if (typeof record.private !== "boolean") return null;
-  return { private: record.private, writable: record.permissions?.push === true };
+  const { permissions } = value as { permissions?: { push?: unknown } };
+  return { writable: permissions?.push === true };
 }
 
 function callerFor(fetcher: Fetcher, api: string, token: string): Caller {
@@ -117,11 +115,11 @@ async function snapshotAt(call: Caller, target: RepoTarget, path: string): Promi
   return { text, revision: await gitBlobSha(text) };
 }
 
-async function repoFacts(call: Caller, target: RepoTarget): Promise<RepoFacts | null> {
+async function repoAccess(call: Caller, target: RepoTarget): Promise<RepoAccess | null> {
   const response = await call(`/repos/${target.owner}/${target.repo}`, JSON_TYPE);
   if (response.status === 401) throw new RemoteError("auth");
   if (!response.ok) return null;
-  return repoFactsFrom(await readJson(response));
+  return repoAccessFrom(await readJson(response));
 }
 
 async function namesBeside(call: Caller, target: RepoTarget): Promise<string[]> {
@@ -174,7 +172,7 @@ export function githubStore(call: Caller, target: RepoTarget): RemoteStore {
     async head(): Promise<RemoteHead | null> {
       const sha = shaOf(await contentsAt(call, target, target.path));
       if (sha !== null) return { revision: sha, modifiedAt: null };
-      if ((await repoFacts(call, target)) === null) throw new RemoteError("gone");
+      if ((await repoAccess(call, target)) === null) throw new RemoteError("gone");
       return null;
     },
 
@@ -192,7 +190,7 @@ export function githubStore(call: Caller, target: RepoTarget): RemoteStore {
 
     siblings: () => namesBeside(call, target),
 
-    writable: async () => (await repoFacts(call, target).catch(() => null))?.writable === true,
+    writable: async () => (await repoAccess(call, target).catch(() => null))?.writable === true,
   };
 }
 
@@ -227,12 +225,11 @@ export function githubProvider(options: GithubProviderOptions = {}): RemoteProvi
       const token = (fields.token ?? "").trim();
       if (!target || !token) return { ok: false, reason: "invalid" };
 
-      const facts = await repoFacts(callerFor(fetcher, api, token), target).catch(() => undefined);
-      if (facts === undefined) return { ok: false, reason: "auth" };
-      if (facts === null) return { ok: false, reason: "gone" };
-      if (!facts.private && (fields.confirm ?? "").trim() !== target.repo) {
-        return { ok: false, reason: "public" };
-      }
+      const access = await repoAccess(callerFor(fetcher, api, token), target).catch(
+        () => undefined,
+      );
+      if (access === undefined) return { ok: false, reason: "auth" };
+      if (access === null) return { ok: false, reason: "gone" };
 
       return {
         ok: true,

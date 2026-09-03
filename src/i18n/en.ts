@@ -288,7 +288,7 @@ export const en = {
       folder: "A folder on this computer",
       folderSub: "iCloud Drive, Dropbox, Syncthing, a network drive",
       github: "GitHub",
-      githubSub: "A private repository, with a history",
+      githubSub: "A repository, with a history",
       drive: "Google Drive",
       onedrive: "OneDrive",
       webdav: "Your own server",
@@ -319,13 +319,6 @@ export const en = {
       auth: "GitHub would not take that token. Check it, or make a new one.",
       gone: "No repository by that name, or the token cannot see it.",
       failed: "That did not go through. Nothing has been connected.",
-    },
-
-    publicRepo: {
-      warning:
-        "{name} is public. A cabinet is a browsing history, and anything written there is on the internet the moment it lands.",
-      typeName: "Type {name} to connect anyway",
-      confirm: "Connect to the public repository",
     },
 
     actions: {

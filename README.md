@@ -74,7 +74,7 @@ React 18, TypeScript, Vite. Nothing to start on the side, though `node relay/ser
 
 In your browser, in `localStorage`, and nowhere else until you say otherwise.
 
-Connect a place and the cabinet also lives there, in the open, as one readable JSON file you can copy, read or drop back into the import box. A folder never touches a network at all. GitHub takes a fine grained token you make yourself, scoped to that one repository, and it is stored in this browser so sync survives a reload; Disconnect forgets it, and you delete it on github.com. A public repository is refused unless you type its name out, because a cabinet is a browsing history and that mistake is not one you can take back.
+Connect a place and the cabinet also lives there, in the open, as one readable JSON file you can copy, read or drop back into the import box. A folder never touches a network at all. GitHub takes a fine grained token you make yourself, scoped to that one repository, and it is stored in this browser so sync survives a reload; Disconnect forgets it, and you delete it on github.com. Which repository is entirely yours to pick: private, public, yours, an organisation's.
 
 Nothing third party ever runs on the page. No analytics, no accounts, no vendor SDK, and nothing in the `<head>` points at another origin.
 

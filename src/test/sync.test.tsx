@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { en } from "@/i18n/en";
-import { format } from "@/i18n/format";
 import type { Cabinet } from "@/domain/model";
 import type { Rhythm } from "@/domain/sync/rhythm";
 import { serializeCabinet } from "@/storage/cabinetFile";
@@ -346,20 +345,13 @@ describe("connecting to a repository", () => {
     expect(remote.textOf("thoughtcabinet.json")).toBeNull();
   });
 
-  it("refuses a public repository until its name is typed out", async () => {
+  it("treats a public repository exactly like a private one", async () => {
     withLocal(cabinetOf(["One"]));
     const remote = new FakeGithub({ private: false });
     mountWith(remote);
 
     await openTheForm();
     await fill(remote);
-
-    const typeIt = format(en.sync.publicRepo.typeName, { name: remote.repo });
-    expect(await screen.findByLabelText(typeIt)).toBeInTheDocument();
-    expect(remote.textOf("thoughtcabinet.json")).toBeNull();
-
-    await userEvent.type(places().getByLabelText(typeIt), remote.repo);
-    await userEvent.click(places().getByRole("button", { name: en.sync.publicRepo.confirm }));
 
     await waitFor(() => expect(remote.textOf("thoughtcabinet.json")).toContain("One"));
   });

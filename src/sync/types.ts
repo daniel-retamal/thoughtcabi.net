@@ -50,7 +50,7 @@ export interface RemoteStore {
   writable?(): Promise<boolean>;
 }
 
-export type ConnectProblem = "cancelled" | "invalid" | "auth" | "gone" | "public" | "failed";
+export type ConnectProblem = "cancelled" | "invalid" | "auth" | "gone" | "failed";
 
 export type ConnectResult =
   { ok: true; connection: RemoteConnection } | { ok: false; reason: ConnectProblem };

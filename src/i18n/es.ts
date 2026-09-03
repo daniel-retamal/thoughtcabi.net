@@ -290,7 +290,7 @@ export const es: Copy = {
       folder: "Una carpeta en este equipo",
       folderSub: "iCloud Drive, Dropbox, Syncthing, una unidad de red",
       github: "GitHub",
-      githubSub: "Un repositorio privado, con historial",
+      githubSub: "Un repositorio, con historial",
       drive: "Google Drive",
       onedrive: "OneDrive",
       webdav: "Tu propio servidor",
@@ -322,13 +322,6 @@ export const es: Copy = {
       auth: "GitHub no aceptó ese token. Revísalo, o crea uno nuevo.",
       gone: "No existe un repositorio con ese nombre, o el token no lo ve.",
       failed: "No se pudo. No quedó nada conectado.",
-    },
-
-    publicRepo: {
-      warning:
-        "{name} es público. Un archivador es un historial de lectura, y lo que se escriba ahí queda en internet apenas llega.",
-      typeName: "Escribe {name} para conectar de todas formas",
-      confirm: "Conectar al repositorio público",
     },
 
     actions: {

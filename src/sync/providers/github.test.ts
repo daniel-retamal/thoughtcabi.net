@@ -83,19 +83,12 @@ describe("connecting to a repository", () => {
     ).toEqual({ ok: false, reason: "invalid" });
   });
 
-  it("refuses a public repository until its name is typed out", async () => {
+  it("takes a public repository on the same terms as a private one", async () => {
     const remote = new FakeGithub({ private: false });
 
-    expect(await providerOn(remote).connect({ fields: fieldsOf(remote) })).toEqual({
-      ok: false,
-      reason: "public",
+    expect(await providerOn(remote).connect({ fields: fieldsOf(remote) })).toMatchObject({
+      ok: true,
     });
-    expect(
-      await providerOn(remote).connect({ fields: { ...fieldsOf(remote), confirm: "Cabinet" } }),
-    ).toEqual({ ok: false, reason: "public" });
-    expect(
-      await providerOn(remote).connect({ fields: { ...fieldsOf(remote), confirm: "cabinet" } }),
-    ).toMatchObject({ ok: true });
   });
 
   it("refuses rather than assumes when the repository cannot be inspected", async () => {
