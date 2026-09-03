@@ -147,6 +147,8 @@ describe("the app in Spanish", () => {
     expect(screen.getByText(es.sync.heading)).toBeInTheDocument();
     expect(screen.getByText(es.sync.places)).toBeInTheDocument();
     expect(screen.getByText(es.transfer.drop)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: new RegExp(es.sync.download.label) }));
     expect(screen.getByRole("button", { name: es.actions.download })).toBeInTheDocument();
     expect(screen.getAllByRole("listitem")[0]).toHaveAttribute(
       "aria-label",

@@ -54,6 +54,7 @@ describe("TransferModal", () => {
   it("asks for the download when told to", async () => {
     const { onExport } = setup();
 
+    await userEvent.click(screen.getByRole("button", { name: /This computer/ }));
     await userEvent.click(screen.getByRole("button", { name: "Download" }));
 
     expect(onExport).toHaveBeenCalledTimes(1);

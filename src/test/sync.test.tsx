@@ -241,6 +241,9 @@ describe("the destinations list", () => {
     mount(new MemoryRemote());
 
     await userEvent.click(screen.getByLabelText(en.toolbar.transfer));
+    await userEvent.click(
+      places().getByRole("button", { name: new RegExp(en.sync.download.label) }),
+    );
 
     expect(places().getByRole("button", { name: en.actions.download })).toBeInTheDocument();
   });

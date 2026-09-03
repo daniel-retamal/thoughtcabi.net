@@ -114,6 +114,7 @@ export function makeSyncSurface(overrides: Partial<SyncSurface> = {}): SyncSurfa
     destinations: [],
     staged: null,
     onAddPlace: () => {},
+    onPlaces: () => {},
     onConnect: () => Promise.resolve({ ok: false, reason: "failed" } as const),
     onResume: () => {},
     onRestore: () => {},

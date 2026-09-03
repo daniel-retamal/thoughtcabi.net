@@ -11,4 +11,4 @@ export type Dialog =
   | { kind: "new-folder" }
   | { kind: "rename-folder"; folder: Folder }
   | { kind: "transfer" }
-  | { kind: "sync-connect" };
+  | { kind: "sync-connect"; from: "places" | "empty" };

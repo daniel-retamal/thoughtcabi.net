@@ -56,7 +56,7 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 4px 10px;
+  gap: 3px 10px;
   width: 100%;
   padding: 10px 12px;
   text-align: start;
@@ -90,11 +90,13 @@
 }
 
 .place-role {
+  justify-self: end;
   font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-faint);
+  white-space: nowrap;
 }
 
 .place-chevron {
@@ -109,9 +111,9 @@
   height: 14px;
 }
 
-.place-file {
+.place-file,
+.place-note {
   grid-column: 2;
-  font-family: var(--font-mono);
   font-size: 11.5px;
   color: var(--text-faint);
   overflow: hidden;
@@ -119,18 +121,44 @@
   white-space: nowrap;
 }
 
+.place-file {
+  font-family: var(--font-mono);
+}
+
 .place-when {
+  justify-self: end;
   font-size: 11.5px;
   color: var(--text-faint);
+  white-space: nowrap;
 }
 
-.place-static .place-head {
-  cursor: default;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
+.place-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px dashed var(--border);
+  border-radius: var(--r-lg);
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  color: var(--text-faint);
+  transition:
+    color 0.14s,
+    border-color 0.14s,
+    background 0.14s;
 }
 
-.place-static .place-verb {
-  grid-row: span 2;
+.place-add:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+
+.place-add svg {
+  width: 14px;
+  height: 14px;
 }
 
 .place-problem {
@@ -254,7 +282,8 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 2px 11px;
+  align-content: start;
+  gap: 3px 11px;
   padding: 12px;
   text-align: start;
   border: 1px solid var(--border);
@@ -273,6 +302,10 @@
 .tile:disabled {
   opacity: 0.62;
   cursor: default;
+}
+
+.tile-wide {
+  grid-column: 1 / -1;
 }
 
 .tile-mark {

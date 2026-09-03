@@ -13,6 +13,7 @@ export interface SyncSurface {
   destinations: readonly DestinationView[];
   staged: StagedCabinet | null;
   onAddPlace: () => void;
+  onPlaces: () => void;
   onConnect: (provider: ProviderId, fields: Record<string, string>) => Promise<ConnectResult>;
   onResume: (id: string) => void;
   onRestore: (id: string) => void;
