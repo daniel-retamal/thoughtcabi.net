@@ -8,12 +8,13 @@ import {
   type Preferences,
 } from "@/domain/model";
 import { createStarterCabinet } from "@/domain/seed/starterCabinet";
+import { EMPTY_REMOTE_STATE, type RemoteState } from "@/domain/sync/types";
 import { DEFAULT_APPEARANCE } from "@/theme/colors";
 import { STORAGE_KEYS } from "./keys";
 import type { CabinetNames } from "./names";
-import { parseJson, readRaw, writeJson, writeRaw, type WriteOutcome } from "./localStore";
+import { clearKey, parseJson, readRaw, writeJson, writeRaw, type WriteOutcome } from "./localStore";
 import { migrateCabinet, migratePreferences } from "./migrations";
-import { parseCabinet, parsePreferences } from "./parsers";
+import { parseCabinet, parsePreferences, parseRemoteState } from "./parsers";
 
 export const DEFAULT_PREFERENCES: Preferences = {
   view: DEFAULT_VIEW_MODE,
@@ -49,4 +50,20 @@ export function loadPreferences(): Preferences {
 
 export function savePreferences(preferences: Preferences): WriteOutcome {
   return writeJson(STORAGE_KEYS.preferences, preferences);
+}
+
+export function loadRemoteState(): RemoteState {
+  return parseJson(readRaw(STORAGE_KEYS.remote), parseRemoteState) ?? EMPTY_REMOTE_STATE;
+}
+
+export function saveRemoteState(state: RemoteState): WriteOutcome {
+  if (state.destinations.length === 0) {
+    clearRemoteState();
+    return "ok";
+  }
+  return writeJson(STORAGE_KEYS.remote, state);
+}
+
+export function clearRemoteState(): void {
+  clearKey(STORAGE_KEYS.remote);
 }

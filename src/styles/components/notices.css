@@ -55,7 +55,9 @@
   background: none;
   color: var(--text-faint);
   cursor: pointer;
-  transition: color 0.18s var(--ease), background 0.18s var(--ease);
+  transition:
+    color 0.18s var(--ease),
+    background 0.18s var(--ease);
 }
 
 .notice-dismiss:hover {

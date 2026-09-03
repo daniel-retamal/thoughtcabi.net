@@ -1,4 +1,6 @@
 import type { Folder, Library, LibraryNode, Note, PendingNote, Shelf, Tag } from "@/domain/model";
+import type { Destination } from "@/domain/sync/types";
+import type { SyncSurface } from "@/components/sync/surface";
 import type { IconName } from "@/icons/names";
 import { en } from "@/i18n/en";
 import { cabinetNames } from "@/storage/names";
@@ -85,4 +87,39 @@ export function makeLibrary(): Library {
       "shelf-research",
     ),
   ];
+}
+
+export function makeDestination(overrides: Partial<Destination> = {}): Destination {
+  return {
+    id: overrides.id ?? nextId("d"),
+    provider: "folder",
+    locator: { name: "thoughtcabinet.json" },
+    label: "A folder",
+    direction: "mirror",
+    cadence: "live",
+    adopted: true,
+    baseRevision: null,
+    baseDigest: null,
+    lastSyncedAt: null,
+    lastProblem: null,
+    strays: [],
+    secret: null,
+    ...overrides,
+  };
+}
+
+export function makeSyncSurface(overrides: Partial<SyncSurface> = {}): SyncSurface {
+  return {
+    providers: [],
+    destinations: [],
+    staged: null,
+    onAddPlace: () => {},
+    onConnect: () => Promise.resolve({ ok: false, reason: "failed" } as const),
+    onResume: () => {},
+    onRestore: () => {},
+    onMakeHome: () => {},
+    onCadence: () => {},
+    onDisconnect: () => {},
+    ...overrides,
+  };
 }

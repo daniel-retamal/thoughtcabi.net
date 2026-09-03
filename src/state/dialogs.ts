@@ -10,4 +10,5 @@ export type Dialog =
   | { kind: "tag"; mode: "edit"; tag: Tag }
   | { kind: "new-folder" }
   | { kind: "rename-folder"; folder: Folder }
-  | { kind: "transfer" };
+  | { kind: "transfer" }
+  | { kind: "sync-connect" };

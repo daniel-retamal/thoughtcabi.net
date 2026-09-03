@@ -144,7 +144,8 @@ describe("the app in Spanish", () => {
 
     await userEvent.click(screen.getByLabelText(es.toolbar.transfer));
 
-    expect(screen.getByText(es.transfer.heading)).toBeInTheDocument();
+    expect(screen.getByText(es.sync.heading)).toBeInTheDocument();
+    expect(screen.getByText(es.sync.places)).toBeInTheDocument();
     expect(screen.getByText(es.transfer.drop)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: es.actions.download })).toBeInTheDocument();
     expect(screen.getAllByRole("listitem")[0]).toHaveAttribute(

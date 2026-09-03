@@ -31,8 +31,16 @@ jobs:
           ssh deploy@${{ secrets.SSH_HOST }} "ln -sfn $REL /var/www/thoughtcabi.net/current.new && mv -T /var/www/thoughtcabi.net/current.new /var/www/thoughtcabi.net/current"
       - name: Ship the relay
         run: |
-          rsync -az --exclude '*.test.mjs' relay/ deploy@${{ secrets.SSH_HOST }}:/opt/link-relay/
+          rsync -az --exclude '*.test.mjs' --exclude 'authd*.mjs' relay/ deploy@${{ secrets.SSH_HOST }}:/opt/link-relay/
           ssh deploy@${{ secrets.SSH_HOST }} "sudo systemctl restart link-relay"
+      - name: Ship the token broker, if the box has one
+        run: |
+          if ssh deploy@${{ secrets.SSH_HOST }} "test -f /etc/systemd/system/token-broker.service"; then
+            rsync -az relay/authd.mjs deploy@${{ secrets.SSH_HOST }}:/opt/token-broker/authd.mjs
+            ssh deploy@${{ secrets.SSH_HOST }} "sudo systemctl restart token-broker"
+          else
+            echo "no token broker on this box yet, skipping"
+          fi
       - name: Smoke test
         run: |
           sleep 3

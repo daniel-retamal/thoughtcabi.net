@@ -11,7 +11,9 @@ import { ComposeModal } from "./modals/ComposeModal";
 import { NamePromptModal } from "./modals/NamePromptModal";
 import { NoteDetailModal } from "./modals/NoteDetailModal";
 import { TagEditorModal } from "./modals/TagEditorModal";
+import { SyncConnectModal } from "./modals/SyncConnectModal";
 import { TransferModal, type ImportMode } from "./modals/TransferModal";
+import type { SyncSurface } from "./sync/surface";
 
 const NEW_NOTE_ICON: IconName = "folder-plus";
 
@@ -22,6 +24,7 @@ export interface DialogHostProps {
   currentLocation: LibraryLocation;
   detailLocationLabel: (note: Note) => string;
   readLink: LinkReader;
+  sync: SyncSurface;
   onClose: () => void;
   onEditNote: (note: Note) => void;
   onDeleteNote: (note: Note) => void;
@@ -44,6 +47,7 @@ export function DialogHost({
   currentLocation,
   detailLocationLabel,
   readLink,
+  sync,
   onClose,
   onEditNote,
   onDeleteNote,
@@ -151,8 +155,19 @@ export function DialogHost({
         <TransferModal
           library={library}
           tags={tags}
+          sync={sync}
           onExport={onExportCabinet}
           onImport={onImportCabinet}
+          onCancel={onClose}
+        />
+      );
+
+    case "sync-connect":
+      return (
+        <SyncConnectModal
+          providers={sync.providers}
+          onConnect={sync.onConnect}
+          onDownload={onExportCabinet}
           onCancel={onClose}
         />
       );

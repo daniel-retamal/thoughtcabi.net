@@ -126,9 +126,7 @@ export function moveIntoFolder(library: Library, nodeId: NodeId, folderId: NodeI
   if (!node) return library;
 
   const detached = removeNode(library, nodeId);
-  const stillExists = detached.some(
-    (shelf) => pathToFolder(shelf, folderId).at(-1) === folderId,
-  );
+  const stillExists = detached.some((shelf) => pathToFolder(shelf, folderId).at(-1) === folderId);
   if (!stillExists) return library;
 
   const insertInto = (nodes: readonly LibraryNode[]): LibraryNode[] =>
@@ -164,10 +162,7 @@ export function reorderWithinLocation(
   if (!node || !shelf) return library;
 
   const detached = removeNode(library, nodeId);
-  const target = containerAtPath(
-    findShelf(detached, location.shelfId) ?? shelf,
-    location.path,
-  );
+  const target = containerAtPath(findShelf(detached, location.shelfId) ?? shelf, location.path);
   const siblings = target.children;
   const beforeIndex = beforeId == null ? -1 : siblings.findIndex((c) => c.id === beforeId);
   const index = beforeIndex < 0 ? siblings.length : beforeIndex;
@@ -207,9 +202,7 @@ export function updateShelf(
   shelfId: NodeId,
   changes: Partial<Pick<Shelf, "name" | "icon">>,
 ): Library {
-  return library.map((shelf) =>
-    shelf.id === shelfId ? { ...shelf, ...changes } : shelf,
-  );
+  return library.map((shelf) => (shelf.id === shelfId ? { ...shelf, ...changes } : shelf));
 }
 
 export function removeShelf(library: Library, shelfId: NodeId): Library {

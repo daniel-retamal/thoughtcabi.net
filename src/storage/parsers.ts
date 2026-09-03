@@ -19,6 +19,18 @@ import {
   type ViewMode,
 } from "@/domain/model";
 import { toSiteCategory } from "@/domain/links/category";
+import { repairTopology } from "@/domain/sync/topology";
+import {
+  CADENCES,
+  DIRECTIONS,
+  SYNC_PROBLEMS,
+  type Cadence,
+  type Destination,
+  type Direction,
+  type RemoteLocator,
+  type RemoteState,
+  type SyncProblem,
+} from "@/domain/sync/types";
 import { asNumber, asRecord, asText, type JsonRecord } from "@/lib/json";
 import { toIconName } from "@/icons/names";
 import { toStoredWidth } from "@/lib/sidebarWidth";
@@ -167,4 +179,75 @@ export function parsePreferences(value: unknown): Preferences | null {
     language: toLocale(record.language) ?? DEFAULT_LOCALE,
     onboarded: record.onboarded === true,
   };
+}
+
+function oneOf<T extends string>(options: readonly T[], value: unknown): T | null {
+  return options.find((option) => option === value) ?? null;
+}
+
+function parseLocator(value: unknown): RemoteLocator {
+  const record = asRecord(value);
+  if (!record) return {};
+  const locator: Record<string, string> = {};
+  for (const [key, entry] of Object.entries(record)) {
+    if (typeof entry === "string") locator[key] = entry;
+  }
+  return locator;
+}
+
+function parseStrays(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((entry): entry is string => typeof entry === "string")
+    : [];
+}
+
+function nullableText(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}
+
+function nullableNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+export function parseDestination(value: unknown): Destination | null {
+  const record = asRecord(value);
+  if (!record) return null;
+
+  const id = str(record.id);
+  const provider = str(record.provider);
+  if (!id || !provider) return null;
+
+  return {
+    id,
+    provider,
+    locator: parseLocator(record.locator),
+    label: str(record.label),
+    direction: oneOf<Direction>(DIRECTIONS, record.direction) ?? "mirror",
+    cadence: oneOf<Cadence>(CADENCES, record.cadence) ?? "manual",
+    adopted: record.adopted === true,
+    baseRevision: nullableText(record.baseRevision),
+    baseDigest: nullableText(record.baseDigest),
+    lastSyncedAt: nullableNumber(record.lastSyncedAt),
+    lastProblem: oneOf<SyncProblem>(SYNC_PROBLEMS, record.lastProblem),
+    strays: parseStrays(record.strays),
+    secret: nullableText(record.secret),
+  };
+}
+
+export function parseRemoteState(value: unknown): RemoteState | null {
+  const record = asRecord(value);
+  if (!record) return null;
+  if (!Array.isArray(record.destinations)) return null;
+
+  const seen = new Set<string>();
+  const destinations: Destination[] = [];
+
+  for (const entry of record.destinations) {
+    const destination = parseDestination(entry);
+    if (!destination || seen.has(destination.id)) continue;
+    seen.add(destination.id);
+    destinations.push(destination);
+  }
+
+  return { destinations: repairTopology(destinations) };
 }

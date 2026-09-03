@@ -23,9 +23,11 @@ export function ToastStack({ toasts }: ToastStackProps) {
           <span>
             {copy.toasts[toast.verb]} <b>{toast.subject}</b>
           </span>
-          <button type="button" className="tlink" onClick={toast.action.run}>
-            {actionLabel[toast.action.kind]}
-          </button>
+          {toast.action ? (
+            <button type="button" className="tlink" onClick={toast.action.run}>
+              {actionLabel[toast.action.kind]}
+            </button>
+          ) : null}
         </div>
       ))}
     </div>

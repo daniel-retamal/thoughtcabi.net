@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import type { Appearance, Locale } from "@/domain/model";
 import { useCopy } from "@/i18n/I18nContext";
 import { Icon } from "@/components/primitives/Icon";
@@ -10,6 +10,7 @@ export interface AppControlsProps {
   onAppearanceChange: (changes: Partial<Appearance>) => void;
   onLanguageChange: (locale: Locale) => void;
   onTransfer: () => void;
+  pill: ReactNode;
 }
 
 export function AppControls({
@@ -18,6 +19,7 @@ export function AppControls({
   onAppearanceChange,
   onLanguageChange,
   onTransfer,
+  pill,
 }: AppControlsProps) {
   const copy = useCopy();
   const [displayOpen, setDisplayOpen] = useState(false);
@@ -25,6 +27,8 @@ export function AppControls({
 
   return (
     <>
+      {pill}
+
       <button
         type="button"
         className="iconbtn"
