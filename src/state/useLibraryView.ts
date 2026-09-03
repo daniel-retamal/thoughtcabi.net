@@ -3,6 +3,7 @@ import { searchLibrary, notesWithTag } from "@/domain/library/search";
 import {
   containerAtPath,
   requireShelf,
+  resolveLocation,
   splitChildren,
   type Container,
 } from "@/domain/library/tree";
@@ -10,6 +11,7 @@ import {
   isFolder,
   type Folder,
   type Library,
+  type LibraryLocation,
   type NodeId,
   type NoteEntry,
   type Shelf,
@@ -27,6 +29,7 @@ export interface LibraryView {
   mode: BrowseMode;
   shelf: Shelf;
   container: Container;
+  location: LibraryLocation;
   folders: FolderEntry[];
   notes: NoteEntry[];
   crumbs: Crumb[];
@@ -87,6 +90,7 @@ export function useLibraryView(
       mode,
       shelf,
       container,
+      location: resolveLocation(library, { shelfId: shelf.id, path: navigation.path }),
       folders,
       notes,
       crumbs,

@@ -16,12 +16,7 @@ const ICONS: Readonly<Record<ProviderId, IconName>> = {
   s3: "server",
 };
 
-export const CONNECT_TILES: readonly ProviderId[] = [
-  "folder",
-  "github",
-  "drive",
-  "webdav",
-];
+export const CONNECT_TILES: readonly ProviderId[] = ["folder", "github", "drive", "webdav"];
 
 export function isProviderId(value: string): value is ProviderId {
   return PROVIDER_IDS.some((id) => id === value);

@@ -56,6 +56,23 @@ export function containerAt(library: Library, location: LibraryLocation): Contai
   return containerAtPath(requireShelf(library, location.shelfId), location.path);
 }
 
+export function resolveLocation(library: Library, location: LibraryLocation): LibraryLocation {
+  const shelf = requireShelf(library, location.shelfId);
+  const path: NodeId[] = [];
+  let container: Container = shelf;
+
+  for (const segment of location.path) {
+    const next: Folder | undefined = container.children.find(
+      (child): child is Folder => child.id === segment && isFolder(child),
+    );
+    if (!next) break;
+    path.push(segment);
+    container = next;
+  }
+
+  return { shelfId: shelf.id, path };
+}
+
 export function pathToFolder(root: Container, folderId: NodeId): NodeId[] {
   const walk = (container: Container, trail: NodeId[]): NodeId[] | null => {
     for (const child of container.children) {

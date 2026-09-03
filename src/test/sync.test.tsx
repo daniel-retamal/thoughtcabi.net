@@ -10,11 +10,13 @@ import { memoryBaseStore } from "@/sync/baseStore";
 import { MemoryRemote, memoryProvider } from "@/sync/memoryStore";
 import { githubProvider } from "@/sync/providers/github";
 import { driveProvider } from "@/sync/providers/drive";
+import { webdavProvider } from "@/sync/providers/webdav";
 import { DRIVE_API } from "@/domain/sync/drive";
 import { brokerFor } from "@/sync/auth/tokens";
 import { beginAuth } from "@/sync/auth/oauth";
 import { FakeGithub } from "@/test/fakeGithub";
 import { FakeDrive } from "@/test/fakeDrive";
+import { FakeWebdav } from "@/test/fakeWebdav";
 import { makeNote, makeShelf, makeTag } from "@/test/factories";
 import { TAG_PALETTE } from "@/domain/tags/palette";
 import { App } from "@/App";
@@ -95,6 +97,22 @@ describe("connecting a place", () => {
 
     await waitFor(() => expect(cards()).toEqual(["Theirs"]));
     expect(screen.queryByText(en.sync.reconcile.heading)).not.toBeInTheDocument();
+  });
+
+  it("saves the next card into the shelf that arrived, not the seed that is gone", async () => {
+    const remote = new MemoryRemote();
+    remote.put(serializeCabinet(cabinetOf(["Theirs"]), NOW));
+    mount(remote);
+
+    await connect();
+    await waitFor(() => expect(cards()).toEqual(["Theirs"]));
+
+    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+    await userEvent.type(screen.getByPlaceholderText("What is this?"), "Saved here");
+    const compose = document.querySelector(".modal") as HTMLElement;
+    await userEvent.click(within(compose).getByRole("button", { name: /^save$/i }));
+
+    expect(cards()).toEqual(["Saved here", "Theirs"]);
   });
 
   it("asks before it mixes a full cabinet into one that is already there", async () => {
@@ -346,7 +364,7 @@ describe("connecting to a repository", () => {
     await openTheForm();
     await fill(remote, "github_pat_wrong");
 
-    expect(await screen.findByText(en.sync.refused.auth)).toBeInTheDocument();
+    expect(await screen.findByText(en.sync.refused.github.auth)).toBeInTheDocument();
     expect(remote.textOf("thoughtcabinet.json")).toBeNull();
   });
 
@@ -465,8 +483,81 @@ describe("connecting to Google Drive", () => {
     const state = new URL(went[0] ?? "").searchParams.get("state") ?? "";
     mountWith(drive, `?code=the-code&state=${state}`);
 
-    expect(await screen.findByText(en.toasts.couldNotConnect, { exact: false })).toBeInTheDocument();
+    expect(
+      await screen.findByText(en.toasts.couldNotConnect, { exact: false }),
+    ).toBeInTheDocument();
     expect(drive.textOf("thoughtcabinet.json")).toBeNull();
+  });
+});
+
+describe("connecting to a server of your own", () => {
+  function mountWith(server: FakeWebdav, pageProtocol = "https:"): void {
+    render(
+      <App
+        providers={[webdavProvider({ fetcher: server.fetcher, pageProtocol })]}
+        baseStore={memoryBaseStore()}
+      />,
+    );
+  }
+
+  async function openTheForm(): Promise<void> {
+    await userEvent.click(screen.getByLabelText(en.toolbar.transfer));
+    await userEvent.click(screen.getByRole("button", { name: en.sync.addPlace }));
+    await userEvent.click(screen.getByRole("button", { name: /Your own server/ }));
+  }
+
+  async function fill(server: FakeWebdav, address = server.base): Promise<void> {
+    await userEvent.type(places().getByLabelText(en.sync.fields.address), address);
+    await userEvent.type(places().getByLabelText(en.sync.fields.user), server.user);
+    await userEvent.type(places().getByLabelText(en.sync.fields.password), server.password);
+    await userEvent.click(places().getByRole("button", { name: en.sync.fields.connect }));
+  }
+
+  it("takes an address, a username and an app password, and writes the cabinet there", async () => {
+    withLocal(cabinetOf(["One"]));
+    const server = new FakeWebdav();
+    mountWith(server);
+
+    await openTheForm();
+    await fill(server);
+
+    await waitFor(() => expect(server.textOf("thoughtcabinet.json")).toContain("One"));
+  });
+
+  it("hands a second machine the whole cabinet", async () => {
+    const server = new FakeWebdav();
+    server.put("thoughtcabinet.json", serializeCabinet(cabinetOf(["Theirs"]), NOW));
+    mountWith(server);
+
+    await openTheForm();
+    await fill(server);
+
+    await waitFor(() => expect(cards()).toEqual(["Theirs"]));
+  });
+
+  it("names a server that would not let the browser through, and writes nothing", async () => {
+    withLocal(cabinetOf(["One"]));
+    const server = new FakeWebdav();
+    server.blocked = true;
+    mountWith(server);
+
+    await openTheForm();
+    await fill(server);
+
+    expect(await screen.findByText(en.sync.refused.cors)).toBeInTheDocument();
+    expect(server.textOf("thoughtcabinet.json")).toBeNull();
+  });
+
+  it("names an address the browser will not open, without asking the network", async () => {
+    withLocal(cabinetOf(["One"]));
+    const server = new FakeWebdav();
+    server.unreachable = true;
+    mountWith(server);
+
+    await openTheForm();
+    await fill(server, "http://nas.local/dav/");
+
+    expect(await screen.findByText(en.sync.refused.mixedContent)).toBeInTheDocument();
   });
 });
 

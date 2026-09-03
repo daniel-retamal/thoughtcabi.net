@@ -19,6 +19,7 @@ import {
   placementOf,
   pendingPlacements,
   requireShelf,
+  resolveLocation,
   splitChildren,
 } from "./tree";
 
@@ -58,6 +59,45 @@ describe("containerAtPath", () => {
   it("resolves a location against the whole library", () => {
     const library = makeLibrary();
     expect(containerAt(library, { shelfId: "shelf-research", path: [] }).name).toBe("Research");
+  });
+});
+
+describe("the location a write can actually land in", () => {
+  it("leaves a location that is entirely there alone", () => {
+    const library = makeLibrary();
+
+    expect(resolveLocation(library, { shelfId: "shelf-reading", path: ["folder-essays"] })).toEqual(
+      {
+        shelfId: "shelf-reading",
+        path: ["folder-essays"],
+      },
+    );
+  });
+
+  it("falls back to the first shelf when the one it names is gone", () => {
+    const library = makeLibrary();
+
+    expect(resolveLocation(library, { shelfId: "shelf-that-left", path: [] })).toEqual({
+      shelfId: firstShelf(library).id,
+      path: [],
+    });
+  });
+
+  it("stops at the last folder still standing", () => {
+    const library = makeLibrary();
+
+    expect(
+      resolveLocation(library, { shelfId: "shelf-reading", path: ["folder-essays", "gone"] }),
+    ).toEqual({ shelfId: "shelf-reading", path: ["folder-essays"] });
+  });
+
+  it("answers the shelf itself when the folder it named is gone", () => {
+    const library = makeLibrary();
+
+    expect(resolveLocation(library, { shelfId: "shelf-reading", path: ["gone"] })).toEqual({
+      shelfId: "shelf-reading",
+      path: [],
+    });
   });
 });
 
