@@ -219,7 +219,7 @@ export function App({
 
   const takePastedText = usePasteToSave({
     library,
-    location: navigation.location,
+    location: viewState.location,
     readLink,
     dispatch,
     onSaved: (note, folder, location) => {
@@ -580,7 +580,7 @@ export function App({
             <div className="pane-body" onContextMenu={openContextMenu}>
               <div
                 className="body-inner"
-                {...(viewState.canReorder ? locationDropProps(navigation.location) : {})}
+                {...(viewState.canReorder ? locationDropProps(viewState.location) : {})}
               >
                 {storageStatus !== "ok" && !noticeDismissed ? (
                   <StorageNotice
@@ -648,7 +648,7 @@ export function App({
           dialog={dialog}
           library={library}
           tags={tags}
-          currentLocation={navigation.location}
+          currentLocation={viewState.location}
           readLink={readLink}
           sync={syncSurface}
           detailLocationLabel={(note) =>
@@ -666,7 +666,7 @@ export function App({
           onCreateFolder={(name) => {
             dispatch({
               type: "folder/add",
-              location: navigation.location,
+              location: viewState.location,
               id: createId("f"),
               name,
             });

@@ -99,6 +99,22 @@ describe("connecting a place", () => {
     expect(screen.queryByText(en.sync.reconcile.heading)).not.toBeInTheDocument();
   });
 
+  it("saves the next card into the shelf that arrived, not the seed that is gone", async () => {
+    const remote = new MemoryRemote();
+    remote.put(serializeCabinet(cabinetOf(["Theirs"]), NOW));
+    mount(remote);
+
+    await connect();
+    await waitFor(() => expect(cards()).toEqual(["Theirs"]));
+
+    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+    await userEvent.type(screen.getByPlaceholderText("What is this?"), "Saved here");
+    const compose = document.querySelector(".modal") as HTMLElement;
+    await userEvent.click(within(compose).getByRole("button", { name: /^save$/i }));
+
+    expect(cards()).toEqual(["Saved here", "Theirs"]);
+  });
+
   it("asks before it mixes a full cabinet into one that is already there", async () => {
     withLocal(cabinetOf(["Mine"]));
     const remote = new MemoryRemote();

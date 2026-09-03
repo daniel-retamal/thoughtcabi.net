@@ -230,6 +230,25 @@ describe("the store, once it is open", () => {
     expect(server.textOf("thoughtcabinet-copy-2.json")).toBe("theirs");
   });
 
+  it("reads the cabinet past the browser cache, never a stale copy of it", async () => {
+    const seen: RequestInit[] = [];
+    const watching = new FakeWebdav();
+    const inner = watching.fetcher;
+    const store = await openStore(
+      Object.assign(watching, {
+        fetcher: (input: string, init: RequestInit = {}) => {
+          seen.push(init);
+          return inner(input, init);
+        },
+      }),
+    );
+    watching.put("thoughtcabinet.json", "mine");
+
+    await store.pull();
+
+    expect(seen.some((init) => init.cache === "no-store")).toBe(true);
+  });
+
   it("reads a stray beside the cabinet", async () => {
     const store = await openStore(server);
     server.put("thoughtcabinet.json", "mine");

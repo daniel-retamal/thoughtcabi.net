@@ -119,7 +119,7 @@ export function webdavStore(call: Caller, target: WebdavTarget): RemoteStore {
   };
 
   const snapshotAt = async (url: string): Promise<RemoteSnapshot> => {
-    const response = await reach(url);
+    const response = await reach(url, { cache: "no-store" });
     if (response.status === 404) throw new RemoteError("gone");
     if (!response.ok) throw new RemoteError(READ_PROBLEM[response.status] ?? "failed");
 
