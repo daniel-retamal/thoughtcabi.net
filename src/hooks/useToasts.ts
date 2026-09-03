@@ -11,7 +11,8 @@ export type ToastVerb =
   | "movedTo"
   | "movedFolderTo"
   | "keptTwoVersions"
-  | "savedACopy";
+  | "savedACopy"
+  | "couldNotConnect";
 
 export interface ToastAction {
   kind: ToastActionKind;

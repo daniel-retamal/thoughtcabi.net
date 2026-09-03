@@ -11,6 +11,11 @@ export interface StoreProbe {
   cutOff: () => void;
 }
 
+export interface ExpiringProbe extends StoreProbe {
+  expire: () => void;
+  revoke: () => void;
+}
+
 export function describeStoreSuite(label: string, open: () => Promise<StoreProbe>): void {
   describe(`${label}, against the shared suite`, () => {
     it("answers null for a file that is not there", async () => {
@@ -66,6 +71,32 @@ export function describeStoreSuite(label: string, open: () => Promise<StoreProbe
       await probe.store.push(FANCY_CABINET, null, "Cabinet: 1 shelf");
 
       expect((await probe.store.pull()).text).toBe(FANCY_CABINET);
+    });
+  });
+}
+
+export function describeExpiringStoreSuite(
+  label: string,
+  open: () => Promise<ExpiringProbe>,
+): void {
+  describeStoreSuite(label, open);
+
+  describe(`${label}, when its credential has run out`, () => {
+    it("renews it once and carries on without a word", async () => {
+      const probe = await open();
+      await probe.seed("theirs");
+      probe.expire();
+
+      expect((await probe.store.pull()).text).toBe("theirs");
+    });
+
+    it("says auth, not failed, when the renewal is refused", async () => {
+      const probe = await open();
+      await probe.seed("theirs");
+      probe.expire();
+      probe.revoke();
+
+      await expect(probe.store.head()).rejects.toMatchObject({ problem: "auth" });
     });
   });
 }

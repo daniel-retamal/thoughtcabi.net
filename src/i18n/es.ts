@@ -120,6 +120,7 @@ export const es: Copy = {
     movedFolderTo: "Carpeta movida a",
     keptTwoVersions: "Se guardaron dos versiones en",
     savedACopy: "Se guardó una copia como",
+    couldNotConnect: "No se pudo conectar con",
     view: "Ver",
     undo: "Deshacer",
   },
@@ -292,6 +293,7 @@ export const es: Copy = {
       github: "GitHub",
       githubSub: "Un repositorio, con historial",
       drive: "Google Drive",
+      driveSub: "Un archivo en Mi unidad, en tu propia cuenta",
       webdav: "Tu propio servidor",
       webdavSub: "WebDAV: Nextcloud, Synology, rclone",
       file: "Este equipo",
@@ -299,6 +301,7 @@ export const es: Copy = {
       unavailable: "Aquí no",
       needsChromium:
         "La carpeta necesita Chrome, Edge, Brave o Arc. Safari y Firefox no traen selector de carpetas.",
+      needsSetup: "Esta versión se compiló sin un acceso propio de Google.",
       soon: "Todavía no está conectado en esta versión.",
     },
 

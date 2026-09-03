@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { act, render, screen, waitFor, within } from "@testing-library/react";
+import { beforeEach, describe, expect, it } from "vitest";
+import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { en } from "@/i18n/en";
 import type { Cabinet } from "@/domain/model";
@@ -9,7 +9,12 @@ import { STORAGE_KEYS } from "@/storage/keys";
 import { memoryBaseStore } from "@/sync/baseStore";
 import { MemoryRemote, memoryProvider } from "@/sync/memoryStore";
 import { githubProvider } from "@/sync/providers/github";
+import { driveProvider } from "@/sync/providers/drive";
+import { DRIVE_API } from "@/domain/sync/drive";
+import { brokerFor } from "@/sync/auth/tokens";
+import { beginAuth } from "@/sync/auth/oauth";
 import { FakeGithub } from "@/test/fakeGithub";
+import { FakeDrive } from "@/test/fakeDrive";
 import { makeNote, makeShelf, makeTag } from "@/test/factories";
 import { TAG_PALETTE } from "@/domain/tags/palette";
 import { App } from "@/App";
@@ -354,6 +359,114 @@ describe("connecting to a repository", () => {
     await fill(remote);
 
     await waitFor(() => expect(remote.textOf("thoughtcabinet.json")).toContain("One"));
+  });
+});
+
+describe("connecting to Google Drive", () => {
+  const CLIENT_ID = "450897477073.apps.googleusercontent.com";
+  const REDIRECT = "https://thoughtcabi.net/";
+  const went: string[] = [];
+
+  function mountWith(drive: FakeDrive, search = ""): void {
+    window.history.replaceState(null, "", `/${search}`);
+    render(
+      <App
+        providers={[
+          driveProvider({
+            fetcher: drive.fetcher,
+            api: DRIVE_API,
+            broker: brokerFor("google", { fetcher: drive.fetcher }),
+            clientId: CLIENT_ID,
+            redirectUri: REDIRECT,
+            begin: (config) =>
+              beginAuth("drive", config, {
+                go: (url) => void went.push(url),
+                random: (bytes) => bytes.fill(7),
+              }),
+          }),
+        ]}
+        baseStore={memoryBaseStore()}
+      />,
+    );
+  }
+
+  async function pickDrive(): Promise<void> {
+    await userEvent.click(screen.getByLabelText(en.toolbar.transfer));
+    await userEvent.click(screen.getByRole("button", { name: en.sync.addPlace }));
+    await userEvent.click(screen.getByRole("button", { name: /Google Drive/ }));
+  }
+
+  async function comeBack(drive: FakeDrive): Promise<void> {
+    await pickDrive();
+    await waitFor(() => expect(went).toHaveLength(1));
+    cleanup();
+    const state = new URL(went[0] ?? "").searchParams.get("state") ?? "";
+    mountWith(drive, `?code=the-code&state=${state}`);
+  }
+
+  beforeEach(() => {
+    went.length = 0;
+  });
+
+  it("sends the browser to Google, and connects nothing until it comes back", async () => {
+    withLocal(cabinetOf(["One"]));
+    const drive = new FakeDrive();
+    mountWith(drive);
+
+    await pickDrive();
+
+    await waitFor(() => expect(went[0]).toContain("accounts.google.com"));
+    expect(drive.textOf("thoughtcabinet.json")).toBeNull();
+  });
+
+  it("finishes the sign in on the way back and writes the cabinet to the Drive", async () => {
+    withLocal(cabinetOf(["One"]));
+    const drive = new FakeDrive();
+    mountWith(drive);
+
+    await comeBack(drive);
+
+    await waitFor(() => expect(drive.textOf("thoughtcabinet.json")).toContain("One"));
+    await userEvent.click(screen.getByLabelText(en.toolbar.transfer));
+    expect(screen.getByText(drive.account)).toBeInTheDocument();
+  });
+
+  it("leaves the code out of the address bar once it has been spent", async () => {
+    withLocal(cabinetOf(["One"]));
+    const drive = new FakeDrive();
+    mountWith(drive);
+
+    await comeBack(drive);
+
+    await waitFor(() => expect(drive.textOf("thoughtcabinet.json")).toContain("One"));
+    expect(window.location.search).toBe("");
+  });
+
+  it("hands a second machine the whole cabinet, with the consent screen the only step", async () => {
+    const drive = new FakeDrive();
+    drive.put("thoughtcabinet.json", serializeCabinet(cabinetOf(["Theirs"]), NOW));
+    mountWith(drive);
+
+    await comeBack(drive);
+
+    await waitFor(() => expect(cards()).toEqual(["Theirs"]));
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("says so rather than nothing when Google will not take the code", async () => {
+    withLocal(cabinetOf(["One"]));
+    const drive = new FakeDrive();
+    mountWith(drive);
+    await pickDrive();
+    await waitFor(() => expect(went).toHaveLength(1));
+    cleanup();
+
+    drive.refuses = true;
+    const state = new URL(went[0] ?? "").searchParams.get("state") ?? "";
+    mountWith(drive, `?code=the-code&state=${state}`);
+
+    expect(await screen.findByText(en.toasts.couldNotConnect, { exact: false })).toBeInTheDocument();
+    expect(drive.textOf("thoughtcabinet.json")).toBeNull();
   });
 });
 

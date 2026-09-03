@@ -27,6 +27,7 @@ window.matchMedia ??= (query: string) =>
 afterEach(() => {
   cleanup();
   localStorage.clear();
+  sessionStorage.clear();
   forgetImageOutcomes();
   forgetSelfWrites();
 });

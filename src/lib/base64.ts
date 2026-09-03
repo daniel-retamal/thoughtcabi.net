@@ -16,3 +16,13 @@ export function textFromBase64(encoded: string): string {
   const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
   return new TextDecoder().decode(bytes);
 }
+
+export function base64UrlFromBytes(bytes: Uint8Array): string {
+  let binary = "";
+
+  for (let at = 0; at < bytes.length; at += CHUNK) {
+    binary += String.fromCharCode(...bytes.subarray(at, at + CHUNK));
+  }
+
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}

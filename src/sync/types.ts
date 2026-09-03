@@ -37,7 +37,9 @@ export type PushFailure =
   | "too-large"
   | "failed";
 
-export type PushOutcome = { ok: true; revision: string } | { ok: false; reason: PushFailure };
+export type PushOutcome =
+  | { ok: true; revision: string; locator?: RemoteLocator }
+  | { ok: false; reason: PushFailure };
 
 export interface RemoteStore {
   readonly provider: ProviderId;
@@ -74,7 +76,7 @@ export interface ConnectOptions {
 
 export interface ProviderAvailability {
   ok: boolean;
-  reason: "chromium-only" | null;
+  reason: "chromium-only" | "unconfigured" | null;
 }
 
 export interface ProviderDefaults {

@@ -11,7 +11,10 @@ export default defineConfig({
     },
   },
   server: {
-    proxy: { "/relay": "http://127.0.0.1:8788" },
+    proxy: {
+      "/relay": "http://127.0.0.1:8788",
+      "/auth": "http://127.0.0.1:8789",
+    },
   },
   test: {
     globals: true,

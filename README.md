@@ -37,7 +37,7 @@
 
 **Export and import.** Export writes a single JSON file holding every shelf, folder, card and tag. Import takes it back and shows you what is inside before it touches anything: merge pours it into what you have, replace swaps the lot.
 
-**Somewhere of your own to keep it.** Point the cabinet at a folder on this computer, the one your sync app already watches, or at a private GitHub repository, and it keeps itself there as that same JSON file. Open the app on another machine, point it at the same place, and both sides merge: cards arrive with the same small pop as a card you just saved, and it only asks you a question when there is one only you can answer. One place is the home and syncs both ways; anything else you add is a backup that only ever receives. The app never sends the cabinet anywhere you did not choose, and with nothing connected there is nothing to send.
+**Somewhere of your own to keep it.** Point the cabinet at a folder on this computer, the one your sync app already watches, at a GitHub repository, or at your Google Drive, and it keeps itself there as that same JSON file. Open the app on another machine, point it at the same place, and both sides merge: cards arrive with the same small pop as a card you just saved, and it only asks you a question when there is one only you can answer. One place is the home and syncs both ways; anything else you add is a backup that only ever receives. The app never sends the cabinet anywhere you did not choose, and with nothing connected there is nothing to send.
 
 ## Keyboard and gestures
 
@@ -66,8 +66,8 @@ React 18, TypeScript, Vite. Nothing to start on the side, though `node relay/ser
 ## Roadmap
 
 - [x] Spanish translation
-- [x] External storage: a folder on this computer, or a private GitHub repository
-- [ ] The rest of the destinations. Google Drive, and your own WebDAV server
+- [x] External storage: a folder on this computer, a GitHub repository, or Google Drive
+- [ ] The last destination. Your own WebDAV server
 - [ ] More shades of blue. The four currently in the app are cleared by the Moralintern for civilian use; anything deeper is still before the Commission, and the greens were a concession.
 
 ## Where your cabinet lives

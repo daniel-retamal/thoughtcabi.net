@@ -36,7 +36,7 @@ export function providerFace(provider: string, copy: Copy): ProviderFace {
     case "github":
       return { icon: ICONS.github, label: connect.github, sub: connect.githubSub };
     case "drive":
-      return { icon: ICONS.drive, label: connect.drive, sub: "" };
+      return { icon: ICONS.drive, label: connect.drive, sub: connect.driveSub };
     case "webdav":
       return { icon: ICONS.webdav, label: connect.webdav, sub: connect.webdavSub };
     case "s3":
