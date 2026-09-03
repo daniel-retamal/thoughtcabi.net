@@ -315,15 +315,31 @@ export const es: Copy = {
       path: "Archivo",
       pathHint:
         "Dónde queda dentro del repositorio. Si lo dejas así, thoughtcabinet.json en la raíz.",
+      address: "Dirección",
+      addressHint:
+        "La carpeta donde debería quedar tu gabinete. En Nextcloud se llama dirección WebDAV.",
+      user: "Usuario",
+      password: "Contraseña de aplicación",
+      passwordHint:
+        "Nextcloud, Synology y ownCloud emiten contraseñas de aplicación. Usa una, no la de tu cuenta.",
       connect: "Conectar",
       connecting: "Conectando…",
     },
 
     refused: {
-      invalid: "Ahí no hay un repositorio al que llegar. Revisa el dueño y el nombre.",
-      auth: "GitHub no aceptó ese token. Revísalo, o crea uno nuevo.",
-      gone: "No existe un repositorio con ese nombre, o el token no lo ve.",
       failed: "No se pudo. No quedó nada conectado.",
+      cors: "Tu servidor no dejó que este navegador llegara. Tiene que enviar cabeceras CORS.",
+      mixedContent: "Esa dirección no es HTTPS, así que el navegador no la abrirá.",
+      github: {
+        invalid: "Ahí no hay un repositorio al que llegar. Revisa el dueño y el nombre.",
+        auth: "GitHub no aceptó ese token. Revísalo, o crea uno nuevo.",
+        gone: "No existe un repositorio con ese nombre, o el token no lo ve.",
+      },
+      webdav: {
+        invalid: "Esa dirección respondió, pero no como un recurso WebDAV.",
+        auth: "Tu servidor no aceptó ese nombre y esa contraseña de aplicación.",
+        gone: "En tu servidor no hay nada en esa dirección.",
+      },
     },
 
     actions: {

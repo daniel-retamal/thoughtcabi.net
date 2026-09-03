@@ -6,6 +6,7 @@ import { Button } from "@/components/primitives/Button";
 import { FormActions } from "@/components/modals/FormModal";
 import { Field } from "@/components/modals/fields/Field";
 import { connectFieldsFor } from "./connectFields";
+import { refusalFor } from "./refusals";
 
 export interface ConnectFormProps {
   provider: ProviderId;
@@ -20,6 +21,7 @@ export function ConnectForm({ provider, onConnect, onBack }: ConnectFormProps) {
   const [busy, setBusy] = useState(false);
 
   const fields = connectFieldsFor(provider, copy);
+  const refusal = refused === null ? null : refusalFor(provider, refused, copy);
 
   const set = (name: string, value: string): void => {
     setValues((current) => ({ ...current, [name]: value }));
@@ -59,9 +61,9 @@ export function ConnectForm({ provider, onConnect, onBack }: ConnectFormProps) {
         </Field>
       ))}
 
-      {refused && refused !== "cancelled" ? (
+      {refusal ? (
         <p className="cab-problem" role="alert">
-          {copy.sync.refused[refused]}
+          {refusal}
         </p>
       ) : null}
 

@@ -13,11 +13,7 @@ export interface ConnectField {
   linkLabel?: string;
 }
 
-export function connectFieldsFor(provider: ProviderId, copy: Copy): ConnectField[] {
-  const fields = copy.sync.fields;
-
-  if (provider !== "github") return [];
-
+function githubFields(fields: Copy["sync"]["fields"]): ConnectField[] {
   return [
     { name: "owner", label: fields.owner, hint: fields.ownerHint, placeholder: "danielr" },
     { name: "repo", label: fields.repo, placeholder: "cabinet" },
@@ -37,4 +33,30 @@ export function connectFieldsFor(provider: ProviderId, copy: Copy): ConnectField
       placeholder: "thoughtcabinet.json",
     },
   ];
+}
+
+function webdavFields(fields: Copy["sync"]["fields"]): ConnectField[] {
+  return [
+    {
+      name: "url",
+      label: fields.address,
+      hint: fields.addressHint,
+      placeholder: "https://cloud.example.com/remote.php/dav/files/you/",
+    },
+    { name: "user", label: fields.user, placeholder: "you" },
+    {
+      name: "password",
+      label: fields.password,
+      hint: fields.passwordHint,
+      secret: true,
+    },
+  ];
+}
+
+export function connectFieldsFor(provider: ProviderId, copy: Copy): ConnectField[] {
+  const fields = copy.sync.fields;
+
+  if (provider === "github") return githubFields(fields);
+  if (provider === "webdav") return webdavFields(fields);
+  return [];
 }

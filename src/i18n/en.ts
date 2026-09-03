@@ -312,15 +312,31 @@ export const en = {
       tokenLink: "Make one on github.com",
       path: "File",
       pathHint: "Where in the repository it goes. Left alone, thoughtcabinet.json at the root.",
+      address: "Address",
+      addressHint:
+        "The folder your cabinet should sit in. Nextcloud calls this the WebDAV address.",
+      user: "Username",
+      password: "App password",
+      passwordHint:
+        "Nextcloud, Synology and ownCloud all issue app passwords. Use one, not your account password.",
       connect: "Connect",
       connecting: "Connecting…",
     },
 
     refused: {
-      invalid: "That is not a repository this can reach. Check the owner and the name.",
-      auth: "GitHub would not take that token. Check it, or make a new one.",
-      gone: "No repository by that name, or the token cannot see it.",
       failed: "That did not go through. Nothing has been connected.",
+      cors: "Your server did not allow this browser to reach it. It has to send CORS headers.",
+      mixedContent: "That address is not HTTPS, so the browser will not open it.",
+      github: {
+        invalid: "That is not a repository this can reach. Check the owner and the name.",
+        auth: "GitHub would not take that token. Check it, or make a new one.",
+        gone: "No repository by that name, or the token cannot see it.",
+      },
+      webdav: {
+        invalid: "That address answered, but not as a WebDAV share.",
+        auth: "Your server would not take that name and app password.",
+        gone: "There is nothing at that address on your server.",
+      },
     },
 
     actions: {

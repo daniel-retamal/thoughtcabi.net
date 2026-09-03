@@ -67,7 +67,7 @@ React 18, TypeScript, Vite. Nothing to start on the side, though `node relay/ser
 
 - [x] Spanish translation
 - [x] External storage: a folder on this computer, a GitHub repository, or Google Drive
-- [ ] The last destination. Your own WebDAV server
+- [x] The last destination. Your own WebDAV server
 - [ ] More shades of blue. The four currently in the app are cleared by the Moralintern for civilian use; anything deeper is still before the Commission, and the greens were a concession.
 
 ## Where your cabinet lives
@@ -75,6 +75,8 @@ React 18, TypeScript, Vite. Nothing to start on the side, though `node relay/ser
 In your browser, in `localStorage`, and nowhere else until you say otherwise.
 
 Connect a place and the cabinet also lives there, in the open, as one readable JSON file you can copy, read or drop back into the import box. A folder never touches a network at all. GitHub takes a fine grained token you make yourself, scoped to that one repository, and it is stored in this browser so sync survives a reload; Disconnect forgets it, and you delete it on github.com. Which repository is entirely yours to pick: private, public, yours, an organisation's.
+
+A WebDAV server of your own, Nextcloud or Synology or `rclone serve webdav`, works the same way and goes straight from your browser to your machine, with an app password rather than your account password. The one thing it needs from you is CORS: your server has to say that this page may reach it, and `RELAY.md` §8 has the six headers. Nothing about it is proxied through us, because the alternative would mean your cabinet and your password passing through a box we run.
 
 Nothing third party ever runs on the page. No analytics, no accounts, no vendor SDK, and nothing in the `<head>` points at another origin.
 
