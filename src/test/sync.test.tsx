@@ -236,16 +236,24 @@ describe("the destinations list", () => {
     expect(localStorage.getItem(STORAGE_KEYS.preferences)).not.toBeNull();
   });
 
-  it("always offers this computer as a place, with a download", async () => {
+  it("keeps the export beside the import, and out of the list of places", async () => {
     withLocal(cabinetOf(["One"]));
     mount(new MemoryRemote());
 
     await userEvent.click(screen.getByLabelText(en.toolbar.transfer));
-    await userEvent.click(
-      places().getByRole("button", { name: new RegExp(en.sync.download.label) }),
-    );
 
-    expect(places().getByRole("button", { name: en.actions.download })).toBeInTheDocument();
+    const pair = places().getByRole("button", { name: new RegExp(en.transfer.exportLabel) });
+    expect(pair).toBeInTheDocument();
+    expect(pair.closest(".places")).toBeNull();
+  });
+
+  it("says the cabinet is in this browser alone until a place is added", async () => {
+    withLocal(cabinetOf(["One"]));
+    mount(new MemoryRemote());
+
+    await userEvent.click(screen.getByLabelText(en.toolbar.transfer));
+
+    expect(places().getByText(en.sync.placesEmpty)).toBeInTheDocument();
   });
 });
 

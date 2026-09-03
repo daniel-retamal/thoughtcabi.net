@@ -253,7 +253,9 @@ export const es: Copy = {
   transfer: {
     heading: "Exportar e importar",
     exportLabel: "Exportar",
+    exportSub: "Un archivo, guardado en este equipo",
     importLabel: "Importar",
+    importSub: "Suelta uno aquí, o haz clic para elegir",
     exported: "exportado {when}",
     chooseAnother: "Elegir otro archivo",
     hint: "Combinar conserva lo que tienes, y un estante cuyo nombre ya usas vierte sus tarjetas en el tuyo. Reemplazar descarta este gabinete por ese.",
@@ -271,8 +273,6 @@ export const es: Copy = {
 
     download: {
       label: "Este equipo",
-      detail: "un archivo que descargas",
-      when: "cuando lo pidas",
     },
 
     roles: {
@@ -289,6 +289,8 @@ export const es: Copy = {
 
     connect: {
       heading: "¿Dónde debería vivir tu gabinete?",
+      keepsItself:
+        "Elige uno y tu gabinete se mantiene ahí, en cada equipo donde lo abras.",
       folder: "Una carpeta en este equipo",
       folderSub: "iCloud Drive, Dropbox, Syncthing, una unidad de red",
       github: "GitHub",
@@ -297,8 +299,8 @@ export const es: Copy = {
       driveSub: "Un archivo en Mi unidad, en tu propia cuenta",
       webdav: "Tu propio servidor",
       webdavSub: "WebDAV: Nextcloud, Synology, rclone",
-      file: "Este equipo",
-      fileSub: "Un archivo que descargas y conservas",
+      file: "Solo descargar una copia",
+      fileSub: "Un archivo, guardado ahora. No se mantendrá al día.",
       unavailable: "Aquí no",
       needsChromium:
         "La carpeta necesita Chrome, Edge, Brave o Arc. Safari y Firefox no traen selector de carpetas.",

@@ -767,8 +767,9 @@ describe("App", () => {
       render(<App />);
 
       await userEvent.click(screen.getByLabelText(en.toolbar.transfer));
-      await userEvent.click(screen.getByRole("button", { name: /This computer/ }));
-      await userEvent.click(screen.getByRole("button", { name: "Download" }));
+      await userEvent.click(
+        screen.getByRole("button", { name: new RegExp(en.transfer.exportLabel) }),
+      );
 
       expect(downloads).toEqual([
         expect.stringMatching(/^thoughtcabinet-\d{4}-\d{2}-\d{2}\.json$/),
