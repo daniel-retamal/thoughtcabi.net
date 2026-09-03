@@ -416,8 +416,11 @@ export function App({
 
   useOAuthReturn({
     connect: remote.connect,
-    onRefused: (provider) =>
-      pushToast({ verb: "couldNotConnect", subject: providerFace(provider, copy).label }),
+    onRefused: (provider, problem) =>
+      pushToast({
+        verb: problem === "auth" ? "couldNotSignIn" : "couldNotConnect",
+        subject: providerFace(provider, copy).label,
+      }),
   });
 
   const openTransfer = (): void => {

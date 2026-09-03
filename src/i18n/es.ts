@@ -121,6 +121,7 @@ export const es: Copy = {
     keptTwoVersions: "Se guardaron dos versiones en",
     savedACopy: "Se guardó una copia como",
     couldNotConnect: "No se pudo conectar con",
+    couldNotSignIn: "No se pudo completar el acceso a",
     view: "Ver",
     undo: "Deshacer",
   },

@@ -19,6 +19,8 @@ export const ACTIONS = ["exchange", "refresh", "revoke"];
 const JSON_TYPE = "application/json; charset=utf-8";
 const FORM_TYPE = "application/x-www-form-urlencoded";
 
+const REFUSALS = new Set([400, 401, 403]);
+
 const ALLOWED_ORIGINS = ["https://thoughtcabi.net", "https://www.thoughtcabi.net"];
 const DEV_ORIGIN = "http://localhost:5173";
 
@@ -155,10 +157,9 @@ export function createBroker({ fetchImpl = fetch, env = process.env, gate = crea
     }
 
     if (!response.ok) {
-      return {
-        status: response.status === 400 ? 400 : 502,
-        payload: { error: "upstream_refused" },
-      };
+      return REFUSALS.has(response.status)
+        ? { status: response.status, payload: { error: "upstream_refused" } }
+        : { status: 502, payload: { error: "upstream_unreachable" } };
     }
 
     return { status: 200, payload: await response.json().catch(() => null) };

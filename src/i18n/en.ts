@@ -119,6 +119,7 @@ export const en = {
     keptTwoVersions: "Kept two versions in",
     savedACopy: "Saved a copy as",
     couldNotConnect: "Could not connect to",
+    couldNotSignIn: "Could not finish signing in to",
     view: "View",
     undo: "Undo",
   },

@@ -12,7 +12,8 @@ export type ToastVerb =
   | "movedFolderTo"
   | "keptTwoVersions"
   | "savedACopy"
-  | "couldNotConnect";
+  | "couldNotConnect"
+  | "couldNotSignIn";
 
 export interface ToastAction {
   kind: ToastActionKind;
