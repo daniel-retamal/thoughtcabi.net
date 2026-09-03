@@ -12,11 +12,6 @@ export const PROVIDERS = {
     revoke: "https://oauth2.googleapis.com/revoke",
     revokeField: "token",
   },
-  microsoft: {
-    token: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
-    revoke: null,
-    revokeField: null,
-  },
 };
 
 export const ACTIONS = ["exchange", "refresh", "revoke"];

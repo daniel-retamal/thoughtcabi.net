@@ -12,7 +12,6 @@ const ICONS: Readonly<Record<ProviderId, IconName>> = {
   folder: "folder",
   github: "github",
   drive: "cloud",
-  onedrive: "cloud",
   webdav: "server",
   s3: "server",
 };
@@ -21,7 +20,6 @@ export const CONNECT_TILES: readonly ProviderId[] = [
   "folder",
   "github",
   "drive",
-  "onedrive",
   "webdav",
 ];
 
@@ -39,8 +37,6 @@ export function providerFace(provider: string, copy: Copy): ProviderFace {
       return { icon: ICONS.github, label: connect.github, sub: connect.githubSub };
     case "drive":
       return { icon: ICONS.drive, label: connect.drive, sub: "" };
-    case "onedrive":
-      return { icon: ICONS.onedrive, label: connect.onedrive, sub: "" };
     case "webdav":
       return { icon: ICONS.webdav, label: connect.webdav, sub: connect.webdavSub };
     case "s3":

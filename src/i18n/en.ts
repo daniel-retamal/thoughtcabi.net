@@ -290,7 +290,6 @@ export const en = {
       github: "GitHub",
       githubSub: "A repository, with a history",
       drive: "Google Drive",
-      onedrive: "OneDrive",
       webdav: "Your own server",
       webdavSub: "WebDAV: Nextcloud, Synology, rclone",
       file: "This computer",

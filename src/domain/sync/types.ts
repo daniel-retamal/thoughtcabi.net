@@ -1,4 +1,4 @@
-export const PROVIDER_IDS = ["folder", "github", "drive", "onedrive", "webdav", "s3"] as const;
+export const PROVIDER_IDS = ["folder", "github", "drive", "webdav", "s3"] as const;
 
 export type ProviderId = (typeof PROVIDER_IDS)[number];
 

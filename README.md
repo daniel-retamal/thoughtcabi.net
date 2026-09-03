@@ -67,7 +67,7 @@ React 18, TypeScript, Vite. Nothing to start on the side, though `node relay/ser
 
 - [x] Spanish translation
 - [x] External storage: a folder on this computer, or a private GitHub repository
-- [ ] The rest of the destinations. Google Drive, OneDrive, and your own WebDAV server
+- [ ] The rest of the destinations. Google Drive, and your own WebDAV server
 - [ ] More shades of blue. The four currently in the app are cleared by the Moralintern for civilian use; anything deeper is still before the Commission, and the greens were a concession.
 
 ## Where your cabinet lives

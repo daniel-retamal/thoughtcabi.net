@@ -130,8 +130,8 @@
       <h2>When you connect a destination</h2>
       <p>
         You may point the app at a place of your own so the cabinet lives there too: a folder on
-        your computer, a GitHub repository, Google Drive, OneDrive or your own server. In every case
-        the cabinet is written as a single JSON file to the place you chose, and to nowhere else. It
+        your computer, a GitHub repository, Google Drive or your own server. In every case the
+        cabinet is written as a single JSON file to the place you chose, and to nowhere else. It
         never passes through our server.
       </p>
       <p>
@@ -139,8 +139,7 @@
         <code>https://www.googleapis.com/auth/drive.file</code> scope. That scope can only see and
         change files this app created or that you explicitly picked. It is used for one thing:
         reading and writing your own cabinet file. The app cannot see the rest of your Drive, does
-        not ask to, and never reads, indexes or transmits any other file. The same is true of
-        OneDrive, where the app touches only the file it maintains.
+        not ask to, and never reads, indexes or transmits any other file.
       </p>
 
       <h2>Credentials</h2>
@@ -148,13 +147,12 @@
         A token for a destination you connected is kept in your browser so that syncing survives a
         reload. Disconnecting a destination deletes it from your browser and, where the provider
         offers a revocation endpoint, revokes it. You can also revoke access at any time in your
-        Google, Microsoft or GitHub account settings.
+        Google or GitHub account settings.
       </p>
       <p>
-        Signing in to Google or Microsoft passes an authorization code through a small service on
-        our server, which exchanges it for a token and hands it straight back to your browser. That
-        service keeps nothing: no database, no log of the exchange, and it never receives your
-        cabinet.
+        Signing in to Google passes an authorization code through a small service on our server,
+        which exchanges it for a token and hands it straight back to your browser. That service
+        keeps nothing: no database, no log of the exchange, and it never receives your cabinet.
       </p>
 
       <h2>Link previews</h2>

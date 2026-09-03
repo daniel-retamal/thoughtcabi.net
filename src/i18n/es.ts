@@ -292,7 +292,6 @@ export const es: Copy = {
       github: "GitHub",
       githubSub: "Un repositorio, con historial",
       drive: "Google Drive",
-      onedrive: "OneDrive",
       webdav: "Tu propio servidor",
       webdavSub: "WebDAV: Nextcloud, Synology, rclone",
       file: "Este equipo",

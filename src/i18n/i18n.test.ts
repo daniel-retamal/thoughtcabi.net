@@ -81,7 +81,6 @@ describe("the two dictionaries", () => {
       "detail.url",
       "sync.connect.github",
       "sync.connect.drive",
-      "sync.connect.onedrive",
       "sync.connect.webdavSub",
       "sync.fields.token",
       "display.color",

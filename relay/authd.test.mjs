@@ -12,8 +12,6 @@ import {
 const ENV = {
   GOOGLE_CLIENT_ID: "google-id",
   GOOGLE_CLIENT_SECRET: "google-secret",
-  MICROSOFT_CLIENT_ID: "microsoft-id",
-  MICROSOFT_CLIENT_SECRET: "microsoft-secret",
 };
 
 const ORIGIN = "https://thoughtcabi.net";
@@ -71,19 +69,20 @@ async function answerFor(handler, options) {
 }
 
 describe("parseRoute", () => {
-  it("takes the two providers and the three actions, under the nginx prefix or without it", () => {
+  it("takes the provider and the three actions, under the nginx prefix or without it", () => {
     expect(parseRoute("/auth/google/exchange")).toEqual({
       provider: "google",
       action: "exchange",
     });
-    expect(parseRoute("/microsoft/refresh")).toEqual({
-      provider: "microsoft",
+    expect(parseRoute("/google/refresh")).toEqual({
+      provider: "google",
       action: "refresh",
     });
   });
 
-  it("is an allowlist of two strings, and nothing else is a provider", () => {
+  it("is an allowlist, and nothing else is a provider", () => {
     expect(parseRoute("/auth/dropbox/exchange")).toBeNull();
+    expect(parseRoute("/auth/microsoft/refresh")).toBeNull();
     expect(parseRoute("/auth/https:%2F%2Fevil.example/exchange")).toBeNull();
     expect(parseRoute("/auth/google/delete")).toBeNull();
     expect(parseRoute("/auth/google")).toBeNull();
@@ -93,7 +92,7 @@ describe("parseRoute", () => {
 
 describe("credentialsFrom", () => {
   it("takes a provider only when both halves of its pair are set", () => {
-    expect(Object.keys(credentialsFrom(ENV))).toEqual(["google", "microsoft"]);
+    expect(Object.keys(credentialsFrom(ENV))).toEqual(["google"]);
     expect(Object.keys(credentialsFrom({ GOOGLE_CLIENT_ID: "id" }))).toEqual([]);
   });
 });
@@ -165,7 +164,6 @@ describe("tokenFrom", () => {
 
 describe("the broker", () => {
   const GOOGLE = "https://oauth2.googleapis.com/token";
-  const MICROSOFT = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
 
   it("posts an exchange to the hardcoded upstream, with the secret the request never saw", async () => {
     const fetcher = fetcherFor({
@@ -183,21 +181,6 @@ describe("the broker", () => {
       payload: { access_token: "a", expires_in: 3599, refresh_token: "r" },
     });
     expect(formOf(fetcher)).toMatchObject({ client_secret: "google-secret", code: "c" });
-  });
-
-  it("sends microsoft to microsoft, and never to google", async () => {
-    const fetcher = fetcherFor({
-      [MICROSOFT]: () => jsonResponse({ access_token: "a", expires_in: 60 }),
-    });
-    const broker = createBroker({ fetchImpl: fetcher, env: ENV });
-
-    const result = await broker(
-      { provider: "microsoft", action: "refresh" },
-      { refresh_token: "t" },
-    );
-
-    expect(result.status).toBe(200);
-    expect(fetcher.mock.calls[0][0]).toBe(MICROSOFT);
   });
 
   it("passes an upstream refusal through as a status rather than swallowing it", async () => {
@@ -231,7 +214,7 @@ describe("the broker", () => {
     );
   });
 
-  it("revokes at google, and answers 204 for microsoft, which has no endpoint", async () => {
+  it("revokes at google's own endpoint", async () => {
     const fetcher = fetcherFor({
       "https://oauth2.googleapis.com/revoke": () => jsonResponse({}),
     });
@@ -242,11 +225,6 @@ describe("the broker", () => {
       payload: null,
     });
     expect(formOf(fetcher)).toMatchObject({ token: "t" });
-
-    expect(
-      await broker({ provider: "microsoft", action: "revoke" }, { refresh_token: "t" }),
-    ).toEqual({ status: 204, payload: null });
-    expect(fetcher).toHaveBeenCalledTimes(1);
   });
 
   it("says so plainly when a provider has no secret configured", async () => {
@@ -297,6 +275,14 @@ describe("the handler", () => {
     expect(on.status).toBe(400);
   });
 
+  it("says a provider is not configured, which is not the same as refusing it", async () => {
+    const bare = createHandler({ fetchImpl: fetcherFor({}), env: {} });
+
+    expect(
+      await answerFor(bare, { path: "/auth/google/refresh", body: { refresh_token: "t" } }),
+    ).toMatchObject({ status: 501 });
+  });
+
   it("is POST only, and answers a preflight without a body", async () => {
     expect(await answerFor(handlerFor(), { method: "GET" })).toMatchObject({ status: 405 });
 
@@ -327,9 +313,9 @@ describe("the handler", () => {
     expect(answer.status).toBe(400);
   });
 
-  it("has no route for anything but the two providers", async () => {
-    expect(
-      await answerFor(handlerFor(), { path: "/auth/dropbox/exchange", body: {} }),
-    ).toMatchObject({ status: 404 });
+  it("has no route for a provider it does not serve", async () => {
+    for (const path of ["/auth/dropbox/exchange", "/auth/microsoft/refresh"]) {
+      expect(await answerFor(handlerFor(), { path, body: {} })).toMatchObject({ status: 404 });
+    }
   });
 });
