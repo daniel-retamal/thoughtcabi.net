@@ -56,6 +56,7 @@ import { useUndoShortcut } from "@/hooks/useUndoShortcut";
 import { browserBaseStore, type BaseStore } from "@/sync/baseStore";
 import type { RemoteProvider } from "@/sync/types";
 import { useCabinet } from "@/state/useCabinet";
+import { useOAuthReturn } from "@/state/useOAuthReturn";
 import { useRemoteSync } from "@/state/useRemoteSync";
 import { useLibraryDragAndDrop } from "@/state/useLibraryDragAndDrop";
 import { useLibraryView, type FolderEntry } from "@/state/useLibraryView";
@@ -66,6 +67,7 @@ import { DialogHost } from "@/components/DialogHost";
 import { SyncAnswerModal } from "@/components/modals/SyncAnswerModal";
 import type { ImportMode } from "@/components/modals/TransferModal";
 import { SyncPill } from "@/components/sync/SyncPill";
+import { providerFace } from "@/components/sync/providerFace";
 import type { StagedCabinet, SyncSurface } from "@/components/sync/surface";
 import { AppControls } from "@/components/layout/AppControls";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
@@ -410,6 +412,12 @@ export function App({
       });
     },
     onSavedAside: (name) => pushToast({ verb: "savedACopy", subject: name }),
+  });
+
+  useOAuthReturn({
+    connect: remote.connect,
+    onRefused: (provider) =>
+      pushToast({ verb: "couldNotConnect", subject: providerFace(provider, copy).label }),
   });
 
   const openTransfer = (): void => {

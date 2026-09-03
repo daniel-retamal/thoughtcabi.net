@@ -118,6 +118,7 @@ export const en = {
     movedFolderTo: "Moved folder to",
     keptTwoVersions: "Kept two versions in",
     savedACopy: "Saved a copy as",
+    couldNotConnect: "Could not connect to",
     view: "View",
     undo: "Undo",
   },
@@ -290,6 +291,7 @@ export const en = {
       github: "GitHub",
       githubSub: "A repository, with a history",
       drive: "Google Drive",
+      driveSub: "A file in My Drive, in your own account",
       webdav: "Your own server",
       webdavSub: "WebDAV: Nextcloud, Synology, rclone",
       file: "This computer",
@@ -297,6 +299,7 @@ export const en = {
       unavailable: "Not here",
       needsChromium:
         "The folder needs Chrome, Edge, Brave or Arc. Safari and Firefox ship no folder picker.",
+      needsSetup: "This build was made without a Google sign in of its own.",
       soon: "Not wired up in this version yet.",
     },
 

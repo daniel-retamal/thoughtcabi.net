@@ -36,7 +36,13 @@ export function SyncConnectModal({
     if (!provider) return { id, reason: copy.sync.connect.soon };
     const availability = provider.available();
     if (availability.ok) return { id, reason: null };
-    return { id, reason: copy.sync.connect.needsChromium };
+    return {
+      id,
+      reason:
+        availability.reason === "unconfigured"
+          ? copy.sync.connect.needsSetup
+          : copy.sync.connect.needsChromium,
+    };
   });
 
   const pick = (id: ProviderId): void => {

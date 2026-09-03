@@ -8,7 +8,13 @@ import { mergeThree } from "@/domain/sync/mergeThree";
 import { planFollow, planMirror, planSync } from "@/domain/sync/planSync";
 import { writeMessage } from "@/domain/sync/writeMessage";
 import type { DestinationPatch } from "@/domain/sync/topology";
-import type { Destination, LocalSyncState, RemoteHead, SyncProblem } from "@/domain/sync/types";
+import type {
+  Destination,
+  LocalSyncState,
+  RemoteHead,
+  RemoteLocator,
+  SyncProblem,
+} from "@/domain/sync/types";
 import { summarizeCabinet } from "@/domain/transfer/cabinetSummary";
 import { mergeCabinets } from "@/domain/transfer/mergeCabinets";
 import { withFreshIds, type IdFactory } from "@/domain/transfer/reidentify";
@@ -139,6 +145,10 @@ async function readRemote(store: RemoteStore, context: EngineContext): Promise<R
   }
 }
 
+function movedTo(destination: Destination, found: RemoteLocator | undefined): DestinationPatch {
+  return found ? { locator: { ...destination.locator, ...found } } : {};
+}
+
 async function writeTo(
   destination: Destination,
   store: RemoteStore,
@@ -156,7 +166,7 @@ async function writeTo(
     revision: outcome.revision,
   });
 
-  return settledAt(outcome.revision, digest, context.now());
+  return settledAt(outcome.revision, digest, context.now(), movedTo(destination, outcome.locator));
 }
 
 async function siblingOut(
