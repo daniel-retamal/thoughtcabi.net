@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy · thoughtcabi.net</title>
+    <meta name="theme-color" content="#101C86" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="description" content="What thoughtcabi.net stores, and where." />
+    <link rel="canonical" href="https://thoughtcabi.net/privacy/" />
+    <style>
+      @font-face {
+        font-family: "Literata";
+        font-style: normal;
+        font-weight: 200 900;
+        font-display: swap;
+        src: url("/fonts/literata.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Schibsted Grotesk";
+        font-style: normal;
+        font-weight: 400 800;
+        font-display: swap;
+        src: url("/fonts/schibsted-grotesk.woff2") format("woff2");
+      }
+
+      :root {
+        color-scheme: dark;
+        --field: #101c86;
+        --paper: #f2ecde;
+        --plate: #1d2ca1;
+        --faint: #b9c0e8;
+      }
+
+      body {
+        margin: 0;
+        padding: 56px 24px 96px;
+        background: var(--field);
+        color: var(--paper);
+        font-family: "Schibsted Grotesk", system-ui, sans-serif;
+        font-size: 16px;
+        line-height: 1.65;
+      }
+
+      main {
+        max-width: 640px;
+        margin: 0 auto;
+      }
+
+      a {
+        color: var(--paper);
+      }
+
+      h1,
+      h2 {
+        font-family: "Literata", Georgia, serif;
+        font-weight: 600;
+        line-height: 1.2;
+      }
+
+      h1 {
+        font-size: 34px;
+        margin: 0 0 6px;
+      }
+
+      h2 {
+        font-size: 20px;
+        margin: 38px 0 8px;
+      }
+
+      .sub {
+        color: var(--faint);
+        margin: 0 0 34px;
+      }
+
+      ul {
+        padding-left: 20px;
+      }
+
+      li {
+        margin-bottom: 7px;
+      }
+
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 14px;
+        background: var(--plate);
+        padding: 1px 5px;
+        border-radius: 4px;
+      }
+
+      footer {
+        margin-top: 48px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(242, 236, 222, 0.18);
+        color: var(--faint);
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Privacy</h1>
+      <p class="sub">thoughtcabi.net. Last updated 2 September 2026.</p>
+
+      <p>
+        thoughtcabi.net is a bookmark cabinet that runs entirely in your browser. There are no
+        accounts, no sign up, no analytics, no advertising and no tracking cookies. Nobody running
+        this site can see your cabinet.
+      </p>
+
+      <h2>What is stored, and where</h2>
+      <ul>
+        <li>
+          <strong>Your cabinet</strong>, meaning your shelves, folders, cards and tags, is kept in
+          your own browser's <code>localStorage</code> on the device you saved it from. It is not
+          sent anywhere unless you connect a destination yourself.
+        </li>
+        <li>
+          <strong>Your preferences</strong>, meaning the theme, the view, the language, are kept in
+          the same place and never leave the browser at all.
+        </li>
+        <li>
+          <strong>Nothing is stored on our server about you.</strong> No account, no profile, no
+          identifier, no log of what you save.
+        </li>
+      </ul>
+
+      <h2>When you connect a destination</h2>
+      <p>
+        You may point the app at a place of your own so the cabinet lives there too: a folder on
+        your computer, a GitHub repository, Google Drive, OneDrive or your own server. In every case
+        the cabinet is written as a single JSON file to the place you chose, and to nowhere else. It
+        never passes through our server.
+      </p>
+      <p>
+        If you connect Google Drive, the app asks for the
+        <code>https://www.googleapis.com/auth/drive.file</code> scope. That scope can only see and
+        change files this app created or that you explicitly picked. It is used for one thing:
+        reading and writing your own cabinet file. The app cannot see the rest of your Drive, does
+        not ask to, and never reads, indexes or transmits any other file. The same is true of
+        OneDrive, where the app touches only the file it maintains.
+      </p>
+
+      <h2>Credentials</h2>
+      <p>
+        A token for a destination you connected is kept in your browser so that syncing survives a
+        reload. Disconnecting a destination deletes it from your browser and, where the provider
+        offers a revocation endpoint, revokes it. You can also revoke access at any time in your
+        Google, Microsoft or GitHub account settings.
+      </p>
+      <p>
+        Signing in to Google or Microsoft passes an authorization code through a small service on
+        our server, which exchanges it for a token and hands it straight back to your browser. That
+        service keeps nothing: no database, no log of the exchange, and it never receives your
+        cabinet.
+      </p>
+
+      <h2>Link previews</h2>
+      <p>
+        When you save a link, the app fetches that page to read its title, description and picture.
+        Some sites cannot be read directly from a browser, so for those the request is made by a
+        small relay on our server. The relay therefore sees the address of the page being saved. It
+        stores nothing beyond a short lived cache of the page it fetched, and it never sees your
+        cabinet, your other cards or anything identifying you.
+      </p>
+
+      <h2>Deleting everything</h2>
+      <p>
+        Clearing this site's data in your browser removes the cabinet completely, because that is
+        the only copy we ever had access to. Any copy in a destination you connected is yours to
+        delete there.
+      </p>
+
+      <h2>Children</h2>
+      <p>
+        The app is not directed at children and collects nothing that would identify anyone, of any
+        age.
+      </p>
+
+      <h2>Changes and contact</h2>
+      <p>
+        If this policy changes, the date at the top changes with it. Questions go to
+        <a href="https://github.com/daniel-retamal/thoughtcabi.net/issues">the project's issues</a>.
+      </p>
+
+      <footer><a href="/">Back to the cabinet</a> · <a href="/terms/">Terms</a></footer>
+    </main>
+  </body>
+</html>
