@@ -4,6 +4,8 @@ import { describe, expect, it } from "vitest";
 
 const SIDEBAR = resolve(process.cwd(), "src/styles/layout/sidebar.css");
 const SHELL = resolve(process.cwd(), "src/styles/layout/shell.css");
+const BASE = resolve(process.cwd(), "src/styles/base.css");
+const MODALS = resolve(process.cwd(), "src/styles/components/modals.css");
 
 interface Rule {
   selectors: string[];
@@ -79,5 +81,26 @@ describe("the shell", () => {
 
     expect(pane?.body).not.toMatch(/box-shadow/);
     expect(sidebar?.body).not.toMatch(/box-shadow/);
+  });
+});
+
+describe("the button reset", () => {
+  it("zeroes the padding the browser puts there, so a glyph sits on its own centre", () => {
+    const reset = flatten(readFileSync(BASE, "utf8")).find((rule) =>
+      rule.selectors.includes("button"),
+    );
+
+    expect(reset?.body).toMatch(/padding:\s*0/);
+  });
+});
+
+describe("the modal scrim", () => {
+  it("paints nothing, because it is thrown away and rebuilt on every change of dialog", () => {
+    const scrim = flatten(readFileSync(MODALS, "utf8")).find((rule) =>
+      rule.selectors.includes(".scrim"),
+    );
+
+    expect(scrim).toBeDefined();
+    expect(scrim?.body).not.toMatch(/background|backdrop-filter|animation/);
   });
 });

@@ -525,7 +525,7 @@ export function App({
     <I18nProvider copy={copy}>
       <div className="app">
         {drawerOpen ? (
-          <div className="scrim drawer-scrim" onClick={closeDrawer} aria-hidden="true" />
+          <div className="backdrop drawer-scrim" onClick={closeDrawer} aria-hidden="true" />
         ) : null}
 
         <div
@@ -637,6 +637,8 @@ export function App({
 
           {compact ? null : <SidebarGrip handlers={sidebarResize} />}
         </div>
+
+        {dialog || remote.question ? <div className="backdrop" aria-hidden="true" /> : null}
 
         <DialogHost
           dialog={dialog}

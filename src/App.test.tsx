@@ -361,6 +361,24 @@ describe("App", () => {
     expect(document.querySelector(".modal")).toBeNull();
   });
 
+  it("holds one backdrop across a change of modal, so the blur never blinks", async () => {
+    withSaves();
+    render(<App />);
+    await userEvent.click(screen.getByLabelText(en.toolbar.transfer));
+
+    const backdrop = document.querySelector(".backdrop");
+    expect(backdrop).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: en.sync.addPlace }));
+
+    expect(screen.getByText(en.sync.connect.heading)).toBeInTheDocument();
+    expect(document.querySelectorAll(".backdrop")).toHaveLength(1);
+    expect(document.querySelector(".backdrop")).toBe(backdrop);
+
+    await userEvent.keyboard("{Escape}");
+    expect(document.querySelector(".backdrop")).toBeNull();
+  });
+
   it("saves a note by hand into the chosen destination", async () => {
     render(<App />);
     await userEvent.click(screen.getByRole("button", { name: "Save" }));

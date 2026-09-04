@@ -24,6 +24,7 @@ button {
   font: inherit;
   color: inherit;
   border: none;
+  padding: 0;
   background: none;
   cursor: pointer;
 }
