@@ -537,6 +537,7 @@
 .es-bring {
   display: block;
   margin: 14px auto 0;
+  padding: 2px 6px;
   font-family: var(--font-ui);
   font-size: 13px;
   color: var(--text-faint);
