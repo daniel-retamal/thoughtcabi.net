@@ -31,6 +31,7 @@ export class MemoryRemote {
   pushes = 0;
   pulls = 0;
   private ordinal = 0;
+  private held: Promise<void> | null = null;
 
   constructor(readonly name = "thoughtcabinet.json") {}
 
@@ -57,6 +58,22 @@ export class MemoryRemote {
     this.ordinal += 1;
     return `rev-${this.ordinal}`;
   }
+
+  holdPush(): () => void {
+    let open = (): void => {};
+    this.held = new Promise<void>((resolve) => {
+      open = resolve;
+    });
+
+    return () => {
+      this.held = null;
+      open();
+    };
+  }
+
+  pushGate(): Promise<void> {
+    return this.held ?? Promise.resolve();
+  }
 }
 
 class MemoryStore implements RemoteStore {
@@ -78,16 +95,15 @@ class MemoryStore implements RemoteStore {
     return Promise.resolve({ text: file.text, revision: file.revision });
   }
 
-  push(text: string, expected: string | null): Promise<PushOutcome> {
-    if (this.remote.script.push) {
-      return Promise.resolve({ ok: false, reason: this.remote.script.push });
-    }
+  async push(text: string, expected: string | null): Promise<PushOutcome> {
+    await this.remote.pushGate();
+    if (this.remote.script.push) return { ok: false, reason: this.remote.script.push };
 
     const current = this.remote.files.get(this.remote.name)?.revision ?? null;
-    if (current !== expected) return Promise.resolve({ ok: false, reason: "conflict" });
+    if (current !== expected) return { ok: false, reason: "conflict" };
 
     this.remote.pushes += 1;
-    return Promise.resolve({ ok: true, revision: this.remote.put(text) });
+    return { ok: true, revision: this.remote.put(text) };
   }
 
   pullFrom(name: string): Promise<RemoteSnapshot> {

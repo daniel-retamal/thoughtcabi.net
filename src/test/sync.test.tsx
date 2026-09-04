@@ -140,6 +140,51 @@ describe("connecting a place", () => {
     await waitFor(() => expect(cards().sort()).toEqual(["Mine", "Theirs"]));
     expect(remote.text()).toContain("Mine");
   });
+
+  it("does not go back to the remote while a question is waiting for an answer", async () => {
+    withLocal(cabinetOf(["Mine"]));
+    const remote = new MemoryRemote();
+    remote.put(serializeCabinet(cabinetOf(["Theirs"]), NOW));
+    mount(remote);
+
+    await connect();
+    await screen.findByText(en.sync.reconcile.heading);
+
+    const { pulls, pushes } = remote;
+    await act(async () => {
+      window.dispatchEvent(new Event("pagehide"));
+      await Promise.resolve();
+    });
+
+    expect(remote.pulls).toBe(pulls);
+    expect(remote.pushes).toBe(pushes);
+    expect(cards()).toEqual(["Mine"]);
+  });
+
+  it("does not ask a second time while the first answer is still being written", async () => {
+    withLocal(cabinetOf(["Mine"]));
+    const remote = new MemoryRemote();
+    remote.put(serializeCabinet(cabinetOf(["Theirs"]), NOW));
+    mount(remote);
+
+    await connect();
+    await screen.findByText(en.sync.reconcile.heading);
+
+    const letGo = remote.holdPush();
+    await userEvent.click(screen.getByRole("button", { name: en.sync.reconcile.keepBoth }));
+    await waitFor(() => expect(cards().sort()).toEqual(["Mine", "Theirs"]));
+
+    tick();
+    tick();
+    expect(screen.queryByText(en.sync.reconcile.heading)).toBeNull();
+
+    letGo();
+    await waitFor(() => expect(remote.text()).toContain("Mine"));
+
+    tick();
+    await waitFor(() => expect(cards().sort()).toEqual(["Mine", "Theirs"]));
+    expect(screen.queryByText(en.sync.reconcile.heading)).toBeNull();
+  });
 });
 
 describe("two machines", () => {

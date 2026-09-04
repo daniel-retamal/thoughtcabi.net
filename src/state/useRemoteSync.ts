@@ -117,7 +117,7 @@ export function useRemoteSync(options: RemoteSyncOptions): RemoteSync {
 
   const runtimes = useRef(new Map<string, Runtime>());
   const digest = useMemo(() => cabinetDigest(options.cabinet), [options.cabinet]);
-  const latest = useLatest({ ...options, state, digest });
+  const latest = useLatest({ ...options, state, digest, question });
 
   const runtimeFor = useCallback((id: string): Runtime => {
     const existing = runtimes.current.get(id);
@@ -222,6 +222,7 @@ export function useRemoteSync(options: RemoteSyncOptions): RemoteSync {
     async (destination: Destination, mode: ReopenMode = "quiet"): Promise<void> => {
       const runtime = runtimeFor(destination.id);
       if (runtime.busy) return;
+      if (latest.current.question?.destinationId === destination.id) return;
       runtime.busy = true;
       publish(destination.id, { kind: "working", problem: null });
 
@@ -233,7 +234,7 @@ export function useRemoteSync(options: RemoteSyncOptions): RemoteSync {
         runtime.busy = false;
       }
     },
-    [apply, contextFor, openStore, publish, runtimeFor],
+    [apply, contextFor, latest, openStore, publish, runtimeFor],
   );
 
   const settleAll = useCallback((): void => {
@@ -375,19 +376,29 @@ export function useRemoteSync(options: RemoteSyncOptions): RemoteSync {
     (input: AnswerInput): void => {
       const asked = question;
       if (!asked) return;
-      setQuestion(null);
 
       const destination = latest.current.state.destinations.find(
         (entry) => entry.id === asked.destinationId,
       );
-      const store = runtimes.current.get(asked.destinationId)?.store;
-      if (!destination || !store) return;
+      const runtime = runtimeFor(asked.destinationId);
+      const store = runtime.store;
+      if (!destination || !store) {
+        setQuestion(null);
+        return;
+      }
+      if (runtime.busy) return;
 
-      void answerQuestion(asked, input, destination, store, contextFor()).then((outcome) =>
-        apply(destination, outcome),
-      );
+      setQuestion(null);
+      runtime.busy = true;
+      publish(destination.id, { kind: "working", problem: null });
+
+      void answerQuestion(asked, input, destination, store, contextFor())
+        .then((outcome) => apply(destination, outcome))
+        .finally(() => {
+          runtime.busy = false;
+        });
     },
-    [apply, contextFor, latest, question],
+    [apply, contextFor, latest, publish, question, runtimeFor],
   );
 
   const restore = useCallback(
