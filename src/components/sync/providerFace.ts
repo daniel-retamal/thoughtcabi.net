@@ -1,6 +1,7 @@
 import { PROVIDER_IDS, type ProviderId } from "@/domain/sync/types";
 import type { IconName } from "@/icons/names";
 import type { Copy } from "@/i18n/copy";
+import type { PillState } from "@/state/useRemoteSync";
 
 export interface ProviderFace {
   icon: IconName;
@@ -20,6 +21,10 @@ export const CONNECT_TILES: readonly ProviderId[] = ["folder", "github", "drive"
 
 export function isProviderId(value: string): value is ProviderId {
   return PROVIDER_IDS.some((id) => id === value);
+}
+
+export function needsAHand(state: PillState): boolean {
+  return state === "conflict" || state === "blocked";
 }
 
 export function providerFace(provider: string, copy: Copy): ProviderFace {

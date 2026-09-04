@@ -54,7 +54,6 @@
   overflow: hidden;
   border: 1px solid var(--hairline);
   border-radius: var(--r-lg);
-  box-shadow: var(--shadow-sm);
   background-color: var(--bg);
   background-image: var(--grain);
   background-blend-mode: overlay;

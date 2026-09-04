@@ -63,6 +63,10 @@ function places() {
   return within(screen.getByRole("dialog"));
 }
 
+function peek() {
+  return within(document.querySelector(".sync-peek") as HTMLElement);
+}
+
 function cards(): string[] {
   return [...document.querySelectorAll(".card-title")].map((node) => node.textContent ?? "");
 }
@@ -79,6 +83,26 @@ describe("connecting a place", () => {
     await userEvent.click(screen.getByLabelText(en.toolbar.transfer));
     expect(screen.getByText("A folder")).toBeInTheDocument();
     expect(screen.getByText(en.sync.roles.home)).toBeInTheDocument();
+  });
+
+  it("reads the status out of the pill, and leaves the cabinet dialog to the other button", async () => {
+    withLocal(cabinetOf(["One"]));
+    const remote = new MemoryRemote();
+    mount(remote);
+
+    await connect();
+    await waitFor(() => expect(remote.text()).toContain("One"));
+
+    await userEvent.click(await screen.findByLabelText(/Synced with A folder/));
+
+    expect(peek().getByText("A folder")).toBeInTheDocument();
+    expect(peek().getByText(en.sync.roles.home)).toBeInTheDocument();
+    expect(peek().getByRole("button", { name: en.sync.actions.syncNow })).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    await userEvent.click(peek().getByRole("button", { name: en.sync.heading }));
+
+    expect(places().getByText(en.transfer.heading)).toBeInTheDocument();
   });
 
   it("shows nothing at all before anything is connected", () => {
@@ -559,7 +583,9 @@ describe("connecting to Google Drive", () => {
       it.unreachable = true;
     });
 
-    expect(await screen.findByText(en.toasts.couldNotConnect, { exact: false })).toBeInTheDocument();
+    expect(
+      await screen.findByText(en.toasts.couldNotConnect, { exact: false }),
+    ).toBeInTheDocument();
     expect(drive.textOf("thoughtcabinet.json")).toBeNull();
   });
 });

@@ -1,46 +1,36 @@
-import type { PillState } from "@/state/useRemoteSync";
+import type { RefObject } from "react";
 import { useCopy } from "@/i18n/I18nContext";
-import { format } from "@/i18n/format";
-import { relativeTime } from "@/lib/relativeTime";
+import type { PillState } from "@/state/useRemoteSync";
 import { Icon } from "@/components/primitives/Icon";
-import { providerFace } from "./providerFace";
+import { needsAHand, providerFace } from "./providerFace";
 
 export interface SyncPillProps {
-  state: PillState;
+  state: Exclude<PillState, "off">;
   provider: string;
-  label: string;
-  lastSyncedAt: number | null;
+  title: string;
+  open: boolean;
+  buttonRef: RefObject<HTMLButtonElement>;
   onClick: () => void;
 }
 
-const DANGEROUS = new Set<PillState>(["conflict", "blocked"]);
-
-export function SyncPill({ state, provider, label, lastSyncedAt, onClick }: SyncPillProps) {
+export function SyncPill({ state, provider, title, open, buttonRef, onClick }: SyncPillProps) {
   const copy = useCopy();
-  if (state === "off") return null;
-
-  const name = label || providerFace(provider, copy).label;
-  const said = format(copy.sync.states[state], { name });
-  const when =
-    state === "synced" && lastSyncedAt !== null
-      ? format(copy.sync.lastSynced, { when: relativeTime(lastSyncedAt, copy.time) })
-      : null;
-  const title = when ? `${said}, ${when}` : said;
 
   return (
     <button
+      ref={buttonRef}
       type="button"
-      className={`iconbtn sync-pill sync-${state}`}
+      className={
+        open ? `iconbtn active sync-pill sync-${state}` : `iconbtn sync-pill sync-${state}`
+      }
       title={title}
       aria-label={title}
+      aria-expanded={open}
       onClick={onClick}
     >
       <Icon name={providerFace(provider, copy).icon} />
       {state === "synced" ? null : (
-        <span
-          className={DANGEROUS.has(state) ? "sync-dot danger" : "sync-dot"}
-          aria-hidden="true"
-        />
+        <span className={needsAHand(state) ? "sync-dot danger" : "sync-dot"} aria-hidden="true" />
       )}
     </button>
   );

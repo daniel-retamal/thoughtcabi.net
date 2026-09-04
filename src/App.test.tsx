@@ -228,6 +228,19 @@ describe("App", () => {
     expect(sidebar().querySelectorAll("[data-tag-row]")).toHaveLength(3);
   });
 
+  it("keeps the add buttons in the rail, each still carrying its glyph", async () => {
+    withSaves();
+    render(<App />);
+
+    await userEvent.click(within(paneBar()).getByLabelText(en.paneBar.narrowSidebar));
+
+    for (const label of [en.sidebar.newShelf, en.sidebar.newTag]) {
+      const button = within(sidebar()).getByLabelText(label);
+      expect(button.querySelector("svg")).toBeInTheDocument();
+    }
+    expect(within(sidebar()).getByText(en.sidebar.library)).toHaveClass("side-section-title");
+  });
+
   it("switches shelves from the sidebar", async () => {
     withSaves();
     render(<App />);
