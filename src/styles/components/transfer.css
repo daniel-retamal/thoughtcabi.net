@@ -5,6 +5,24 @@
   padding: 12px;
 }
 
+.cab-summary {
+  margin-bottom: 22px;
+}
+
+.cab-panes > .field {
+  margin-bottom: 22px;
+}
+
+.form .cab-panes > .field:last-of-type {
+  margin-bottom: 0;
+}
+
+.cab-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
 .cab-counts {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -51,41 +69,21 @@
 }
 
 label.cab-drop {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  min-height: 104px;
+  position: relative;
   margin: 0;
-  padding: 16px;
-  border: 1.5px dashed var(--border-strong);
-  border-radius: var(--r-lg);
+  border-style: dashed;
+  border-color: var(--border-strong);
   background: var(--surface);
-  color: var(--text-faint);
   cursor: pointer;
-  text-align: center;
   text-transform: none;
   letter-spacing: 0;
-  font-family: var(--font-ui);
-  font-size: 13px;
-  font-weight: 500;
-  transition:
-    border-color 0.15s,
-    background 0.15s,
-    color 0.15s;
+  font-weight: 400;
 }
 
-.cab-drop:hover,
 .cab-drop:focus-within {
+  border-style: solid;
   border-color: color-mix(in oklab, var(--accent) 55%, var(--border));
   background: var(--raise);
-  color: var(--text-muted);
-}
-
-.cab-drop svg {
-  width: 22px;
-  height: 22px;
 }
 
 .cab-file-input {

@@ -251,7 +251,9 @@ export const en = {
   transfer: {
     heading: "Export & import",
     exportLabel: "Export",
+    exportSub: "One file, saved to this computer",
     importLabel: "Import",
+    importSub: "Drop one here, or click to choose",
     exported: "exported {when}",
     chooseAnother: "Choose another file",
     hint: "Merging keeps what you have, a shelf whose name you already use pours its cards into yours. Replacing discards this cabinet for that one.",
@@ -269,8 +271,6 @@ export const en = {
 
     download: {
       label: "This computer",
-      detail: "a file you download",
-      when: "when you ask",
     },
 
     roles: {
@@ -287,6 +287,7 @@ export const en = {
 
     connect: {
       heading: "Where should your cabinet live?",
+      keepsItself: "Pick one and your cabinet keeps itself there, on every machine you open it on.",
       folder: "A folder on this computer",
       folderSub: "iCloud Drive, Dropbox, Syncthing, a network drive",
       github: "GitHub",
@@ -295,8 +296,8 @@ export const en = {
       driveSub: "A file in My Drive, in your own account",
       webdav: "Your own server",
       webdavSub: "WebDAV: Nextcloud, Synology, rclone",
-      file: "This computer",
-      fileSub: "A file you download and keep",
+      file: "Just download a copy instead",
+      fileSub: "One file, saved now. It will not keep itself up to date.",
       unavailable: "Not here",
       needsChromium:
         "The folder needs Chrome, Edge, Brave or Arc. Safari and Firefox ship no folder picker.",

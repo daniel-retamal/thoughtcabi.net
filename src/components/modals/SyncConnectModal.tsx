@@ -69,6 +69,8 @@ export function SyncConnectModal({
 
   return (
     <FormModal size="md" heading={copy.sync.connect.heading} onClose={onCancel}>
+      <p className="tiles-lead">{copy.sync.connect.keepsItself}</p>
+
       <div className="tiles">
         {tiles.map((tile) => {
           const face = providerFace(tile.id, copy);
@@ -89,14 +91,13 @@ export function SyncConnectModal({
           );
         })}
 
-        <button type="button" className="tile tile-wide" onClick={onDownload}>
-          <span className="tile-mark">
-            <Icon name="hard-drive" />
-          </span>
-          <span className="tile-name">{copy.sync.connect.file}</span>
-          <span className="tile-sub">{copy.sync.connect.fileSub}</span>
-        </button>
       </div>
+
+      <button type="button" className="tile-aside" onClick={onDownload}>
+        <Icon name="download" />
+        <span className="tile-aside-name">{copy.sync.connect.file}</span>
+        <span className="tile-aside-sub">{copy.sync.connect.fileSub}</span>
+      </button>
 
       <FormActions>
         <Button variant="ghost" onClick={onBack ?? onCancel}>
