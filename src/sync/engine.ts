@@ -417,7 +417,7 @@ async function strayAnswer(
   return { ...written, patch: { ...written.patch, ...remembered } };
 }
 
-export async function answerQuestion(
+async function resolveQuestion(
   question: SyncQuestion,
   input: AnswerInput,
   destination: Destination,
@@ -463,4 +463,18 @@ export async function answerQuestion(
   context.replace(union);
   const written = await writeTo(destination, store, context, union, question.snapshot.revision);
   return { ...written, savedAs };
+}
+
+export async function answerQuestion(
+  question: SyncQuestion,
+  input: AnswerInput,
+  destination: Destination,
+  store: RemoteStore,
+  context: EngineContext,
+): Promise<SyncOutcome> {
+  try {
+    return await resolveQuestion(question, input, destination, store, context);
+  } catch (error) {
+    return stalled(problemOf(error));
+  }
 }

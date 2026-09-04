@@ -63,6 +63,10 @@ function places() {
   return within(screen.getByRole("dialog"));
 }
 
+function peek() {
+  return within(document.querySelector(".sync-peek") as HTMLElement);
+}
+
 function cards(): string[] {
   return [...document.querySelectorAll(".card-title")].map((node) => node.textContent ?? "");
 }
@@ -79,6 +83,26 @@ describe("connecting a place", () => {
     await userEvent.click(screen.getByLabelText(en.toolbar.transfer));
     expect(screen.getByText("A folder")).toBeInTheDocument();
     expect(screen.getByText(en.sync.roles.home)).toBeInTheDocument();
+  });
+
+  it("reads the status out of the pill, and leaves the cabinet dialog to the other button", async () => {
+    withLocal(cabinetOf(["One"]));
+    const remote = new MemoryRemote();
+    mount(remote);
+
+    await connect();
+    await waitFor(() => expect(remote.text()).toContain("One"));
+
+    await userEvent.click(await screen.findByLabelText(/Synced with A folder/));
+
+    expect(peek().getByText("A folder")).toBeInTheDocument();
+    expect(peek().getByText(en.sync.roles.home)).toBeInTheDocument();
+    expect(peek().getByRole("button", { name: en.sync.actions.syncNow })).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    await userEvent.click(peek().getByRole("button", { name: en.sync.heading }));
+
+    expect(places().getByText(en.transfer.heading)).toBeInTheDocument();
   });
 
   it("shows nothing at all before anything is connected", () => {
@@ -139,6 +163,51 @@ describe("connecting a place", () => {
 
     await waitFor(() => expect(cards().sort()).toEqual(["Mine", "Theirs"]));
     expect(remote.text()).toContain("Mine");
+  });
+
+  it("does not go back to the remote while a question is waiting for an answer", async () => {
+    withLocal(cabinetOf(["Mine"]));
+    const remote = new MemoryRemote();
+    remote.put(serializeCabinet(cabinetOf(["Theirs"]), NOW));
+    mount(remote);
+
+    await connect();
+    await screen.findByText(en.sync.reconcile.heading);
+
+    const { pulls, pushes } = remote;
+    await act(async () => {
+      window.dispatchEvent(new Event("pagehide"));
+      await Promise.resolve();
+    });
+
+    expect(remote.pulls).toBe(pulls);
+    expect(remote.pushes).toBe(pushes);
+    expect(cards()).toEqual(["Mine"]);
+  });
+
+  it("does not ask a second time while the first answer is still being written", async () => {
+    withLocal(cabinetOf(["Mine"]));
+    const remote = new MemoryRemote();
+    remote.put(serializeCabinet(cabinetOf(["Theirs"]), NOW));
+    mount(remote);
+
+    await connect();
+    await screen.findByText(en.sync.reconcile.heading);
+
+    const letGo = remote.holdPush();
+    await userEvent.click(screen.getByRole("button", { name: en.sync.reconcile.keepBoth }));
+    await waitFor(() => expect(cards().sort()).toEqual(["Mine", "Theirs"]));
+
+    tick();
+    tick();
+    expect(screen.queryByText(en.sync.reconcile.heading)).toBeNull();
+
+    letGo();
+    await waitFor(() => expect(remote.text()).toContain("Mine"));
+
+    tick();
+    await waitFor(() => expect(cards().sort()).toEqual(["Mine", "Theirs"]));
+    expect(screen.queryByText(en.sync.reconcile.heading)).toBeNull();
   });
 });
 
@@ -514,7 +583,9 @@ describe("connecting to Google Drive", () => {
       it.unreachable = true;
     });
 
-    expect(await screen.findByText(en.toasts.couldNotConnect, { exact: false })).toBeInTheDocument();
+    expect(
+      await screen.findByText(en.toasts.couldNotConnect, { exact: false }),
+    ).toBeInTheDocument();
     expect(drive.textOf("thoughtcabinet.json")).toBeNull();
   });
 });

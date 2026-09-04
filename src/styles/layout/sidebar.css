@@ -248,7 +248,7 @@
 
 .lib-name,
 .lib-edit,
-.side-section-label span {
+.side-section-title {
   transition: opacity 0.18s var(--ease) 0.1s;
 }
 
@@ -264,7 +264,7 @@
   }
 
   :root[data-sidebar="rail"] .lib-edit,
-  :root[data-sidebar="rail"] .side-section-label span,
+  :root[data-sidebar="rail"] .side-section-title,
   :root[data-sidebar="rail"] .lib-ghost {
     display: none;
   }
@@ -288,11 +288,25 @@
   :root[data-sidebar="rail"] .side-section-label {
     order: 2;
     justify-content: center;
-    padding: 6px 0 0;
+    padding: 8px 0 0;
   }
 
   :root[data-sidebar="rail"] .side-section-label button {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    border: 1px dashed color-mix(in oklab, var(--text) 30%, transparent);
+    color: var(--text-faint);
+  }
+
+  :root[data-sidebar="rail"] .side-section-label button:hover {
+    border-color: color-mix(in oklab, var(--text) 46%, transparent);
     color: var(--text-muted);
+  }
+
+  :root[data-sidebar="rail"] .side-section-label button svg {
+    width: 13px;
+    height: 13px;
   }
 }
 
@@ -300,7 +314,7 @@
   .lib-row,
   .lib-name,
   .lib-edit,
-  .side-section-label span,
+  .side-section-title,
   .side-brand .wordmark {
     transition: none;
   }

@@ -12,7 +12,7 @@ export function SidebarSection({ title, addLabel, onAdd, children }: SidebarSect
   return (
     <div className="side-section">
       <div className="side-section-label">
-        <span>{title}</span>
+        <span className="side-section-title">{title}</span>
         <button type="button" title={addLabel} aria-label={addLabel} onClick={onAdd}>
           <Icon name="plus" />
         </button>

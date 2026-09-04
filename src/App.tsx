@@ -66,7 +66,7 @@ import type { Dialog } from "@/state/dialogs";
 import { DialogHost } from "@/components/DialogHost";
 import { SyncAnswerModal } from "@/components/modals/SyncAnswerModal";
 import type { ImportMode } from "@/components/modals/TransferModal";
-import { SyncPill } from "@/components/sync/SyncPill";
+import { SyncStatus } from "@/components/sync/SyncStatus";
 import { providerFace } from "@/components/sync/providerFace";
 import type { StagedCabinet, SyncSurface } from "@/components/sync/surface";
 import { AppControls } from "@/components/layout/AppControls";
@@ -453,10 +453,6 @@ export function App({
     onDisconnect: remote.disconnect,
   };
 
-  const pillFor =
-    remote.destinations.find((view) => view.destination.direction === "two-way") ??
-    remote.destinations[0];
-
   const noteHandlers = {
     onOpen: (note: Note) => setDialog({ kind: "detail", note }),
     onEdit: (note: Note) => setDialog({ kind: "compose", mode: "edit", note }),
@@ -495,19 +491,13 @@ export function App({
       onLanguageChange={changeLanguage}
       onTransfer={openTransfer}
       pill={
-        pillFor ? (
-          <SyncPill
-            state={remote.pill}
-            provider={pillFor.destination.provider}
-            label={pillFor.destination.label}
-            lastSyncedAt={pillFor.destination.lastSyncedAt}
-            onClick={() =>
-              pillFor.status.kind === "paused"
-                ? remote.resume(pillFor.destination.id)
-                : openTransfer()
-            }
-          />
-        ) : null
+        <SyncStatus
+          state={remote.pill}
+          destinations={remote.destinations}
+          onSyncNow={remote.syncNow}
+          onResume={remote.resume}
+          onManage={openTransfer}
+        />
       }
     />
   );

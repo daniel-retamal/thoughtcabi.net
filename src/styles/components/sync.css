@@ -39,6 +39,131 @@
   background: var(--danger);
 }
 
+.sync-peek {
+  width: 296px;
+}
+
+.sync-peek-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.sync-peek-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 3px 10px;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
+  font-family: var(--font-ui);
+}
+
+.sync-peek-row .place-mark {
+  position: relative;
+  width: 26px;
+  height: 26px;
+}
+
+.peek-dot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-faint);
+  outline: 2px solid var(--surface-2);
+}
+
+.peek-dot.danger {
+  background: var(--danger);
+}
+
+.sync-peek-row .place-mark svg {
+  width: 14px;
+  height: 14px;
+}
+
+.sync-peek-note {
+  grid-column: 2 / -1;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-faint);
+  text-wrap: pretty;
+}
+
+.sync-peek-note .place-verb {
+  margin-inline-start: 6px;
+  padding: 1px 8px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  background: var(--raise);
+}
+
+.sync-peek-note .place-verb:hover {
+  color: var(--text);
+  background: var(--accent-softer);
+}
+
+.peek-blocked .sync-peek-note,
+.peek-conflict .sync-peek-note {
+  color: var(--text-muted);
+}
+
+.peek-blocked,
+.peek-conflict {
+  border-color: color-mix(in oklab, var(--danger) 34%, var(--border));
+}
+
+.sync-peek-verbs {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.sync-peek-verb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition:
+    color 0.14s,
+    background 0.14s,
+    border-color 0.14s;
+}
+
+.sync-peek-verb.lead {
+  flex: 1 1 auto;
+}
+
+.sync-peek-verb:hover:not(:disabled) {
+  color: var(--text);
+  background: var(--raise);
+  border-color: var(--border-strong);
+}
+
+.sync-peek-verb:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.sync-peek-verb svg {
+  width: 14px;
+  height: 14px;
+}
+
 .places {
   display: flex;
   flex-direction: column;
