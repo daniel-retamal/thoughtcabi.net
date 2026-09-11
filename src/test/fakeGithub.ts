@@ -16,6 +16,12 @@ interface Written {
   sha?: string;
 }
 
+interface CachedAnswer {
+  etag: string;
+  body: string;
+  type: string | null;
+}
+
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -31,6 +37,7 @@ function decode(content: string): string {
 export class FakeGithub {
   readonly files = new Map<string, string>();
   readonly messages: string[] = [];
+  readonly browserCache = new Map<string, CachedAnswer>();
   readonly owner: string;
   readonly repo: string;
   readonly token: string;
@@ -81,11 +88,44 @@ export class FakeGithub {
     if (!rest.startsWith("/contents/")) return json({ message: "Not Found" }, 404);
 
     const path = decodeURIComponent(rest.slice("/contents/".length));
-    if (init.method !== "PUT") return await this.read(path, headers.get("Accept") ?? "");
+    if (init.method !== "PUT") {
+      return await this.readThroughCache(path, headers.get("Accept") ?? "", init.cache);
+    }
 
     const body = typeof init.body === "string" ? (JSON.parse(init.body) as Written) : null;
     return body ? await this.write(path, body) : json({ message: "Bad request" }, 400);
   };
+
+  private async etagOf(path: string): Promise<string> {
+    return await gitBlobSha(this.files.get(path) ?? this.names(path).join("\n"));
+  }
+
+  private async readThroughCache(
+    path: string,
+    accept: string,
+    cache: RequestCache | undefined,
+  ): Promise<Response> {
+    if (cache === "no-store") return await this.read(path, accept);
+
+    const etag = await this.etagOf(path);
+    const cached = this.browserCache.get(path);
+    if (cached?.etag === etag) {
+      return new Response(cached.body, {
+        status: 200,
+        headers: cached.type === null ? {} : { "Content-Type": cached.type },
+      });
+    }
+
+    const response = await this.read(path, accept);
+    if (response.ok) {
+      this.browserCache.set(path, {
+        etag,
+        body: await response.clone().text(),
+        type: response.headers.get("Content-Type"),
+      });
+    }
+    return response;
+  }
 
   private async read(path: string, accept: string): Promise<Response> {
     const text = this.files.get(path);

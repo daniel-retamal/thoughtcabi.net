@@ -13,8 +13,10 @@ import {
   makeTag,
 } from "@/test/factories";
 import { TAG_PALETTE } from "@/domain/tags/palette";
+import { FakeGithub } from "@/test/fakeGithub";
 import { memoryBaseStore, type BaseStore } from "./baseStore";
 import { MemoryRemote, memoryProvider } from "./memoryStore";
+import { githubProvider } from "./providers/github";
 import { answerQuestion, settleDestination, type EngineContext, type SyncQuestion } from "./engine";
 import type { RemoteStore } from "./types";
 
@@ -94,6 +96,33 @@ function home(overrides: Partial<Destination> = {}): Destination {
 function mirror(overrides: Partial<Destination> = {}): Destination {
   return makeDestination({ id: "d1", direction: "mirror", adopted: true, ...overrides });
 }
+
+describe("settleDestination, through the github store", () => {
+  it("pulls what another device wrote rather than calling it empty", async () => {
+    const before = cabinetOf(["One"]);
+    const github = new FakeGithub();
+    github.put("thoughtcabinet.json", serializeCabinet(before, NOW));
+    const connected = await githubProvider({ fetcher: github.fetcher }).connect({
+      fields: { owner: github.owner, repo: github.repo, token: github.token },
+    });
+    if (!connected.ok) throw new Error("the fake github refused");
+    const { store } = connected.connection;
+    const destination = home({
+      baseRevision: (await store.head())?.revision ?? null,
+      baseDigest: cabinetDigest(before),
+    });
+    github.put("thoughtcabinet.json", serializeCabinet(cabinetOf(["One", "Two"]), NOW));
+    const harnessed = await harness(before);
+
+    const outcome = await settleDestination(destination, store, harnessed.context);
+
+    expect(outcome.status).toEqual({ kind: "synced", problem: null });
+    expect(collectNotes(harnessed.adopted[0]?.library[0] as never).map((n) => n.title)).toEqual([
+      "One",
+      "Two",
+    ]);
+  });
+});
 
 describe("settleDestination, a home", () => {
   it("creates the file on a first connection and remembers where it landed", async () => {

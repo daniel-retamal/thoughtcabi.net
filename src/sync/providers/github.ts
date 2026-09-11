@@ -79,6 +79,7 @@ function callerFor(fetcher: Fetcher, api: string, token: string): Caller {
   return (path, accept, init = {}) =>
     fetcher(`${api}${path}`, {
       ...init,
+      cache: "no-store",
       headers: {
         Accept: accept,
         Authorization: `Bearer ${token}`,
