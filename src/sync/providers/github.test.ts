@@ -148,6 +148,29 @@ describe("the github store", () => {
     expect((await store.pull()).revision).toBe(head?.revision);
   });
 
+  it("pulls the file another device wrote, never the metadata the browser kept from head", async () => {
+    const remote = new FakeGithub();
+    const store = await connected(remote);
+    remote.put(PATH, "written on the phone");
+
+    const head = await store.head();
+    const snapshot = await store.pull();
+
+    expect(snapshot).toEqual({ text: "written on the phone", revision: head?.revision });
+  });
+
+  it("reads every answer past the browser cache", async () => {
+    const remote = new FakeGithub();
+    const store = await connected(remote, { path: "backups" });
+    await store.push("mine", null, "Cabinet: 1 shelf");
+
+    await store.head();
+    await store.pull();
+    await store.siblings?.();
+
+    expect(remote.browserCache.size).toBe(0);
+  });
+
   it("reports a token without write access as read only", async () => {
     const remote = new FakeGithub({ push: false });
     const store = await connected(remote);
